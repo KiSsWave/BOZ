@@ -5,8 +5,8 @@
 
 
   "autoload": {
-    "psr-4": {
-      "Blockchain\\": "src/Blockchain/"
+    "psr-4" : {
+      "boz\\" : "src/"
     }
   }
 
