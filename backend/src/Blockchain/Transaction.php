@@ -1,6 +1,6 @@
 <?php
 
-namespace Blockchain;
+namespace backend\src\Blockchain;
 class Transaction
 {
     public string $account;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Blockchain;
+namespace backend\src\Blockchain;
 
 use Exception;
 

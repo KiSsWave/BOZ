@@ -1,6 +1,7 @@
 <?php
 
-namespace Blockchain;
+namespace backend\src\Blockchain;
+
 class Block {
     public string $previousHash;
     public int $timestamp;
