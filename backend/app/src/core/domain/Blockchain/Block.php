@@ -1,6 +1,6 @@
 <?php
 
-namespace backend\src\Blockchain;
+namespace backend\app\src\core\domain\Blockchain;
 
 class Block {
     public string $previousHash;
