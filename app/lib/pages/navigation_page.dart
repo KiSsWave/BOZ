@@ -12,12 +12,10 @@ class MyNavigation extends StatefulWidget {
 class MyNavigationBar extends State<MyNavigation> {
   int _currentIndex = 0;
 
-  // Liste des pages (y compris HomePage)
   final List<Widget> body = [
-    const HomePage(), // Ajout de la page d'accueil
-    const Icon(Icons.person), // Page Profil
-    const Icon(Icons.settings), // Page Paramètres
-    const Icon(Icons.logout), // Page Déconnexion
+    const HomePage(), 
+    const Icon(Icons.person), 
+    const Icon(Icons.logout),
   ];
 
   void _handleLogout() async {
@@ -100,16 +98,12 @@ class MyNavigationBar extends State<MyNavigation> {
             label: "Profil",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: "Paramètres",
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.logout),
             label: "Déconnexion",
           ),
         ],
         onTap: (index) {
-          if (index == 3) {
+          if (index == 2) {
             // Affiche la boîte de dialogue de confirmation pour la déconnexion
             _showLogoutConfirmation(context);
           } else {
