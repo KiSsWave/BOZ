@@ -1,0 +1,56 @@
+networks:
+  boz.net:
+    driver: bridge
+
+services:
+
+  api:
+    image: canals/php:latest
+    restart: unless-stopped
+    build:
+      context: ./backend
+      dockerfile: ./build/Dockerfile
+    env_file: ./backend/app/config/token.env
+    ports:
+      - '44050:80'
+    volumes:
+      - ./backend/app:/var/php
+    working_dir: /var/php
+    networks:
+      - boz.net
+    depends_on:
+      - postgres
+    command: php -S 0.0.0.0:80 -t /var/php/public
+
+
+  postgres:
+    image: 'postgres:latest'
+    restart: unless-stopped
+    env_file: ./backend/app/config/postgres.env
+    ports:
+      - '44051:5432'
+    networks:
+      - boz.net
+    volumes:
+      - ./app/sql:/var/sql
+
+  adminer:
+    image: adminer
+    restart: unless-stopped
+    ports:
+      - '44052:8080'
+    networks:
+      - boz.net
+    command : php -S 0.0.0.0:8080 -t /var/www/html
+
+  apache2:
+    image: ubuntu/apache2:latest
+    restart: unless-stopped
+    ports:
+      - "44053:80"
+    volumes:
+      - ./frontend/:/var/www/html
+    networks:
+      - boz.net
+    depends_on:
+      - api
