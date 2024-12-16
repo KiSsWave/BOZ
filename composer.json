@@ -1,0 +1,13 @@
+{
+  "require": {
+    "ext-json": "*"
+  },
+
+
+  "autoload": {
+    "psr-4": {
+      "Blockchain\\": "src/Blockchain/"
+    }
+  }
+
+}
