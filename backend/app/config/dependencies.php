@@ -2,10 +2,10 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use DotEnv\DotEnv;
+use Dotenv\Dotenv;
 
 $dbName = 'boz';
-$dotenv = Dotenv::createImmutable(__DIR__ .  'dbconnexion.env');
+$dotenv = Dotenv::createImmutable(__DIR__ , ['dbconnexion.env']);
 $dotenv->load();
 
 
