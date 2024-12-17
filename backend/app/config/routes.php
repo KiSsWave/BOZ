@@ -9,6 +9,9 @@ return function( \Slim\App $app):\Slim\App {
 
     $app->add(\backend\app\src\application\middleware\CorsMiddleware::class);
 
+    $app->group('', function () use ($app){
+
+    })->add(\backend\app\src\application\middleware\AuthnMiddleware::class);
 
     return $app;
 };

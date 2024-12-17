@@ -18,12 +18,6 @@ class SignInAction extends AbstractAction
         $this->authnProvider = $authnProvider;
     }
 
-    private AuthnProviderInterface $authnProvider;
-
-    public function __construct(AuthnProviderInterface $authnProvider){
-        $this->authnProvider = $authnProvider;
-    }
-
     public function __invoke(ServerRequestInterface $rq, ResponseInterface $rs, array $args): ResponseInterface
     {
         $data = $rq->getParsedBody();
