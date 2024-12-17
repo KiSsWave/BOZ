@@ -2,15 +2,14 @@
 
 namespace backend\app\src\application\action;
 
-use backend\app\src\application\action\AbstractAction;
 use backend\app\src\application\providers\AuthnProviderInterface;
 use backend\app\src\core\dto\CredentialDTO;
 use backend\app\src\core\services\auth\AuthServiceBadDataException;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ResponseInterface;
 use Slim\Exception\HttpBadRequestException;
 
-class SignInAction extends AbstractAction
+class RegisterAction extends AbstractAction
 {
 
     private AuthnProviderInterface $authnProvider;
@@ -25,19 +24,21 @@ class SignInAction extends AbstractAction
 
         $email = $data['email'] ?? null;
         $password = $data['password'] ?? null;
+        $nom = $data['nom'];
+        $prenom = $data['prenom'];
+        $numerotel = $data['numerotel'];
+        $birthdate = $data['birthdate'];
+        $eligible = $data['eligible'];
+        $role = $data['role'];
 
+        try{
+            $this->authnProvider->register(new CredentialDTO($email, $password), $nom, $prenom, $numerotel, $birthdate, $eligible, $role);
 
-        try {
-            $user = $this->authnProvider->signin(new CredentialDTO($email, $password));
-            $token = $user->getToken();
         }catch(AuthServiceBadDataException $e){
             throw new HttpBadRequestException($rq, $e->getMessage());
         }
 
-        $rs->getBody()->write(json_encode([
-            'token' => $token
-        ]));
-
         return $rs->withHeader('Content-Type', 'application/json')->withStatus(200);
+
     }
 }
