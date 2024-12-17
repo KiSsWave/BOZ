@@ -16,6 +16,7 @@ use backend\app\src\core\services\auth\AuthnService;
 use backend\app\src\core\services\auth\AuthnServiceInterface;
 use backend\app\src\core\services\auth\AuthzService;
 use backend\app\src\core\services\auth\AuthzServiceInterface;
+use backend\app\src\Infrastructure\repositories\BlockRepository;
 use Dotenv\Dotenv;
 use Psr\Container\ContainerInterface;
 use backend\app\src\application\middleware\CorsMiddleware;
@@ -90,6 +91,10 @@ return [
 
     RegisterAction::class => function (ContainerInterface $c){
         return new RegisterAction($c->get(AuthnProviderInterface::class));
+    },
+
+    BlockRepository::class => function (ContainerInterface $container) {
+        return new BlockRepository($container->get(PDO::class));
     },
 
 

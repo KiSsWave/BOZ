@@ -14,10 +14,29 @@ class BlockService implements BlockServiceInterface
     private BlockRepositoryInterface $blockRepository;
 
 
-    public function __construct(BlockRepositoryInterface $blockRepository)
+    public function __construct(BlockRepositoryInterface $b)
     {
-        $this->blockRepository = $blockRepository;
+        $this->blockRepository = $b;
     }
+
+
+    public function getBalance(string $account): float
+    {
+        $balance = 0;
+        $blocks = $this->blockRepository->getAllBlocks();
+        foreach ($blocks as $block) {
+            if ($block->transaction->account === $account) {
+                if ($block->transaction->type === 'credit') {
+                    $balance += $block->transaction->price;
+                } else {
+                    $balance -= $block->transaction->price;
+                }
+            }
+        }
+        return $balance;
+    }
+
+
 
 
 
