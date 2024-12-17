@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+use backend\app\src\application\action\RegisterAction;
 use backend\app\src\application\action\SignInAction;
 use backend\app\src\application\providers\AuthnProviderInterface;
 use backend\app\src\application\providers\JWTAuthnProvider;
