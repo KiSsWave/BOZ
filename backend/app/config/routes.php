@@ -7,6 +7,9 @@ use Psr\Http\Message\ResponseInterface as Response;
 
 return function( \Slim\App $app):\Slim\App {
 
+    $app->add(\backend\app\src\application\middleware\CorsMiddleware::class);
+
+
     return $app;
 };
 
