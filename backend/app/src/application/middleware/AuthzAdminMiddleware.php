@@ -8,7 +8,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Psr7\Response;
 
 
-class AuthzOrganisateurMiddleware
+class AuthzAdminMiddleware
 {
     private AuthzServiceInterface $authzService;
 

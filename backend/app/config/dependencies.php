@@ -2,7 +2,12 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+use backend\app\src\application\action\RegisterAction;
 use backend\app\src\application\action\SignInAction;
+use backend\app\src\application\middleware\AuthnMiddleware;
+use backend\app\src\application\middleware\AuthzUserMiddleware;
+use backend\app\src\application\middleware\AuthzAdminMiddleware;
+use backend\app\src\application\middleware\AuthzVendeurMiddleware;
 use backend\app\src\application\providers\AuthnProviderInterface;
 use backend\app\src\application\providers\JWTAuthnProvider;
 use backend\app\src\application\providers\JWTManager;
@@ -71,8 +76,12 @@ return [
         return new AuthzUserMiddleware($c->get(AuthzServiceInterface::class));
     },
 
-    AuthzOrganisateurMiddleware::class =>function (ContainerInterface $c){
-        return new AuthzOrganisateurMiddleware($c->get(AuthzServiceInterface::class));
+    AuthzAdminMiddleware::class =>function (ContainerInterface $c){
+        return new AuthzAdminMiddleware($c->get(AuthzServiceInterface::class));
+    },
+
+    AuthzVendeurMiddleware::class =>function (ContainerInterface $c){
+        return new AuthzVendeurMiddleware($c->get(AuthzServiceInterface::class));
     },
 
     SignInAction::class => function (ContainerInterface $c){
