@@ -2,7 +2,7 @@
 
 namespace backend\app\src\core\repositoryInterfaces;
 
-interface BlockchainRepositoryInterface
+interface BlockRepositoryInterface
 {
 
 }

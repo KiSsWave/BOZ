@@ -1,12 +1,14 @@
 <?php
 
 namespace backend\app\src\core\domain\Blockchain;
-class Transaction
+use backend\app\src\core\domain\Entity;
+
+class Transaction extends Entity
 {
     public string $account;
     public float $price;
 
-    public string $type; //pay or add
+    public string $type;
 
     public function __construct(string $a, float $p, string $t)
     {

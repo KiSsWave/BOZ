@@ -2,7 +2,9 @@
 
 namespace backend\app\src\core\domain\Blockchain;
 
-class Block {
+use backend\app\src\core\domain\Entity;
+
+class Block extends Entity {
     public string $previousHash;
     public int $timestamp;
     public Transaction $transaction;
