@@ -19,7 +19,7 @@ class AuthnService implements AuthnServiceInterface
         $this->userRepository = $userRepository;
     }
 
-    #[\Override] public function createUser(CredentialDTO $c, string $login, int $role)
+    #[\Override] public function createUser(CredentialDTO $c, string $login, int $role): string
     {
         $user = new User($c->getEmail(),$login, $role);
         $user->setID(Uuid::uuid4()->toString());
@@ -29,6 +29,11 @@ class AuthnService implements AuthnServiceInterface
 
     #[\Override] public function byCredentials(CredentialDTO $c): UserDTO
     {
-        // TODO: Implement byCredentials() method.
+        $user = $this->userRepository->getUserByEmail($c->getEmail());
+        if ($user && password_verify($c->getPassword(), $user->getPassword())) {
+            return new UserDTO($user);
+        } else {
+            throw new AuthServiceBadDataException('Erreur 400 : Email ou mot de passe incorrect', 400);
+        }
     }
 }

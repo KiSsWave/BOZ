@@ -26,6 +26,20 @@ class User extends Entity
         return $this->login;
     }
 
+    public function getPassword() : string{
+        return $this->password;
+    }
+
+    public function getRole(): int
+    {
+        return $this->role;
+    }
+
+    public function setPassword(string $p)
+    {
+        $this->password = $p;
+    }
+
 
 
 }
