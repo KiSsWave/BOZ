@@ -7,20 +7,25 @@ use backend\app\src\core\domain\Entity;
 class User extends Entity
 {
     protected string $login;
+    protected string $email;
     protected string $password;
     protected int $role;
 
 
-    public function __construct(string $l, string $p, string $r){
+    public function __construct(string $l,string $e, string $r){
         $this->login = $l;
-        $this->password = $p;
+        $this->email = $e;
         $this->role = $r;
     }
 
-    public function __get(string $name): mixed
-    {
-        return parent::__get($name);
+    public function getEmail() :string {
+        return $this->email;
     }
+
+    public function getLogin() : string{
+        return $this->login;
+    }
+
 
 
 }
