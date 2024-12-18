@@ -20,21 +20,6 @@ class BlockService implements BlockServiceInterface
     }
 
 
-    public function getBalance(string $account): float
-    {
-        $balance = 0;
-        $blocks = $this->blockRepository->getAllBlocks();
-        foreach ($blocks as $block) {
-            if ($block->transaction->account === $account) {
-                if ($block->transaction->type === 'credit') {
-                    $balance += $block->transaction->price;
-                } else {
-                    $balance -= $block->transaction->price;
-                }
-            }
-        }
-        return $balance;
-    }
 
 
 

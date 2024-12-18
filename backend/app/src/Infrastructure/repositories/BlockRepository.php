@@ -9,9 +9,7 @@ use PDO;
 class BlockRepository implements BlockRepositoryInterface
 {
 
-
     private PDO $pdo;
-
 
     public function __construct(PDO $pdo)
     {
@@ -40,7 +38,6 @@ class BlockRepository implements BlockRepositoryInterface
         }
     }
 
-
     public function getAccountHistory(string $account): array
     {
         try {
@@ -63,10 +60,6 @@ class BlockRepository implements BlockRepositoryInterface
             throw new RepositoryEntityNotFoundException("Erreur lors de la récupération de l'historique : " . $e->getMessage());
         }
     }
-
-
-
-
 
 }
 
