@@ -19,6 +19,14 @@ class BlockService implements BlockServiceInterface
         $this->blockRepository = $b;
     }
 
+    public function afficherSolde(string $account):float{
+        return $this->blockRepository->getAccountBalance($account);
+    }
+
+    public function afficherHistorique(string $account):array{
+        return $this->blockRepository->getAccountHistory($account);
+    }
+
 
 
 
