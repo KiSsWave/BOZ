@@ -1,11 +1,13 @@
 <?php
 
 namespace boz\core\dto;
+use AllowDynamicProperties;
 use boz\core\domain\User\User;
 use boz\core\dto\DTO;
 
 class UserDTO extends DTO
 {
+    protected string $ID;
     protected string $login;
     protected string $email;
     protected string $role;
@@ -16,6 +18,7 @@ class UserDTO extends DTO
         $this->ID = $u->getID();
         $this->email = $u->getEmail();
         $this->login = $u->getLogin();
+        $this->role = $u->getRole();
     }
 
     public function getToken(){

@@ -6,8 +6,8 @@ use boz\core\domain\Entity;
 
 class User extends Entity
 {
-    protected string $login;
     protected string $email;
+    protected string $login;
     protected string $password;
     protected int $role;
 
