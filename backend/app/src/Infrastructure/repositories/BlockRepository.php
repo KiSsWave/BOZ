@@ -18,6 +18,29 @@ class BlockRepository implements BlockRepositoryInterface
         $this->pdo = $pdo;
     }
 
+    public function getAccountBalance(string $account): float
+    {
+        try {
+            $stmt = $this->pdo->prepare("
+                SELECT 
+                    SUM(CASE 
+                        WHEN t.type = 'add' THEN t.price 
+                        WHEN t.type = 'pay' THEN -t.price 
+                        ELSE 0 
+                    END) AS balance
+                FROM transactions t
+                WHERE t.account = :account
+            ");
+            $stmt->execute(['account' => $account]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return $result['balance'] ?? 0.0;
+        } catch (\PDOException $e) {
+            throw new RepositoryEntityNotFoundException("Erreur lors du calcul du solde : " . $e->getMessage());
+        }
+    }
+
+
     public function getAccountHistory(string $account): array
     {
         try {
