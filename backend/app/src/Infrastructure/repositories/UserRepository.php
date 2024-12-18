@@ -47,11 +47,11 @@ class UserRepository implements UserRepositoryInterface
     #[\Override] public function getUserByEmail(string $email): User
     {
         foreach ($this->users as $user) {
-            if ($user->getEmail() === $email) {
+            if ($user->getLogin() === $email) {
                 return $user;
             }
         }
-        throw new RepositoryEntityNotFoundException('User not found');    }
+        throw new RepositoryEntityNotFoundException('User not found ');    }
 
     #[\Override] public function getUserByID(string $id): User
     {

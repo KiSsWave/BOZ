@@ -30,6 +30,7 @@ class AuthnService implements AuthnServiceInterface
     #[\Override] public function byCredentials(CredentialDTO $c): UserDTO
     {
         $user = $this->userRepository->getUserByEmail($c->getEmail());
+
         if ($user && password_verify($c->getPassword(), $user->getPassword())) {
             return new UserDTO($user);
         } else {
