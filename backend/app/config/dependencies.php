@@ -22,10 +22,11 @@ use boz\Infrastructure\repositories\BlockRepository;
 use Dotenv\Dotenv;
 use Psr\Container\ContainerInterface;
 use boz\application\middleware\CorsMiddleware;
+use boz\infrastructure\repositories\UserRepository;
 
 return [
     'dotenv' => function () {
-        $dotenv = Dotenv::createImmutable(__DIR__ , ['dbconnexion.env']);
+        $dotenv = Dotenv::createImmutable(__DIR__ , ['.env','dbconnexion.env']);
         $dotenv->load();
         return $dotenv;
     },
@@ -55,8 +56,12 @@ return [
         return new CorsMiddleware();
     },
 
-    JWTManager::class => function (ContainerInterface $container) {
-        return new JWTManager($container->get('jwt.secret'));
+    JWTManager::class => function () {
+        return new JWTManager();
+    },
+
+    UserRepositoryInterface::class => function(ContainerInterface $c){
+      return new UserRepository($c->get(PDO::class));
     },
 
     AuthnServiceInterface::class => function (ContainerInterface $c){
@@ -108,13 +113,3 @@ return [
     },
 
 ];
-
-
-
-
-
-
-
-
-
-
