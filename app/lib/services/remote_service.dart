@@ -5,7 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class RemoteService {
   final storage = FlutterSecureStorage();
-  final baseUrl = DotEnv().env['BASE_URL']; // Chargement de l'URL de base
+  final baseUrl = dotenv.env['BASE_URL']; // Chargement de l'URL de base
 
   Future<http.Response> registerUser(
       String email, String username, String password) async {
@@ -14,7 +14,7 @@ class RemoteService {
       var uri = Uri.parse('$baseUrl/register'); // Utilisation de baseUrl
 
       var response = await client.post(uri,
-          body: {"email": email, "username": username, "password": password});
+          body: {"email": email, "login": username, "password": password});
 
       if (response.statusCode != 200) {
         return http.Response(
@@ -31,10 +31,10 @@ class RemoteService {
   Future<http.Response> loginUser(String username, String password) async {
     try {
       var client = http.Client();
-      var uri = Uri.parse('$baseUrl/login'); // Utilisation de baseUrl
+      var uri = Uri.parse('$baseUrl/signin'); // Utilisation de baseUrl
 
       var response = await client
-          .post(uri, body: {"username": username, "password": password});
+          .post(uri, body: {"email": username, "password": password});
 
       if (response.statusCode != 200) {
         return http.Response(

@@ -1,3 +1,4 @@
+import 'package:boz/pages/qr_page.dart';
 import 'package:flutter/material.dart';
 import 'home_page.dart';
 import 'package:boz/services/remote_service.dart';
@@ -14,14 +15,14 @@ class MyNavigationBar extends State<MyNavigation> {
 
   final List<Widget> body = [
     const HomePage(),
-    const Center(child: Text("Scanner")), // Placeholder pour le scanner
+    const QRPage(), // Placeholder pour le scanner
     const Center(child: Text("Profil")), // Placeholder pour le profil
   ];
 
   @override
   void initState() {
     super.initState();
-    _checkConnection();
+    //_checkConnection();
   }
 
   Future<void> _checkConnection() async {
