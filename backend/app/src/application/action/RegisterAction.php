@@ -22,10 +22,11 @@ class RegisterAction extends AbstractAction
     {
         $data = $rq->getParsedBody();
 
+
         $email = $data['email'] ?? null;
         $password = $data['password'] ?? null;
         $login = $data['login'] ?? null;
-        $role = $data['role'];
+        $role = $data['role'] ?? null;
 
         try{
             $this->authnProvider->register(new CredentialDTO($email, $password), $login, $role);
