@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'home_page.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:boz/services/remote_service.dart';
 
 class MyNavigation extends StatefulWidget {
   MyNavigation({Key? key}) : super(key: key);
@@ -13,19 +13,28 @@ class MyNavigationBar extends State<MyNavigation> {
   int _currentIndex = 0;
 
   final List<Widget> body = [
-    const HomePage(), 
-    const Icon(Icons.person), 
-    const Icon(Icons.logout),
+    const HomePage(),
+    const Center(child: Text("Scanner")), // Placeholder pour le scanner
+    const Center(child: Text("Profil")), // Placeholder pour le profil
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _checkConnection();
+  }
+
+  Future<void> _checkConnection() async {
+    final isConnected = await RemoteService().isConnected();
+    if (!isConnected) {
+      Navigator.pushReplacementNamed(context, "/login");
+    }
+  }
+
   void _handleLogout() async {
-  // Instance de SecureStorage
-  const storage = FlutterSecureStorage();
-  // Supprimer le token JWT
-  await storage.delete(key: "jwt_token");
-  // Naviguer vers l'écran de connexion
-  Navigator.pushReplacementNamed(context, "/login");
-}
+    await RemoteService().disconnectUser();
+    Navigator.pushReplacementNamed(context, "/login");
+  }
 
   void _showLogoutConfirmation(BuildContext context) {
     showDialog(
@@ -80,11 +89,10 @@ class MyNavigationBar extends State<MyNavigation> {
         ),
       ),
       backgroundColor: Colors.grey[300],
-      body: body[_currentIndex], // Affiche la page sélectionnée
+      body: _currentIndex < body.length ? body[_currentIndex] : const SizedBox(),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        type: BottomNavigationBarType
-            .fixed, // Obligatoire pour appliquer un fond constant
+        type: BottomNavigationBarType.fixed, // Fond constant
         backgroundColor: Colors.black,
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.grey,
@@ -92,6 +100,10 @@ class MyNavigationBar extends State<MyNavigation> {
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: "Accueil",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.qr_code),
+            label: "Scanner",
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
@@ -103,8 +115,7 @@ class MyNavigationBar extends State<MyNavigation> {
           ),
         ],
         onTap: (index) {
-          if (index == 2) {
-            // Affiche la boîte de dialogue de confirmation pour la déconnexion
+          if (index == 3) {
             _showLogoutConfirmation(context);
           } else {
             setState(() {
