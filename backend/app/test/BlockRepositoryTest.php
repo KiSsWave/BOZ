@@ -1,8 +1,8 @@
 <?php
 
-namespace backend\app\test;
+namespace boz\test;
 
-use backend\app\src\infrastructure\repositories\BlockRepository;
+use boz\infrastructure\repositories\BlockRepository;
 use PDO;
 use PHPUnit\Framework\TestCase;
 

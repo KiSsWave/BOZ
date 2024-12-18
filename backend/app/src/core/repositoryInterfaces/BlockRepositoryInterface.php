@@ -1,6 +1,6 @@
 <?php
 
-namespace backend\app\src\core\repositoryInterfaces;
+namespace boz\core\repositoryInterfaces;
 
 interface BlockRepositoryInterface
 {

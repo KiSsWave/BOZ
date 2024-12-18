@@ -2,26 +2,26 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use backend\app\src\application\action\GetBalanceAction;
-use backend\app\src\application\action\GetHistoryAction;
-use backend\app\src\application\action\RegisterAction;
-use backend\app\src\application\action\SignInAction;
-use backend\app\src\application\middleware\AuthnMiddleware;
-use backend\app\src\application\middleware\AuthzUserMiddleware;
-use backend\app\src\application\middleware\AuthzAdminMiddleware;
-use backend\app\src\application\middleware\AuthzVendeurMiddleware;
-use backend\app\src\application\providers\AuthnProviderInterface;
-use backend\app\src\application\providers\JWTAuthnProvider;
-use backend\app\src\application\providers\JWTManager;
-use backend\app\src\core\repositoryInterfaces\UserRepositoryInterface;
-use backend\app\src\core\services\auth\AuthnService;
-use backend\app\src\core\services\auth\AuthnServiceInterface;
-use backend\app\src\core\services\auth\AuthzService;
-use backend\app\src\core\services\auth\AuthzServiceInterface;
-use backend\app\src\Infrastructure\repositories\BlockRepository;
+use boz\application\action\GetBalanceAction;
+use boz\application\action\GetHistoryAction;
+use boz\application\action\RegisterAction;
+use boz\application\action\SignInAction;
+use boz\application\middleware\AuthnMiddleware;
+use boz\application\middleware\AuthzUserMiddleware;
+use boz\application\middleware\AuthzAdminMiddleware;
+use boz\application\middleware\AuthzVendeurMiddleware;
+use boz\application\providers\AuthnProviderInterface;
+use boz\application\providers\JWTAuthnProvider;
+use boz\application\providers\JWTManager;
+use boz\core\repositoryInterfaces\UserRepositoryInterface;
+use boz\core\services\auth\AuthnService;
+use boz\core\services\auth\AuthnServiceInterface;
+use boz\core\services\auth\AuthzService;
+use boz\core\services\auth\AuthzServiceInterface;
+use boz\Infrastructure\repositories\BlockRepository;
 use Dotenv\Dotenv;
 use Psr\Container\ContainerInterface;
-use backend\app\src\application\middleware\CorsMiddleware;
+use boz\application\middleware\CorsMiddleware;
 
 return [
     'dotenv' => function () {

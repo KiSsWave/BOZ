@@ -1,8 +1,8 @@
 <?php
 
-namespace backend\app\src\core\domain\User;
+namespace boz\core\domain\User;
 
-use backend\app\src\core\domain\Entity;
+use boz\core\domain\Entity;
 
 class User extends Entity
 {

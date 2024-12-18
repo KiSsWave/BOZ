@@ -1,6 +1,6 @@
 <?php
 
-namespace backend\app\src\core\domain\Blockchain;
+namespace boz\core\domain\Blockchain;
 
 use Exception;
 

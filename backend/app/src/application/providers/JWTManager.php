@@ -1,6 +1,6 @@
 <?php
 
-namespace backend\app\src\application\providers;
+namespace boz\application\providers;
 
 
 use Dotenv\Dotenv;

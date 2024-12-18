@@ -1,9 +1,9 @@
 <?php
 
-namespace backend\app\src\core\services\auth;
+namespace boz\core\services\auth;
 
-use backend\app\src\core\repositoryInterfaces\UserRepositoryInterface;
-use backend\app\src\core\services\auth\AuthzServiceInterface;
+use boz\core\repositoryInterfaces\UserRepositoryInterface;
+use boz\core\services\auth\AuthzServiceInterface;
 
 class AuthzService implements AuthzServiceInterface
 {

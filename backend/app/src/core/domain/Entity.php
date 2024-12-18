@@ -1,6 +1,6 @@
 <?php
 
-namespace backend\app\src\core\domain;
+namespace boz\core\domain;
 
 abstract class Entity
 {

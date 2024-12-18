@@ -1,9 +1,9 @@
 <?php
 
-namespace backend\app\src\core\services\auth;
+namespace boz\core\services\auth;
 
-use backend\app\src\core\dto\CredentialDTO;
-use backend\app\src\core\dto\UserDTO;
+use boz\core\dto\CredentialDTO;
+use boz\core\dto\UserDTO;
 
 interface AuthnServiceInterface
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace backend\app\src\application\action;
+namespace boz\application\action;
 
 use Exception;
 use Psr\Http\Message\ResponseInterface;

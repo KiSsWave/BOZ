@@ -1,8 +1,8 @@
 <?php
 
-namespace backend\app\src\core\dto;
-use backend\app\src\core\domain\User\User;
-use backend\app\src\core\dto\DTO;
+namespace boz\core\dto;
+use boz\core\domain\User\User;
+use boz\core\dto\DTO;
 
 class UserDTO extends DTO
 {

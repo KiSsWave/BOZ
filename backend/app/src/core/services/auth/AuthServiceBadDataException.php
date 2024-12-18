@@ -1,6 +1,6 @@
 <?php
 
-namespace backend\app\src\core\services\auth;
+namespace boz\core\services\auth;
 
 class AuthServiceBadDataException extends \Exception
 {

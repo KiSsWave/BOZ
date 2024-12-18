@@ -1,8 +1,8 @@
 <?php
 
-namespace backend\app\src\core\dto;
+namespace boz\core\dto;
 
-use backend\app\src\core\domain\Blockchain\Transaction;
+use boz\core\domain\Blockchain\Transaction;
 
 class TransactionDTO extends DTO
 {

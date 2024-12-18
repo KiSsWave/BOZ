@@ -1,12 +1,12 @@
 <?php
 
-namespace backend\app\src\core\services\Blockchain;
+namespace boz\core\services\Blockchain;
 
-use backend\app\src\core\domain\Blockchain\Transaction;
-use backend\app\src\core\domain\Blockchain\Block;
-use backend\app\src\core\dto\BlockDTO;
-use backend\app\src\core\dto\TransactionDTO;
-use backend\app\src\core\repositoryInterfaces\BlockRepositoryInterface;
+use boz\core\domain\Blockchain\Transaction;
+use boz\core\domain\Blockchain\Block;
+use boz\core\dto\BlockDTO;
+use boz\core\dto\TransactionDTO;
+use boz\core\repositoryInterfaces\BlockRepositoryInterface;
 use Exception;
 
 class BlockService implements BlockServiceInterface

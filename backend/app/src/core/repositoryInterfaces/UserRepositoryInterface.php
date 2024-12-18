@@ -1,8 +1,8 @@
 <?php
 
 
-namespace backend\app\src\core\repositoryInterfaces;
-use backend\app\src\core\domain\User\User;
+namespace boz\core\repositoryInterfaces;
+use boz\core\domain\User\User;
 
 interface UserRepositoryInterface
 {

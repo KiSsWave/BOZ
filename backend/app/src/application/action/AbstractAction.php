@@ -1,6 +1,6 @@
 <?php
 
-namespace backend\app\src\application\action;
+namespace boz\application\action;
 
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;

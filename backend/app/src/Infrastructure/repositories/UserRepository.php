@@ -1,11 +1,11 @@
 <?php
 
-namespace backend\app\src\core\domain\Blockchain;
+namespace boz\core\domain\Blockchain;
 
-namespace backend\app\src\infrastructure\repositories;
-use backend\app\src\core\domain\User\User;
-use backend\app\src\core\repositoryInterfaces\RepositoryEntityNotFoundException;
-use backend\app\src\core\repositoryInterfaces\UserRepositoryInterface;
+namespace boz\infrastructure\repositories;
+use boz\core\domain\User\User;
+use boz\core\repositoryInterfaces\RepositoryEntityNotFoundException;
+use boz\core\repositoryInterfaces\UserRepositoryInterface;
 use PDO;
 
 class UserRepository implements UserRepositoryInterface

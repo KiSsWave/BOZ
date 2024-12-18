@@ -1,12 +1,12 @@
 <?php
 
-namespace backend\app\src\application\providers;
+namespace boz\application\providers;
 
-use backend\app\src\application\providers\AuthnProviderInterface;
-use backend\app\src\core\domain\User\User;
-use backend\app\src\core\dto\CredentialDTO;
-use backend\app\src\core\dto\UserDTO;
-use backend\app\src\core\services\auth\AuthnServiceInterface;
+use boz\application\providers\AuthnProviderInterface;
+use boz\core\domain\User\User;
+use boz\core\dto\CredentialDTO;
+use boz\core\dto\UserDTO;
+use boz\core\services\auth\AuthnServiceInterface;
 use PhpParser\Token;
 
 class JWTAuthnProvider implements AuthnProviderInterface

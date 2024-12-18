@@ -1,8 +1,8 @@
 <?php
 
-namespace backend\app\src\application\middleware;
+namespace boz\application\middleware;
 
-use backend\app\src\application\providers\AuthnProviderInterface;
+use boz\application\providers\AuthnProviderInterface;
 use Firebase\JWT\ExpiredException;
 use Firebase\JWT\SignatureInvalidException;
 use Firebase\JWT\BeforeValidException;

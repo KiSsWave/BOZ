@@ -1,6 +1,6 @@
 <?php
 
-namespace backend\app\src\application\middleware;
+namespace boz\application\middleware;
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;

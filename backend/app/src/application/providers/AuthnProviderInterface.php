@@ -1,11 +1,11 @@
 <?php
 
-namespace backend\app\src\application\providers;
+namespace boz\application\providers;
 
 
 use DateTime;
-use backend\app\src\core\dto\UserDTO;
-use backend\app\src\core\dto\CredentialDTO;
+use boz\core\dto\UserDTO;
+use boz\core\dto\CredentialDTO;
 use PhpParser\Token;
 
 interface AuthnProviderInterface

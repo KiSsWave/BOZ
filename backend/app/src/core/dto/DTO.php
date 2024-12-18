@@ -1,6 +1,6 @@
 <?php
 
-namespace backend\app\src\core\dto;
+namespace boz\core\dto;
 
 use Respect\Validation\Validatable;
 use Respect\Validation\Validator;

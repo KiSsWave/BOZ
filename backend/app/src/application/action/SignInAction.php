@@ -1,11 +1,11 @@
 <?php
 
-namespace backend\app\src\application\action;
+namespace boz\application\action;
 
-use backend\app\src\application\action\AbstractAction;
-use backend\app\src\application\providers\AuthnProviderInterface;
-use backend\app\src\core\dto\CredentialDTO;
-use backend\app\src\core\services\auth\AuthServiceBadDataException;
+use boz\application\action\AbstractAction;
+use boz\application\providers\AuthnProviderInterface;
+use boz\core\dto\CredentialDTO;
+use boz\core\services\auth\AuthServiceBadDataException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Exception\HttpBadRequestException;

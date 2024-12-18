@@ -1,8 +1,8 @@
 <?php
 
-namespace backend\app\src\core\dto;
+namespace boz\core\dto;
 
-use backend\app\src\core\domain\Blockchain\Block;
+use boz\core\domain\Blockchain\Block;
 
 class BlockDTO extends DTO
 {

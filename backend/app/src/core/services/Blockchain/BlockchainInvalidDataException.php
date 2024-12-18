@@ -1,6 +1,6 @@
 <?php
 
-namespace backend\app\src\core\services\Blockchain;
+namespace boz\core\services\Blockchain;
 
 class BlockchainInvalidDataException extends \Exception
 {

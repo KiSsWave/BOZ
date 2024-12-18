@@ -1,12 +1,12 @@
 <?php
 
-namespace backend\app\src\core\services\auth;
+namespace boz\core\services\auth;
 
-use backend\app\src\core\domain\User\User;
-use backend\app\src\core\dto\CredentialDTO;
-use backend\app\src\core\dto\UserDTO;
-use backend\app\src\core\repositoryInterfaces\UserRepositoryInterface;
-use backend\app\src\core\services\auth\AuthnServiceInterface;
+use boz\core\domain\User\User;
+use boz\core\dto\CredentialDTO;
+use boz\core\dto\UserDTO;
+use boz\core\repositoryInterfaces\UserRepositoryInterface;
+use boz\core\services\auth\AuthnServiceInterface;
 use Ramsey\Uuid\Uuid;
 
 class AuthnService implements AuthnServiceInterface

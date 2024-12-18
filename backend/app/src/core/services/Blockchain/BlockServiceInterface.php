@@ -1,9 +1,9 @@
 <?php
 
-namespace backend\app\src\core\services\Blockchain;
+namespace boz\core\services\Blockchain;
 
-use backend\app\src\core\domain\Blockchain\Block;
-use backend\app\src\core\domain\Blockchain\Transaction;
+use boz\core\domain\Blockchain\Block;
+use boz\core\domain\Blockchain\Transaction;
 
 interface BlockServiceInterface
 {

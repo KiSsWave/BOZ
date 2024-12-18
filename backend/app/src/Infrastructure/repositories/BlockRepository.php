@@ -1,9 +1,9 @@
 <?php
 
-namespace backend\app\src\Infrastructure\repositories;
+namespace boz\Infrastructure\repositories;
 
-use backend\app\src\core\repositoryInterfaces\BlockRepositoryInterface;
-use backend\app\src\core\repositoryInterfaces\RepositoryEntityNotFoundException;
+use boz\core\repositoryInterfaces\BlockRepositoryInterface;
+use boz\core\repositoryInterfaces\RepositoryEntityNotFoundException;
 use PDO;
 
 class BlockRepository implements BlockRepositoryInterface

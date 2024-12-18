@@ -1,8 +1,8 @@
 <?php
 
-namespace backend\app\src\core\dto;
+namespace boz\core\dto;
 
-use backend\app\src\core\dto\DTO;
+use boz\core\dto\DTO;
 
 class CredentialDTO extends DTO
 {

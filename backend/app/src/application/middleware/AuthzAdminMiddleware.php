@@ -1,8 +1,8 @@
 <?php
 
-namespace backend\app\src\application\middleware;
+namespace boz\application\middleware;
 
-use backend\app\src\core\services\auth\AuthzServiceInterface;
+use boz\core\services\auth\AuthzServiceInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Psr7\Response;
