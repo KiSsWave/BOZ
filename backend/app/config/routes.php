@@ -11,6 +11,8 @@ return function( \Slim\App $app):\Slim\App {
 
     $app->post('signin', backend\app\src\application\action\SignInAction::class);
     $app->post('register', backend\app\src\application\action\RegisterAction::class);
+    $app->get('balance', backend\app\src\application\action\GetBalanceAction::class);
+    $app->get('history', backend\app\src\application\action\GetHistoryAction::class);
 
     $app->group('', function () use ($app){
 

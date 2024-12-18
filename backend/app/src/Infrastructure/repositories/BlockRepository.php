@@ -16,7 +16,7 @@ class BlockRepository implements BlockRepositoryInterface
         $this->pdo = $pdo;
     }
 
-    public function getAccountBalance(string $account): float
+    public function getBalanceByUserId(string $userId): float
     {
         try {
             $stmt = $this->pdo->prepare("
@@ -26,10 +26,11 @@ class BlockRepository implements BlockRepositoryInterface
                         WHEN t.type = 'pay' THEN -t.price 
                         ELSE 0 
                     END) AS balance
-                FROM transactions t
-                WHERE t.account = :account
+                FROM users u
+                JOIN transactions t ON u.login = t.account
+                WHERE u.id = :user_id
             ");
-            $stmt->execute(['account' => $account]);
+            $stmt->execute(['user_id' => $userId]);
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
             return $result['balance'] ?? 0.0;
@@ -38,23 +39,28 @@ class BlockRepository implements BlockRepositoryInterface
         }
     }
 
-    public function getAccountHistory(string $account): array
+    public function getHistoryByUserId(string $userId): array
     {
         try {
             $stmt = $this->pdo->prepare("
-                SELECT 
-                    t.id AS transaction_id, 
-                    t.account, 
-                    t.price, 
-                    t.type, 
-                    b.id AS block_id, 
-                    b.timestamp
-                FROM transactions t
-                LEFT JOIN blocks b ON b.transaction_id = t.id
-                WHERE t.account = :account
-                ORDER BY b.timestamp DESC
-            ");
-            $stmt->execute(['account' => $account]);
+            SELECT 
+                t.id AS transaction_id,
+                t.account,
+                t.price,
+                t.type,
+                t.account AS user_login,
+                b.id AS block_id,
+                b.hash AS block_hash,
+                b.previous_hash,
+                b.timestamp AS block_timestamp
+            FROM users u
+            JOIN transactions t ON u.login = t.account
+            LEFT JOIN blocks b ON b.transaction_id = t.id
+            WHERE u.id = :user_id
+            ORDER BY b.timestamp DESC
+        ");
+
+            $stmt->execute(['user_id' => $userId]);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (\PDOException $e) {
             throw new RepositoryEntityNotFoundException("Erreur lors de la récupération de l'historique : " . $e->getMessage());

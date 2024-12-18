@@ -2,6 +2,8 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+use backend\app\src\application\action\GetBalanceAction;
+use backend\app\src\application\action\GetHistoryAction;
 use backend\app\src\application\action\RegisterAction;
 use backend\app\src\application\action\SignInAction;
 use backend\app\src\application\middleware\AuthnMiddleware;
@@ -97,10 +99,13 @@ return [
         return new BlockRepository($container->get(PDO::class));
     },
 
+    GetBalanceAction::class => function (ContainerInterface $container) {
+        return new GetBalanceAction($container->get(BlockRepository::class));
+    },
 
-
-
-
+    GetHistoryAction::class => function (ContainerInterface $container) {
+        return new GetHistoryAction($container->get(BlockRepository::class));
+    },
 
 ];
 

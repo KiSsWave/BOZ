@@ -19,12 +19,12 @@ class BlockService implements BlockServiceInterface
         $this->blockRepository = $b;
     }
 
-    public function afficherSolde(string $account):float{
-        return $this->blockRepository->getAccountBalance($account);
+    public function afficherSolde(string $id):float{
+        return $this->blockRepository->getBalanceByUserId($id);
     }
 
-    public function afficherHistorique(string $account):array{
-        return $this->blockRepository->getAccountHistory($account);
+    public function afficherHistorique(string $id):array{
+        return $this->blockRepository->getHistoryByUserId($id);
     }
 
 
