@@ -26,10 +26,9 @@ class RegisterAction extends AbstractAction
         $email = $data['email'] ?? null;
         $password = $data['password'] ?? null;
         $login = $data['login'] ?? null;
-        $role = $data['role'] ?? null;
 
         try{
-            $this->authnProvider->register(new CredentialDTO($email, $password), $login, $role);
+            $this->authnProvider->register(new CredentialDTO($email, $password), $login, 1);
 
         }catch(AuthServiceBadDataException $e){
             throw new HttpBadRequestException($rq, $e->getMessage());
