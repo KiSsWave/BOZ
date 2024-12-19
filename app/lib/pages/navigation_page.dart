@@ -107,8 +107,8 @@ class MyNavigationBar extends State<MyNavigation> {
             label: "Scanner",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: "Profil",
+            icon: Icon(Icons.settings),
+            label: "Paramètres",
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.logout),
