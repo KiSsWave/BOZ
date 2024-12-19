@@ -28,7 +28,7 @@ class _HomePageState extends State<HomePage> {
       final response = await RemoteService().fetchBalance();
       final data = jsonDecode(response.body);
       setState(() {
-        balance = data['balance'];
+        balance = data;
         final now = DateTime.now();
         lastUpdateFormatted = "${now.day}/${now.month}/${now.year}";
       });

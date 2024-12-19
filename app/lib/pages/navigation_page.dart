@@ -16,7 +16,7 @@ class MyNavigationBar extends State<MyNavigation> {
   final List<Widget> body = [
     const HomePage(),
     const QRPage(), // Placeholder pour le scanner
-    const Center(child: Text("Profil")), // Placeholder pour le profil
+    const Center(child: Text("Paramètres")), // Placeholder pour le profil
   ];
 
   @override
