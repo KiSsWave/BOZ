@@ -19,7 +19,7 @@ class GetBalanceAction extends AbstractAction
     public function __invoke(ServerRequestInterface $rq, ResponseInterface $rs, array $args): ResponseInterface
     {
         $user = $rq->getAttribute('user');
-        $userId = $user['id'];
+        $userId = $user->getId();
 
         try{
             $balance = $this->blockService->afficherSolde($userId);
