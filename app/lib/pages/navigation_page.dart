@@ -22,7 +22,7 @@ class MyNavigationBar extends State<MyNavigation> {
   @override
   void initState() {
     super.initState();
-    //_checkConnection();
+    _checkConnection();
   }
 
   Future<void> _checkConnection() async {
