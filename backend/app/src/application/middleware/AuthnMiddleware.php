@@ -34,7 +34,7 @@ class AuthnMiddleware
             return (new Response())->withStatus(401);
         }
 
-        $rq = $rq->withAttribute('auth', $userDTO);
+        $rq = $rq->withAttribute('user', $userDTO);
 
         return $handler->handle($rq);
     }

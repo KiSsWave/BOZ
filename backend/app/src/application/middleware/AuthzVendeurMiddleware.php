@@ -18,7 +18,7 @@ class AuthzVendeurMiddleware
     public function __invoke(ServerRequestInterface $request, RequestHandlerInterface $handler) : Response
     {
 
-        $user = $request->getAttribute('auth');
+        $user = $request->getAttribute('user');
         $userid = $user->id;
 
         if (!$this->authzService->isVendeur($userid)) {

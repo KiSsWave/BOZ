@@ -17,12 +17,15 @@ use boz\core\repositoryInterfaces\UserRepositoryInterface;
 use boz\core\services\auth\AuthnService;
 use boz\core\services\auth\AuthnServiceInterface;
 use boz\core\services\auth\AuthzService;
+use boz\core\services\Blockchain\BlockService;
 use boz\core\services\auth\AuthzServiceInterface;
 use boz\Infrastructure\repositories\BlockRepository;
 use Dotenv\Dotenv;
 use Psr\Container\ContainerInterface;
 use boz\application\middleware\CorsMiddleware;
 use boz\infrastructure\repositories\UserRepository;
+use boz\core\services\Blockchain\BlockServiceInterface;
+use boz\core\repositoryInterfaces\BlockRepositoryInterface;
 
 return [
     'dotenv' => function () {
@@ -60,6 +63,10 @@ return [
         return new JWTManager();
     },
 
+    BlockRepositoryInterface::class => function (ContainerInterface $container) {
+        return new BlockRepository($container->get(PDO::class));
+    },
+
     UserRepositoryInterface::class => function(ContainerInterface $c){
       return new UserRepository($c->get(PDO::class));
     },
@@ -74,6 +81,10 @@ return [
 
     AuthzServiceInterface::class => function (ContainerInterface $c) {
         return new AuthzService($c->get(UserRepositoryInterface::class));
+    },
+
+    BlockServiceInterface::class =>function(ContainerInterface $c){
+      return new BlockService($c->get(BlockRepositoryInterface::class));
     },
 
     AuthnMiddleware::class =>function (ContainerInterface $c){
@@ -100,16 +111,12 @@ return [
         return new RegisterAction($c->get(AuthnProviderInterface::class));
     },
 
-    BlockRepository::class => function (ContainerInterface $container) {
-        return new BlockRepository($container->get(PDO::class));
-    },
-
     GetBalanceAction::class => function (ContainerInterface $container) {
-        return new GetBalanceAction($container->get(BlockRepository::class));
+        return new GetBalanceAction($container->get(BlockServiceInterface::class));
     },
 
     GetHistoryAction::class => function (ContainerInterface $container) {
-        return new GetHistoryAction($container->get(BlockRepository::class));
+        return new GetHistoryAction($container->get(BlockServiceInterface::class));
     },
 
 ];
