@@ -5,7 +5,7 @@ namespace boz\application\action;
 use Exception;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use backend\app\src\core\services\Blockchain\BlockServiceInterface;
+use boz\core\services\Blockchain\BlockServiceInterface;
 
 class GetHistoryAction extends AbstractAction
 {
