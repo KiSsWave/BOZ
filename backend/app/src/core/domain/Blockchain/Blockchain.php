@@ -37,19 +37,5 @@ class Blockchain
         }
         return true;
     }
-    public function getBalance(string $account): float {
-        $balance = 0.0;
-        foreach ($this->blocks as $block) {
-            $transaction = $block->transaction;
-            if ($transaction->account === $account) {
-                if ($transaction->type === "add") {
-                    $balance += $transaction->price;
-                } elseif ($transaction->type === "pay") {
-                    $balance -= $transaction->price;
-                }
-            }
-        }
 
-        return $balance;
-    }
 }

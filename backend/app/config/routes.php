@@ -11,6 +11,7 @@ return function( \Slim\App $app):\Slim\App {
 
     $app->post('/signin', boz\application\action\SignInAction::class);
     $app->post('/register', boz\application\action\RegisterAction::class);
+    $app->post('/pay/{id}', boz\application\action\PayFactureAction::class);
 
 
 

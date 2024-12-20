@@ -31,6 +31,10 @@ class BlockService implements BlockServiceInterface
         $this->blockRepository->createFacture($userId,$tarif, $label);
     }
 
+    public function payerFacture(string $factureId):void{
+        $this->blockRepository->payFacture($factureId);
+    }
+
 
 
 
