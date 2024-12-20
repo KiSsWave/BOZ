@@ -21,19 +21,34 @@ class GetHistoryAction extends AbstractAction
         $user = $rq->getAttribute('user');
         $userId = $user['id'];
 
-        try{
+        try {
             $history = $this->blockService->afficherHistorique($userId);
 
-            $rs->getBody()->write(json_encode($history));
+
+            $formattedHistory = array_map(function ($entry) {
+                return [
+                    'transaction_id' => $entry['transaction_id'],
+                    'price' => $entry['price'],
+                    'type' => $entry['type'],
+                    'timestamp' => $entry['block_timestamp']
+                ];
+            }, $history);
+
+            $responseData = [
+                'history' => $formattedHistory
+            ];
+
+            $rs->getBody()->write(json_encode($responseData, JSON_PRETTY_PRINT));
             return $rs->withHeader('Content-Type', 'application/json')->withStatus(200);
-        }catch(Exception $e){
-            $rs->getBody()->write(json_encode([
+        } catch (Exception $e) {
+            $errorResponse = [
                 'error' => $e->getMessage()
-            ]));
+            ];
+            $rs->getBody()->write(json_encode($errorResponse, JSON_PRETTY_PRINT));
             return $rs->withHeader('Content-Type', 'application/json')->withStatus(404);
         }
-
     }
+
 }
 
 

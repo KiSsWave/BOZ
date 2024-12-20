@@ -24,7 +24,10 @@ class GetBalanceAction extends AbstractAction
         try{
             $balance = $this->blockService->afficherSolde($userId);
 
-            $rs->getBody()->write(json_encode($balance));
+            $array = [
+                'balance' => $balance
+            ];
+            $rs->getBody()->write(json_encode($array));
             return $rs->withHeader('Content-Type', 'application/json')->withStatus(200);
         }catch(Exception $e){
             $rs->getBody()->write(json_encode([
