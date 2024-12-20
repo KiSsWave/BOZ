@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+use boz\application\action\CreateFactureAction;
 use boz\application\action\GetBalanceAction;
 use boz\application\action\GetHistoryAction;
 use boz\application\action\RegisterAction;
@@ -117,6 +118,10 @@ return [
 
     GetHistoryAction::class => function (ContainerInterface $container) {
         return new GetHistoryAction($container->get(BlockServiceInterface::class));
+    },
+
+    CreateFactureAction::class => function (ContainerInterface $container) {
+        return new CreateFactureAction($container->get(BlockServiceInterface::class));
     },
 
 ];

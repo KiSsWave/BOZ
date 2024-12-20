@@ -28,7 +28,7 @@ DROP TABLE IF EXISTS "transactions";
 CREATE TABLE "public"."transactions" (
                                          "id" uuid NOT NULL,
                                          "account" character varying(255) NOT NULL,
-                                         "price" numeric(12,2) NOT NULL,
+                                         "amount" numeric(12,2) NOT NULL,
                                          "type" character varying(10) NOT NULL,
                                          CONSTRAINT "transactions_pkey" PRIMARY KEY ("id")
 ) WITH (oids = false);

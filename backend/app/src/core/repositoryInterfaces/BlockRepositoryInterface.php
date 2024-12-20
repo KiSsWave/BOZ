@@ -6,6 +6,7 @@ interface BlockRepositoryInterface
 {
     public function getBalanceByUserId(string $userId): float;
     public function getHistoryByUserId(string $userId): array;
+    public function createFacture(string $userId, float $tarif, string $label): void;
 
 
 }

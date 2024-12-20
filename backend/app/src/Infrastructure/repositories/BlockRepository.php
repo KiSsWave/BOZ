@@ -2,9 +2,16 @@
 
 namespace boz\Infrastructure\repositories;
 
+require_once __DIR__ . '/../../../vendor/autoload.php';
+
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\PngWriter;
 use boz\core\repositoryInterfaces\BlockRepositoryInterface;
 use boz\core\repositoryInterfaces\RepositoryEntityNotFoundException;
+use Exception;
+
 use PDO;
+use Ramsey\Uuid\Uuid;
 
 class BlockRepository implements BlockRepositoryInterface
 {
@@ -66,6 +73,44 @@ class BlockRepository implements BlockRepositoryInterface
             throw new RepositoryEntityNotFoundException("Erreur lors de la récupération de l'historique : " . $e->getMessage());
         }
     }
+
+    public function createFacture(string $userId,float $tarif, string $label): void
+    {
+        try {
+            $factureId = Uuid::uuid4()->toString();
+            $directoryPath = __DIR__ . '/../../../public/qr/';
+            $relativePath = "/qr/{$factureId}.png";
+            $qrCodePath = $directoryPath . "{$factureId}.png";
+
+            $qrCode = new QrCode($factureId);
+            $writer = new PngWriter();
+            $writer->writeFile($qrCode, $qrCodePath);
+
+            if (!file_exists($qrCodePath)) {
+                throw new Exception("Le fichier QR Code n'a pas été créé : {$qrCodePath}");
+            }
+
+            $stmt = $this->pdo->prepare("
+            INSERT INTO facture (id, seller_login, qr_link, label, amount, status)
+            VALUES (:id, :seller_login, :qr_link, :label, :amount, :status)
+        ");
+            $stmt->execute([
+                'id' => $factureId,
+                'seller_login' => $userId,
+                'qr_link' => $relativePath,
+                'label' => $label,
+                'amount' => $tarif,
+                'status' => 'non payée'
+            ]);
+        } catch (Exception $e) {
+            error_log("Erreur lors de la création de la facture : " . $e->getMessage());
+            throw new RepositoryEntityNotFoundException("Erreur lors de la création de la facture : " . $e->getMessage());
+        }
+    }
+
+
+
+
 
 }
 

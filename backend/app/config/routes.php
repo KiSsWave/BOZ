@@ -11,12 +11,24 @@ return function( \Slim\App $app):\Slim\App {
 
     $app->post('/signin', boz\application\action\SignInAction::class);
     $app->post('/register', boz\application\action\RegisterAction::class);
-    $app->get('/balance', boz\application\action\GetBalanceAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
-    $app->get('/history', boz\application\action\GetHistoryAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
 
-    $app->group('', function () use ($app){
+
+
+    $app->group('user', function () use ($app){
+
+        $app->get('/balance', boz\application\action\GetBalanceAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
+        $app->get('/history', boz\application\action\GetHistoryAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
 
     })->add(boz\application\middleware\AuthnMiddleware::class);
+
+        $app->group('vendeur', function () use ($app){
+
+            $app->post('/facture', boz\application\action\CreateFactureAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
+
+    })->add(boz\application\middleware\AuthnMiddleware::class)
+    ->add(boz\application\middleware\AuthzVendeurMiddleware::class);
+
+
 
     return $app;
 };
