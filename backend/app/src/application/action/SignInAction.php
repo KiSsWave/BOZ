@@ -34,7 +34,8 @@ class SignInAction extends AbstractAction
         }
 
         $rs->getBody()->write(json_encode([
-            'token' => $token
+            'token' => $token,
+            'role' => $user->getRole()
         ]));
 
         return $rs->withHeader('Content-Type', 'application/json')->withStatus(200);
