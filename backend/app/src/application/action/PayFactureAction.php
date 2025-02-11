@@ -20,10 +20,14 @@ class PayFactureAction extends AbstractAction
 
     public function __invoke(ServerRequestInterface $rq, ResponseInterface $rs, array $args): ResponseInterface
     {
-        $factureId = $args['id'];
+
+        //Il faut Implémenter avec le token
+        $data = $rq->getParsedBody();
+        $factureId = $data['facture_id'] ?? null;
+        $userId = $data['user_id'] ?? null;
 
         try {
-            $this->blockService->payerFacture($factureId);
+            $this->blockService->payerFacture($factureId,$userId);
 
             $rs->getBody()->write(json_encode([
                 'message' => "La facture avec l'ID {$factureId} a été payée avec succès."

@@ -1,0 +1,138 @@
+@startuml
+
+left to right direction
+
+package "Infrastructure" {
+    class BlockRepository {
+        + getBalanceByUserId(string $userId) : float
+        + getHistoryByUserId(string $userId) : array
+        + createFacture(string $login, float $tarif,string $label) : void
+        + payFacture(string $factureId, float $buyerId) : void
+
+    }
+    class UserRepository {
+        + save(User $user) : string
+        + getUsers() : array
+        + getUserByEmail(string $email) : User
+        + getUserById(string $id) : User
+    }
+}
+
+package "Application" {
+    package "Action" {
+        abstract class AbstractAction {
+            # $renderer : JsonRenderer
+            + __construct(JsonRenderer $renderer)
+            __invoke (Request, Response, array $args) : Response
+        }
+        class GetBalanceAction extends AbstractAction
+        class GetHistoryAction extends AbstractAction
+        class RegisterAction extends AbstractAction
+        class SignInAction extends AbstractAction
+    }
+
+    package "Middleware" {
+        class AuthnMiddleware {
+            - $authProvider : AuthnProviderInterface
+            + __invoke(Request, RequestHandlerInterface) : Response
+        }
+        class AuthzAdminMiddleware
+        class AuthzUserMiddleware
+        class AuthzVendeurMiddleware
+        class CorsMiddleware
+    }
+
+    package "Providers" {
+        interface AuthnProviderInterface {
+            + register(UserDTO $user) : void
+            + signIn(CredentialDTO $credential) : UserDTO
+            + refresh(Token $token) : UserDTO
+            + getSignedInUser(string $token) : UserDTO
+        }
+        class JWTAuthnProvider implements AuthnProviderInterface
+        class JWTManager {
+            + createAccessToken(array $payload) : Token
+            + decodeToken(string $token) : array
+        }
+    }
+
+    package "Renderer" {
+        class JsonRenderer {
+            + render(Response, mixed $data) : Response
+        }
+    }
+}
+
+package "Core" {
+    package "Domain" {
+        class Block {
+            + $previousHash : string
+            + $hash : string
+            + $timestamp : int
+            + $transactions : Transaction
+        }
+        class Transaction {
+            + $account : string
+            + $price : float
+            + $type : string
+        }
+        class User {
+            + $email : string
+            + $login : string
+            + $password : string
+            + $role : int
+        }
+    }
+
+    package "DTO" {
+        class BlockDTO
+        class CredentialDTO
+        class DTO
+        class TransactionDTO
+        class UserDTO {
+        }
+    }
+
+    package "RepositoryInterfaces" {
+        interface BlockRepositoryInterface {
+            + getBalanceByUserId(string $userId) : float
+            + getHistoryByUserId(string $userId) : array
+            + createFacture(string $login, float $tarif,string $label) : void
+            + payFacture(string $factureId, float $buyerId) : void
+        }
+        interface UserRepositoryInterface {
+            + save(User $user) : string
+            + getUserByEmail(string $email) : User
+            + getUserById(string $id) : User
+        }
+    }
+
+    package "Services" {
+        package "Auth" {
+            interface AuthnServiceInterface
+            interface AuthzServiceInterface
+            class AuthnService implements AuthnServiceInterface
+            class AuthzService implements AuthzServiceInterface
+        }
+        package "Blockchain" {
+            class BlockchainService {
+                + addTransaction(TransactionDTO $transaction) : void
+            }
+        }
+    }
+}
+
+Infrastructure.BlockRepository --> Core.RepositoryInterfaces.BlockRepositoryInterface
+Infrastructure.UserRepository --> Core.RepositoryInterfaces.UserRepositoryInterface
+
+Application.Action.AbstractAction --> Application.Renderer.JsonRenderer
+Application.Middleware.AuthnMiddleware --> Application.Providers.AuthnProviderInterface
+Application.Providers.JWTAuthnProvider --> Application.Providers.AuthnProviderInterface
+Application.Providers.JWTManager --> Core.DTO.UserDTO
+
+Core.Domain.Block <|-- Core.DTO.BlockDTO
+Core.Domain.User <|-- Core.DTO.UserDTO
+Core.Domain.Blockchain --> Core.Domain.Block
+Core.Domain.Blockchain --> Core.Domain.Transaction
+
+@enduml

@@ -74,7 +74,7 @@ class BlockRepository implements BlockRepositoryInterface
         }
     }
 
-    public function createFacture(string $userId,float $tarif, string $label): void
+    public function createFacture(string $login,float $tarif, string $label): void
     {
         try {
             $factureId = Uuid::uuid4()->toString();
@@ -96,7 +96,7 @@ class BlockRepository implements BlockRepositoryInterface
         ");
             $stmt->execute([
                 'id' => $factureId,
-                'seller_login' => $userId,
+                'seller_login' => $login,
                 'qr_link' => $relativePath,
                 'label' => $label,
                 'amount' => $tarif,
@@ -108,22 +108,58 @@ class BlockRepository implements BlockRepositoryInterface
         }
     }
 
-    public function payFacture(string $factureId): void
+    public function payFacture(string $factureId, string $buyerId): void
     {
         try {
+
             $stmt = $this->pdo->prepare("
-            SELECT status FROM facture WHERE id = :id
+            SELECT seller_login, amount, status 
+            FROM facture 
+            WHERE id = :id
         ");
             $stmt->execute(['id' => $factureId]);
             $facture = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$facture) {
-                throw new  RepositoryEntityNotFoundException("La facture avec l'ID {$factureId} n'existe pas.");
+                throw new RepositoryEntityNotFoundException("La facture avec l'ID {$factureId} n'existe pas.");
             }
 
             if ($facture['status'] === 'payée') {
-                throw new  RepositoryEntityNotFoundException("La facture avec l'ID {$factureId} est déjà payée.");
+                throw new RepositoryEntityNotFoundException("La facture avec l'ID {$factureId} est déjà payée.");
             }
+
+            $sellerLogin = $facture['seller_login'];
+            $amount = (float) $facture['amount'];
+
+
+            if (!$this->isTransactionValid($buyerId, $amount, 'pay')) {
+                throw new Exception("Solde insuffisant pour l'utilisateur {$buyerId}.");
+            }
+
+            $this->pdo->beginTransaction();
+
+            $buyerTransactionId = Uuid::uuid4()->toString();
+            $debitStmt = $this->pdo->prepare("
+            INSERT INTO transactions (id, account, price, type)
+            VALUES (:id, :account, :price, :type)
+        ");
+            $debitStmt->execute([
+                'id' => $buyerTransactionId,
+                'account' => $buyerId,
+                'price' => $amount,
+                'type' => 'pay'
+            ]);
+            $sellerTransactionId = Uuid::uuid4()->toString();
+            $creditStmt = $this->pdo->prepare("
+            INSERT INTO transactions (id, account, price, type)
+            VALUES (:id, :account, :price, :type)
+        ");
+            $creditStmt->execute([
+                'id' => $sellerTransactionId,
+                'account' => $sellerLogin,
+                'price' => $amount,
+                'type' => 'add'
+            ]);
 
 
             $updateStmt = $this->pdo->prepare("
@@ -136,11 +172,18 @@ class BlockRepository implements BlockRepositoryInterface
                 'id' => $factureId
             ]);
 
+
+            $this->addBlock($buyerId, $amount, 'pay');
+            $this->addBlock($sellerLogin, $amount, 'add');
+
+            $this->pdo->commit();
         } catch (Exception $e) {
+            $this->pdo->rollBack();
             error_log("Erreur lors du paiement de la facture : " . $e->getMessage());
             throw new RepositoryEntityNotFoundException("Erreur lors du paiement de la facture : " . $e->getMessage());
         }
     }
+
 
     public function createGenesisBlock(): void
     {
@@ -203,7 +246,7 @@ class BlockRepository implements BlockRepositoryInterface
     public function addBlock(string $userId, float $price, string $type): void
     {
         try {
-            // Valider la transaction
+
             if (!$this->isTransactionValid($userId, $price, $type)) {
                 throw new Exception("Transaction invalide pour l'utilisateur {$userId}.");
             }

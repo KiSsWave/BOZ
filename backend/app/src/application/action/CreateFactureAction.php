@@ -21,14 +21,14 @@ class CreateFactureAction extends AbstractAction
 
     public function __invoke(ServerRequestInterface $rq, ResponseInterface $rs, array $args): ResponseInterface
     {
-        $data = $rq->getParsedBody();
 
-        $user = $rq->getAttribute('user');
-        $userId = $user->getId();
+        //Il faut Implémenter avec le token
+        $data = $rq->getParsedBody();
+        $login = $data['login'] ?? null;
         $tarif = $data['tarif'] ?? null;
         $label = $data['label'] ?? null;
         try{
-            $this->blockService->creerFacture($userId,$tarif, $label);
+            $this->blockService->creerFacture($login,$tarif, $label);
             return $rs->withHeader('Content-Type', 'application/json')->withStatus(200);
         }catch(Exception $e){
             $rs->getBody()->write(json_encode([
