@@ -7,6 +7,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Psr7\Response;
 
+
 class AuthzAdminMiddleware
 {
     private AuthzServiceInterface $authzService;
@@ -18,22 +19,18 @@ class AuthzAdminMiddleware
 
     public function __invoke(ServerRequestInterface $request, RequestHandlerInterface $handler) : Response
     {
+
         $user = $request->getAttribute('user');
+        $userid = $user->id;
 
-        if (!$user) {
+        if (!$this->authzService->isAdmin($userid)) {
             $response = new Response();
-            $response->getBody()->write(json_encode(['error' => 'User not authenticated']));
-            return $response->withStatus(401)->withHeader('Content-Type', 'application/json');
-        }
-
-        $userId = $user->getId();
-
-        if (!$this->authzService->isAdmin($userId)) {
-            $response = new Response();
-            $response->getBody()->write(json_encode(['error' => 'Access forbidden - Admin rights required']));
+            $response->getBody()->write(json_encode(['error' => 'Access forbidden']));
             return $response->withStatus(403)->withHeader('Content-Type', 'application/json');
         }
 
         return $handler->handle($request);
+
     }
+
 }

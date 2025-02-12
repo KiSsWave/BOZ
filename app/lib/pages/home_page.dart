@@ -13,7 +13,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   double balance = 0.0;
-  late String lastUpdateFormatted = "";
+  late String lastUpdateFormatted = "01/01/1970";
   List<Transaction> allTransactions = [];
   List<Transaction> displayedTransactions = [];
 

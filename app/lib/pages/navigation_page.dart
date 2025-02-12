@@ -1,4 +1,5 @@
 import 'package:boz/pages/qr_page.dart';
+import 'package:boz/pages/settings_page.dart';
 import 'package:flutter/material.dart';
 import 'home_page.dart';
 import 'package:boz/services/remote_service.dart';
@@ -16,7 +17,8 @@ class MyNavigationBar extends State<MyNavigation> {
   final List<Widget> body = [
     const HomePage(),
     const QRPage(), // Placeholder pour le scanner
-    const Center(child: Text("Paramètres")), // Placeholder pour le profil
+    const Center(child: Text("Aide")),
+    const SettingsPage() // Placeholder pour le profil
   ];
 
   @override
@@ -35,36 +37,6 @@ class MyNavigationBar extends State<MyNavigation> {
   void _handleLogout() async {
     await RemoteService().disconnectUser();
     Navigator.pushReplacementNamed(context, "/login");
-  }
-
-  void _showLogoutConfirmation(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Confirmation"),
-          content: const Text("Êtes-vous sûr de vouloir vous déconnecter ?"),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Fermer la boîte de dialogue
-              },
-              child: const Text("Annuler"),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Fermer la boîte de dialogue
-                _handleLogout(); // Exécuter la déconnexion
-              },
-              child: const Text(
-                "Confirmer",
-                style: TextStyle(color: Colors.red),
-              ),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
@@ -107,22 +79,18 @@ class MyNavigationBar extends State<MyNavigation> {
             label: "Scanner",
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.help),
+            label: "Aide"
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.settings),
             label: "Paramètres",
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.logout),
-            label: "Déconnexion",
-          ),
         ],
         onTap: (index) {
-          if (index == 3) {
-            _showLogoutConfirmation(context);
-          } else {
-            setState(() {
-              _currentIndex = index;
-            });
-          }
+          setState(() {
+            _currentIndex = index;
+          });
         },
       ),
     );

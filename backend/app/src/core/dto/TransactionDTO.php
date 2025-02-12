@@ -18,4 +18,28 @@ class TransactionDTO extends DTO
         $this->price = $transaction->price;
         $this->type = $transaction->type;
     }
+
+    /**
+     * @return string
+     */
+    public function getAccount(): string
+    {
+        return $this->account;
+    }
+
+    /**
+     * @return float
+     */
+    public function getPrice(): float
+    {
+        return $this->price;
+    }
+
+    /**
+     * @return string
+     */
+    public function getType(): string
+    {
+        return $this->type;
+    }
 }

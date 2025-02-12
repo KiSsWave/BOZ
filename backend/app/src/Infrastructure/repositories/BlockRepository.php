@@ -2,14 +2,10 @@
 
 namespace boz\Infrastructure\repositories;
 
-require_once __DIR__ . '/../../../vendor/autoload.php';
-
-use Endroid\QrCode\QrCode;
-use Endroid\QrCode\Writer\PngWriter;
+use boz\core\domain\Blockchain\Transaction;
+use boz\core\domain\Blockchain\Block;
 use boz\core\repositoryInterfaces\BlockRepositoryInterface;
 use boz\core\repositoryInterfaces\RepositoryEntityNotFoundException;
-use Exception;
-
 use PDO;
 use Ramsey\Uuid\Uuid;
 
@@ -168,39 +164,34 @@ class BlockRepository implements BlockRepositoryInterface
                 'id' => $factureId
             ]);
 
-
-            $this->addBlock($buyerId, $amount, 'pay');
-            $this->addBlock($sellerLogin, $amount, 'add');
-
-            $this->pdo->commit();
         } catch (Exception $e) {
-            $this->pdo->rollBack();
             error_log("Erreur lors du paiement de la facture : " . $e->getMessage());
             throw new RepositoryEntityNotFoundException("Erreur lors du paiement de la facture : " . $e->getMessage());
         }
     }
 
-
-    public function createGenesisBlock(?string $userId): void
+    public function createGenesisBlock(): void
     {
         try {
             $transactionId = Uuid::uuid4()->toString();
             $this->pdo->beginTransaction();
 
+
             $transactionStmt = $this->pdo->prepare("
-            INSERT INTO transactions (id, account, amount, type)
-            VALUES (:id, :account, :amount, :type)
+            INSERT INTO transactions (id, account, price, type)
+            VALUES (:id, :account, :price, :type)
         ");
             $transactionStmt->execute([
                 'id' => $transactionId,
-                'account' => $userId,
-                'amount' => 0.0,
+                'account' => 'admin',
+                'price' => 10000.0,
                 'type' => 'add'
             ]);
 
+            // Insérer le bloc Genesis dans la table `blocks`
             $blockStmt = $this->pdo->prepare("
             INSERT INTO blocks (id, hash, previous_hash, transaction_id, timestamp)
-            VALUES (:id, :hash, :previous_hash, :transaction_id, to_timestamp(:timestamp))
+            VALUES (:id, :hash, :previous_hash, :transaction_id, :timestamp)
         ");
             $blockStmt->execute([
                 'id' => Uuid::uuid4()->toString(),
