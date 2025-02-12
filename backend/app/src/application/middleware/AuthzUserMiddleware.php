@@ -19,7 +19,7 @@ class AuthzUserMiddleware
     {
 
         $user = $request->getAttribute('user');
-        $userid = $user->id;
+        $userid = $user->ID;
 
         if (!$this->authzService->isUser($userid)) {
             $response = new Response();

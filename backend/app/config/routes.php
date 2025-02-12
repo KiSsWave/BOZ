@@ -21,7 +21,7 @@ return function( \Slim\App $app):\Slim\App {
 
     $app->group('user', function () use ($app) {
 
-        $app->get('/balance', boz\application\action\GetBalanceAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
+        $app->get('/balance', boz\application\action\GetBalanceAction::class)->add(boz\application\middleware\AuthzUserMiddleware::class);
         $app->get('/history', boz\application\action\GetHistoryAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
 
     })->add(boz\application\middleware\AuthnMiddleware::class);
