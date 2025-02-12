@@ -1,13 +1,16 @@
 <?php
 
+
 namespace boz\application\action;
+
 
 use Exception;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use boz\core\services\Blockchain\BlockServiceInterface;
 
-class GetBalanceAction extends AbstractAction
+
+class CreateFactureAction extends AbstractAction
 {
     private BlockServiceInterface $blockService;
 
@@ -18,16 +21,14 @@ class GetBalanceAction extends AbstractAction
 
     public function __invoke(ServerRequestInterface $rq, ResponseInterface $rs, array $args): ResponseInterface
     {
+        $data = $rq->getParsedBody();
+
         $user = $rq->getAttribute('user');
         $userId = $user->getId();
-
+        $tarif = $data['tarif'] ?? null;
+        $label = $data['label'] ?? null;
         try{
-            $balance = $this->blockService->afficherSolde($userId);
-
-            $array = [
-                'balance' => $balance
-            ];
-            $rs->getBody()->write(json_encode($array));
+            $this->blockService->creerFacture($userId,$tarif, $label);
             return $rs->withHeader('Content-Type', 'application/json')->withStatus(200);
         }catch(Exception $e){
             $rs->getBody()->write(json_encode([
@@ -35,7 +36,6 @@ class GetBalanceAction extends AbstractAction
             ]));
             return $rs->withHeader('Content-Type', 'application/json')->withStatus(404);
         }
-
     }
 }
 

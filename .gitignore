@@ -1,4 +1,7 @@
 
 /backend/app/vendor
+/backend/app/public/qr
 .env
 /.idea
+
+

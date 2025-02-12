@@ -5,6 +5,8 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/Blockchain" isTestSource="false" packagePrefix="Blockchain\" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/app/public/qr" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/app/vendor" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

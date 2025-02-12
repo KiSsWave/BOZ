@@ -2,12 +2,14 @@
 
 namespace boz\application\action;
 
+
 use Exception;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use boz\core\services\Blockchain\BlockServiceInterface;
 
-class GetBalanceAction extends AbstractAction
+
+class PayFactureAction extends AbstractAction
 {
     private BlockServiceInterface $blockService;
 
@@ -18,24 +20,23 @@ class GetBalanceAction extends AbstractAction
 
     public function __invoke(ServerRequestInterface $rq, ResponseInterface $rs, array $args): ResponseInterface
     {
-        $user = $rq->getAttribute('user');
-        $userId = $user->getId();
+        $factureId = $args['id'];
 
-        try{
-            $balance = $this->blockService->afficherSolde($userId);
+        try {
+            $this->blockService->payerFacture($factureId);
 
-            $array = [
-                'balance' => $balance
-            ];
-            $rs->getBody()->write(json_encode($array));
+            $rs->getBody()->write(json_encode([
+                'message' => "La facture avec l'ID {$factureId} a été payée avec succès."
+            ]));
             return $rs->withHeader('Content-Type', 'application/json')->withStatus(200);
-        }catch(Exception $e){
+
+        } catch (Exception $e) {
             $rs->getBody()->write(json_encode([
                 'error' => $e->getMessage()
             ]));
-            return $rs->withHeader('Content-Type', 'application/json')->withStatus(404);
+            return $rs->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
-
     }
 }
+
 
