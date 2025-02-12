@@ -13,7 +13,7 @@ class RemoteService {
       String email, String username, String password) async {
     try {
       var client = http.Client();
-      var uri = Uri.parse('$baseUrl/register'); // Utilisation de baseUrl
+      var uri = Uri.parse('$baseUrl/register');
 
       var response = await client.post(uri,
           body: {"email": email, "login": username, "password": password});
@@ -34,7 +34,7 @@ class RemoteService {
   Future<http.Response> loginUser(String username, String password) async {
     try {
       var client = http.Client();
-      var uri = Uri.parse('$baseUrl/signin'); // Utilisation de baseUrl
+      var uri = Uri.parse('$baseUrl/signin');
 
       var response = await client
           .post(uri, body: {"email": username, "password": password});
@@ -77,7 +77,7 @@ class RemoteService {
   Future<http.Response> fetchBalance() async {
     try {
       var client = http.Client();
-      var uri = Uri.parse('$baseUrl/balance'); // Utilisation de baseUrl
+      var uri = Uri.parse('$baseUrl/balance');
 
       var token = await storage.read(key: 'jwt');
 
@@ -105,7 +105,7 @@ class RemoteService {
   Future<http.Response> fetchTransactions() async {
     try {
       var client = http.Client();
-      var uri = Uri.parse('$baseUrl/transactions'); // Utilisation de baseUrl
+      var uri = Uri.parse('$baseUrl/transactions');
 
       var token = await storage.read(key: 'jwt');
 
