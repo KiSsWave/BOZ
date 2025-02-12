@@ -17,7 +17,26 @@ class Transaction extends Entity
         $this->type = $t;
     }
 
+    public function getAccount(): string
+    {
+        return $this->account;
+    }
 
+    /**
+     * @return float
+     */
+    public function getPrice(): float
+    {
+        return $this->price;
+    }
+
+    /**
+     * @return string
+     */
+    public function getType(): string
+    {
+        return $this->type;
+    }
 
 
 }
