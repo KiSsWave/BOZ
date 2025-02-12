@@ -19,13 +19,22 @@ use boz\core\services\auth\AuthnServiceInterface;
 use boz\core\services\auth\AuthzService;
 use boz\core\services\Blockchain\BlockService;
 use boz\core\services\auth\AuthzServiceInterface;
+use boz\core\services\tickets\TicketService;
 use boz\Infrastructure\repositories\BlockRepository;
+use boz\Infrastructure\repositories\TicketRepository;
 use Dotenv\Dotenv;
 use Psr\Container\ContainerInterface;
 use boz\application\middleware\CorsMiddleware;
 use boz\infrastructure\repositories\UserRepository;
 use boz\core\services\Blockchain\BlockServiceInterface;
 use boz\core\repositoryInterfaces\BlockRepositoryInterface;
+use boz\core\services\tickets\TicketServiceInterface;
+use boz\core\repositoryInterfaces\TicketRepositoryInterface;
+use boz\application\action\AddTicketAction;
+use boz\application\action\GetTicketByAdminIdAction;
+use boz\application\action\TakeTicketByAdminAction;
+use boz\application\action\CloseGameAction;
+use boz\application\action\GetTicketByUserIdAction;
 
 return [
     'dotenv' => function () {
@@ -71,6 +80,10 @@ return [
       return new UserRepository($c->get(PDO::class));
     },
 
+    TicketRepositoryInterface::class => function(ContainerInterface $c){
+    return new TicketRepository($c->get(PDO::class));
+    },
+
     AuthnServiceInterface::class => function (ContainerInterface $c){
         return new AuthnService($c->get(UserRepositoryInterface::class));
     },
@@ -85,6 +98,10 @@ return [
 
     BlockServiceInterface::class =>function(ContainerInterface $c){
       return new BlockService($c->get(BlockRepositoryInterface::class));
+    },
+
+    TicketServiceInterface::class =>function(ContainerInterface $c){
+    return new TicketService($c->get(TicketRepositoryInterface::class));
     },
 
     AuthnMiddleware::class =>function (ContainerInterface $c){
@@ -118,5 +135,26 @@ return [
     GetHistoryAction::class => function (ContainerInterface $container) {
         return new GetHistoryAction($container->get(BlockServiceInterface::class));
     },
+
+    AddTicketAction::class => function (ContainerInterface $c){
+    return new AddTicketAction($c->get(TicketServiceInterface::class));
+    },
+
+    GetTicketByAdminIdAction::class => function (ContainerInterface $c){
+    return new GetTicketByAdminIdAction($c->get(TicketServiceInterface::class));
+    },
+
+    TakeTicketByAdminAction::class => function(ContainerInterface $c){
+    return new TakeTicketByAdminAction($c->get(TicketServiceInterface::class));
+    },
+
+    CloseGameAction::class => function (ContainerInterface $c){
+        return new CloseGameAction($c->get(TicketServiceInterface::class));
+    },
+
+    GetTicketByUserIdAction::class => function (ContainerInterface $c) {
+        return new GetTicketByUserIdAction($c->get(TicketServiceInterface::class));
+    }
+
 
 ];

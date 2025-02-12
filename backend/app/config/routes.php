@@ -14,6 +14,12 @@ return function( \Slim\App $app):\Slim\App {
     $app->get('/balance', boz\application\action\GetBalanceAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
     $app->get('/history', boz\application\action\GetHistoryAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
 
+    $app->post('/tickets', \boz\application\action\AddTicketAction::class);
+    $app->patch('/tickets', \boz\application\action\TakeTicketByAdminAction::class);
+    $app->get('/tickets/{adminId}', \boz\application\action\GetTicketByAdminIdAction::class);
+    $app->get('/ticket/{userId}', \boz\application\action\GetTicketByUserIdAction::class);
+    $app->patch('/tickets/close/{ticketId}', \boz\application\action\CloseGameAction::class);
+
     $app->group('', function () use ($app){
 
     })->add(boz\application\middleware\AuthnMiddleware::class);
