@@ -2,14 +2,10 @@
 
 namespace boz\Infrastructure\repositories;
 
-require_once __DIR__ . '/../../../vendor/autoload.php';
-
-use Endroid\QrCode\QrCode;
-use Endroid\QrCode\Writer\PngWriter;
+use boz\core\domain\Blockchain\Transaction;
+use boz\core\domain\Blockchain\Block;
 use boz\core\repositoryInterfaces\BlockRepositoryInterface;
 use boz\core\repositoryInterfaces\RepositoryEntityNotFoundException;
-use Exception;
-
 use PDO;
 use Ramsey\Uuid\Uuid;
 
@@ -74,6 +70,28 @@ class BlockRepository implements BlockRepositoryInterface
         }
     }
 
+    #[\Override] public function addTransaction(Transaction $t, Block $b): void
+    {
+        try {
+            $stmt = $this->pdo->prepare( "INSERT INTO transactions (id, account, price, type)VALUES (:id, :account, :price, :type)");
+
+            $stmt->bindValue(':id', $t->getId(), PDO::PARAM_STR);
+            $stmt->bindValue(':account', $t->getAccount(), PDO::PARAM_STR);
+            $stmt->bindValue(':price', $t->getPrice(), PDO::PARAM_STR);
+            $stmt->bindValue(':type', $t->getType(), PDO::PARAM_STR);
+
+            $stmt->execute();
+
+        } catch (\PDOException $e) {
+            throw new \RuntimeException('Erreur lors d ajout de la transaction : ' . $e->getMessage());
+        }
+
+        try{
+            $insert = $this->pdo->prepare("IN");
+        }catch (Exception $e){
+            throw new Exception("Erreur lors d'un ajout");
+        }
+    }
     public function createFacture(string $userId,float $tarif, string $label): void
     {
         try {
