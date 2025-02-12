@@ -11,6 +11,19 @@ CREATE TABLE "public"."blocks" (
                                    CONSTRAINT "blocks_pkey" PRIMARY KEY ("id")
 ) WITH (oids = false);
 
+DROP TABLE IF EXISTS "tickets";
+CREATE TABLE tickets (
+                         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                         iduser UUID NOT NULL,
+                         idadmin UUID NULL DEFAULT NULL,
+                         message TEXT NOT NULL,
+                         type VARCHAR(50) NOT NULL,
+                         status VARCHAR(20) NOT NULL DEFAULT 'open',
+                         FOREIGN KEY (iduser) REFERENCES users(id),
+                         FOREIGN KEY (idadmin) REFERENCES users(id)
+);
+
+
 
 DROP TABLE IF EXISTS "facture";
 CREATE TABLE "public"."facture" (
