@@ -21,7 +21,6 @@ class PayFactureAction extends AbstractAction
     public function __invoke(ServerRequestInterface $rq, ResponseInterface $rs, array $args): ResponseInterface
     {
 
-        //Il faut Implémenter avec le token
         $data = $rq->getParsedBody();
         $factureId = $data['facture_id'] ?? null;
         $userId = $data['user_id'] ?? null;

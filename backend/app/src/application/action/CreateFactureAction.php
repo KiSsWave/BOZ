@@ -22,7 +22,6 @@ class CreateFactureAction extends AbstractAction
     public function __invoke(ServerRequestInterface $rq, ResponseInterface $rs, array $args): ResponseInterface
     {
 
-        //Il faut Implémenter avec le token
         $data = $rq->getParsedBody();
         $login = $data['login'] ?? null;
         $tarif = $data['tarif'] ?? null;

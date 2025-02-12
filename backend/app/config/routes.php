@@ -13,31 +13,30 @@ return function( \Slim\App $app):\Slim\App {
     $app->post('/register', boz\application\action\RegisterAction::class);
 
 
-
-
     $app->group('user', function () use ($app){
 
-        $app->get('/balance', boz\application\action\GetBalanceAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
-        $app->get('/history', boz\application\action\GetHistoryAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
-        $app->post('/pay/{id}', boz\application\action\PayFactureAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
+        $app->get('/balance', boz\application\action\GetBalanceAction::class);
+        $app->get('/history', boz\application\action\GetHistoryAction::class);
+        $app->post('/pay', boz\application\action\PayFactureAction::class);
+
+
+    })->add(boz\application\middleware\AuthnMiddleware::class);
+        //->add(boz\application\middleware\AuthzUserMiddleware::class);
+
+    $app->group('vendeur', function () use ($app){
         $app->post('/facture', boz\application\action\CreateFactureAction::class);
 
     })->add(boz\application\middleware\AuthnMiddleware::class);
-
-        $app->group('vendeur', function () use ($app){
-
-
-
-    })->add(boz\application\middleware\AuthnMiddleware::class)
-    ->add(boz\application\middleware\AuthzVendeurMiddleware::class);
+        //->add(boz\application\middleware\AuthzVendeurMiddleware::class);
 
     $app->group('admin', function () use ($app){
 
-    })->add(boz\application\middleware\AuthnMiddleware::class)
-    ->add(boz\application\middleware\AuthzAdminMiddleware::class);
+        $app->post('/give', boz\application\action\GiveCashAction::class);
+
+    })->add(boz\application\middleware\AuthnMiddleware::class);
+        //->add(boz\application\middleware\AuthzAdminMiddleware::class);
 
 
 
     return $app;
 };
-

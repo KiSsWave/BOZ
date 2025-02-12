@@ -7,6 +7,7 @@ use boz\core\domain\Blockchain\Block;
 use boz\core\dto\BlockDTO;
 use boz\core\dto\TransactionDTO;
 use boz\core\repositoryInterfaces\BlockRepositoryInterface;
+use boz\core\repositoryInterfaces\RepositoryEntityNotFoundException;
 use Exception;
 
 class BlockService implements BlockServiceInterface
@@ -35,10 +36,23 @@ class BlockService implements BlockServiceInterface
         $this->blockRepository->payFacture($factureId,$buyerId);
     }
 
+    public function giveCash(string $adminLogin, string $userLogin, float $amount): void {
+        try {
+            $hasBlocks = true;
+            try {
+                $this->blockRepository->getLastBlock();
+            } catch (RepositoryEntityNotFoundException $e) {
+                $hasBlocks = false;
+            }
 
+            if (!$hasBlocks) {
+                $this->blockRepository->createGenesisBlock($adminLogin);
+            }
 
-
-
-
+            $this->blockRepository->addBlock($userLogin, $amount, 'add');
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
 
 }

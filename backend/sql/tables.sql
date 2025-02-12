@@ -16,7 +16,7 @@ DROP TABLE IF EXISTS "facture";
 CREATE TABLE "public"."facture" (
                                     "id" uuid NOT NULL,
                                     "seller_login" character varying(100) NOT NULL,
-                                    "qr_link" text NOT NULL,
+                                    "qr_link" bytea NOT NULL,
                                     "label" character varying(255) NOT NULL,
                                     "amount" numeric(12,2) NOT NULL,
                                     "status" character varying(50) NOT NULL,
