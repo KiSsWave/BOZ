@@ -17,18 +17,18 @@ class AuthzService implements AuthzServiceInterface
     #[\Override] public function isAdmin(string $id): bool
     {
         $user = $this->userRepository->getUserByID($id);
-        return isset($user['role']) && $user['role'] === '3';
+        return $user->getRole() == '3';
     }
 
     #[\Override] public function isUser(string $id): bool
     {
         $user = $this->userRepository->getUserByID($id);
-        return isset($user['role']) && $user['role'] === '1';
+        return $user->getRole() == '1';
     }
 
     #[\Override] public function isVendeur(string $id): bool
     {
         $user = $this->userRepository->getUserByID($id);
-        return isset($user['role']) && $user['role'] === '2';
+        return $user->getRole() == '2';
     }
 }

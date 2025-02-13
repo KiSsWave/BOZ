@@ -19,11 +19,11 @@ class AuthzUserMiddleware
     {
 
         $user = $request->getAttribute('user');
-        $userid = $user->id;
+        $userid = $user->ID;
 
         if (!$this->authzService->isUser($userid)) {
             $response = new Response();
-            $response->getBody()->write(json_encode(['error' => 'Access forbidden']));
+            $response->getBody()->write(json_encode(['error' => 'Vous n\'avais pas les droits pour faire cette action']));
             return $response->withStatus(403)->withHeader('Content-Type', 'application/json');
         }
 

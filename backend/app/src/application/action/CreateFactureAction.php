@@ -22,12 +22,19 @@ class CreateFactureAction extends AbstractAction
     public function __invoke(ServerRequestInterface $rq, ResponseInterface $rs, array $args): ResponseInterface
     {
 
-        $data = $rq->getParsedBody();
-        $login = $data['login'] ?? null;
+        $data = $rq->getParsedBody();;
         $tarif = $data['tarif'] ?? null;
         $label = $data['label'] ?? null;
+
+        $vendeur = $rq->getAttribute('user');
+        if (!$vendeur) {
+            throw new HttpBadRequestException($rq, "Vendeur non authentifié");
+        }
+        $vendeurLogin = $vendeur->getEmail();
+
+
         try{
-            $this->blockService->creerFacture($login,$tarif, $label);
+            $this->blockService->creerFacture($vendeurLogin,$tarif, $label);
             return $rs->withHeader('Content-Type', 'application/json')->withStatus(200);
         }catch(Exception $e){
             $rs->getBody()->write(json_encode([
@@ -37,4 +44,3 @@ class CreateFactureAction extends AbstractAction
         }
     }
 }
-

@@ -19,7 +19,7 @@ class GetHistoryAction extends AbstractAction
     public function __invoke(ServerRequestInterface $rq, ResponseInterface $rs, array $args): ResponseInterface
     {
         $user = $rq->getAttribute('user');
-        $userId = $user['id'];
+        $userId = $user->getId();
 
         try {
             $history = $this->blockService->afficherHistorique($userId);
@@ -28,7 +28,7 @@ class GetHistoryAction extends AbstractAction
             $formattedHistory = array_map(function ($entry) {
                 return [
                     'transaction_id' => $entry['transaction_id'],
-                    'price' => $entry['price'],
+                    'amount' => $entry['amount'],
                     'type' => $entry['type'],
                     'timestamp' => $entry['block_timestamp']
                 ];

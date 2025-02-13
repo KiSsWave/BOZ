@@ -11,6 +11,7 @@ use Psr\Http\Message\ServerRequestInterface;
 class GetTicketByUserIdAction extends AbstractAction
 {
 
+
     private TicketServiceInterface $ticketService;
     public function __construct(TicketServiceInterface $ticketService){
         $this->ticketService = $ticketService;

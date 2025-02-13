@@ -8,6 +8,8 @@ use boz\core\repositoryInterfaces\BlockRepositoryInterface;
 use boz\core\repositoryInterfaces\RepositoryEntityNotFoundException;
 use PDO;
 use Ramsey\Uuid\Uuid;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\PngWriter;
 
 class BlockRepository implements BlockRepositoryInterface
 {
@@ -103,12 +105,17 @@ class BlockRepository implements BlockRepositoryInterface
     public function payFacture(string $factureId, string $buyerId): void
     {
         try {
+            $buyerStmt = $this->pdo->prepare("SELECT login FROM users WHERE id = :id");
+            $buyerStmt->execute(['id' => $buyerId]);
+            $buyer = $buyerStmt->fetch(PDO::FETCH_ASSOC);
 
-            $stmt = $this->pdo->prepare("
-            SELECT seller_login, amount, status 
-            FROM facture 
-            WHERE id = :id
-        ");
+            if (!$buyer) {
+                throw new RepositoryEntityNotFoundException("Utilisateur acheteur non trouvé.");
+            }
+
+            $buyerLogin = $buyer['login'];
+
+            $stmt = $this->pdo->prepare("SELECT seller_login, amount, status FROM facture WHERE id = :id");
             $stmt->execute(['id' => $factureId]);
             $facture = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -123,88 +130,85 @@ class BlockRepository implements BlockRepositoryInterface
             $sellerLogin = $facture['seller_login'];
             $amount = (float) $facture['amount'];
 
-
             if (!$this->isTransactionValid($buyerId, $amount, 'pay')) {
-                throw new Exception("Solde insuffisant pour l'utilisateur {$buyerId}.");
+                throw new Exception("Solde insuffisant pour l'utilisateur.");
             }
 
             $this->pdo->beginTransaction();
 
-            $buyerTransactionId = Uuid::uuid4()->toString();
-            $debitStmt = $this->pdo->prepare("
+            try {
+                // Transaction de débit pour l'acheteur
+                $buyerTransactionId = Uuid::uuid4()->toString();
+                $debitStmt = $this->pdo->prepare("
                 INSERT INTO transactions (id, account, amount, type)
                 VALUES (:id, :account, :amount, :type)
             ");
-            $debitStmt->execute([
-                'id' => $buyerTransactionId,
-                'account' => $buyerId,
-                'amount' => $amount,
-                'type' => 'pay'
-            ]);
-            $sellerTransactionId = Uuid::uuid4()->toString();
-            $creditStmt = $this->pdo->prepare("
+                $debitStmt->execute([
+                    'id' => $buyerTransactionId,
+                    'account' => $buyerLogin,
+                    'amount' => $amount,
+                    'type' => 'pay'
+                ]);
+
+                // Créer le bloc pour l'acheteur
+                $lastBlock = $this->getLastBlock();
+                $blockId = Uuid::uuid4()->toString();
+                $blockHash = hash('sha256', $blockId . $buyerTransactionId . time());
+                $this->pdo->prepare("
+                INSERT INTO blocks (id, hash, previous_hash, transaction_id, timestamp)
+                VALUES (:id, :hash, :previous_hash, :transaction_id, to_timestamp(:timestamp))
+            ")->execute([
+                    'id' => $blockId,
+                    'hash' => $blockHash,
+                    'previous_hash' => $lastBlock['hash'],
+                    'transaction_id' => $buyerTransactionId,
+                    'timestamp' => time()
+                ]);
+
+                // Transaction de crédit pour le vendeur
+                $sellerTransactionId = Uuid::uuid4()->toString();
+                $creditStmt = $this->pdo->prepare("
                 INSERT INTO transactions (id, account, amount, type)
                 VALUES (:id, :account, :amount, :type)
             ");
-            $creditStmt->execute([
-                'id' => $sellerTransactionId,
-                'account' => $sellerLogin,
-                'amount' => $amount,
-                'type' => 'add'
-            ]);
+                $creditStmt->execute([
+                    'id' => $sellerTransactionId,
+                    'account' => $sellerLogin,
+                    'amount' => $amount,
+                    'type' => 'add'
+                ]);
 
+                // Créer le bloc pour le vendeur
+                $blockId = Uuid::uuid4()->toString();
+                $blockHash = hash('sha256', $blockId . $sellerTransactionId . time());
+                $this->pdo->prepare("
+                INSERT INTO blocks (id, hash, previous_hash, transaction_id, timestamp)
+                VALUES (:id, :hash, :previous_hash, :transaction_id, to_timestamp(:timestamp))
+            ")->execute([
+                    'id' => $blockId,
+                    'hash' => $blockHash,
+                    'previous_hash' => $lastBlock['hash'],
+                    'transaction_id' => $sellerTransactionId,
+                    'timestamp' => time()
+                ]);
 
-            $updateStmt = $this->pdo->prepare("
-            UPDATE facture
-            SET status = :status
-            WHERE id = :id
-        ");
-            $updateStmt->execute([
-                'status' => 'payée',
-                'id' => $factureId
-            ]);
+                // Mettre à jour la facture
+                $this->pdo->prepare("
+                UPDATE facture
+                SET status = :status
+                WHERE id = :id
+            ")->execute([
+                    'status' => 'payée',
+                    'id' => $factureId
+                ]);
 
+                $this->pdo->commit();
+            } catch (Exception $e) {
+                $this->pdo->rollBack();
+                throw $e;
+            }
         } catch (Exception $e) {
-            error_log("Erreur lors du paiement de la facture : " . $e->getMessage());
             throw new RepositoryEntityNotFoundException("Erreur lors du paiement de la facture : " . $e->getMessage());
-        }
-    }
-
-    public function createGenesisBlock(): void
-    {
-        try {
-            $transactionId = Uuid::uuid4()->toString();
-            $this->pdo->beginTransaction();
-
-
-            $transactionStmt = $this->pdo->prepare("
-            INSERT INTO transactions (id, account, price, type)
-            VALUES (:id, :account, :price, :type)
-        ");
-            $transactionStmt->execute([
-                'id' => $transactionId,
-                'account' => 'admin',
-                'price' => 10000.0,
-                'type' => 'add'
-            ]);
-
-            // Insérer le bloc Genesis dans la table `blocks`
-            $blockStmt = $this->pdo->prepare("
-            INSERT INTO blocks (id, hash, previous_hash, transaction_id, timestamp)
-            VALUES (:id, :hash, :previous_hash, :transaction_id, :timestamp)
-        ");
-            $blockStmt->execute([
-                'id' => Uuid::uuid4()->toString(),
-                'hash' => hash('sha256', 'genesis'),
-                'previous_hash' => '0',
-                'transaction_id' => $transactionId,
-                'timestamp' => time()
-            ]);
-
-            $this->pdo->commit();
-        } catch (Exception $e) {
-            $this->pdo->rollBack();
-            throw new Exception("Erreur lors de la création du bloc Genesis : " . $e->getMessage());
         }
     }
 
