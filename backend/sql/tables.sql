@@ -16,11 +16,23 @@ DROP TABLE IF EXISTS "facture";
 CREATE TABLE "public"."facture" (
                                     "id" uuid NOT NULL,
                                     "seller_login" character varying(100) NOT NULL,
-                                    "qr_link" bytea NOT NULL,
                                     "label" character varying(255) NOT NULL,
                                     "amount" numeric(12,2) NOT NULL,
                                     "status" character varying(50) NOT NULL,
+                                    "qr_code" bytea,
                                     CONSTRAINT "facture_pkey" PRIMARY KEY ("id")
+) WITH (oids = false);
+
+
+DROP TABLE IF EXISTS "tickets";
+CREATE TABLE "public"."tickets" (
+                                    "id" uuid DEFAULT gen_random_uuid() NOT NULL,
+                                    "iduser" uuid NOT NULL,
+                                    "idadmin" uuid,
+                                    "message" text NOT NULL,
+                                    "type" character varying(50) NOT NULL,
+                                    "status" character varying(20) DEFAULT 'open' NOT NULL,
+                                    CONSTRAINT "tickets_pkey" PRIMARY KEY ("id")
 ) WITH (oids = false);
 
 
@@ -51,5 +63,9 @@ ALTER TABLE ONLY "public"."blocks" ADD CONSTRAINT "blocks_transaction_id_fkey" F
 
 ALTER TABLE ONLY "public"."facture" ADD CONSTRAINT "facture_seller_login_fkey" FOREIGN KEY (seller_login) REFERENCES users(login) NOT DEFERRABLE;
 
+ALTER TABLE ONLY "public"."tickets" ADD CONSTRAINT "tickets_idadmin_fkey" FOREIGN KEY (idadmin) REFERENCES users(id) NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."tickets" ADD CONSTRAINT "tickets_iduser_fkey" FOREIGN KEY (iduser) REFERENCES users(id) NOT DEFERRABLE;
+
 ALTER TABLE ONLY "public"."transactions" ADD CONSTRAINT "transactions_account_fkey" FOREIGN KEY (account) REFERENCES users(login) NOT DEFERRABLE;
 
+-- 2025-02-14 10:27:19.892225+00
