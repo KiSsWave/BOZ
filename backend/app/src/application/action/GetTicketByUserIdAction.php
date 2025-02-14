@@ -20,7 +20,8 @@ class GetTicketByUserIdAction extends AbstractAction
     public function __invoke(ServerRequestInterface $rq, ResponseInterface $rs, array $args): ResponseInterface
     {
         try {
-            $userId = $args['userId'];
+            $user = $rq->getAttribute('user');
+            $userId = $user->getID();
             $tickets = $this->ticketService->getTicketByUserId($userId);
             $resultat["Tickets"]  = [];
             foreach ($tickets as $ticket) {

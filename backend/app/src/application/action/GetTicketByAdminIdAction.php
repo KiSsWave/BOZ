@@ -19,7 +19,8 @@ class GetTicketByAdminIdAction extends AbstractAction
     public function __invoke(ServerRequestInterface $rq, ResponseInterface $rs, array $args): ResponseInterface
     {
         try {
-            $adminId = $args['adminId'];
+            $admin = $rq->getAttribute('user');
+            $adminId = $admin->getID();
             $tickets = $this->ticketService->getTicketByAdminId($adminId);
             $resultat["Tickets"]  = [];
             foreach ($tickets as $ticket) {
