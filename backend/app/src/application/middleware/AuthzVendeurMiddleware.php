@@ -23,7 +23,7 @@ class AuthzVendeurMiddleware
 
         if (!$this->authzService->isVendeur($userid)) {
             $response = new Response();
-            $response->getBody()->write(json_encode(['error' => 'Vous n\'avais pas les droits pour faire cette action']));
+            $response->getBody()->write(json_encode(['error' => 'Vous n\'avez pas les droits pour faire cette action']));
             return $response->withStatus(403)->withHeader('Content-Type', 'application/json');
         }
 

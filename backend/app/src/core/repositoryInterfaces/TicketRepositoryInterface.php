@@ -19,6 +19,6 @@ interface TicketRepositoryInterface
 
     public function getTicketsByUserId(string $id): array;
 
-    public function getTicketsPending(string $id): array;
+    public function getTicketsPending(): array;
 
 }

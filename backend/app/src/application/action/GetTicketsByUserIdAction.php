@@ -22,7 +22,7 @@ class GetTicketsByUserIdAction extends AbstractAction
         try {
             $user = $rq->getAttribute('user');
             $userId = $user->getID();
-            $tickets = $this->ticketService->getTicketByUserId($userId);
+            $tickets = $this->ticketService->getTicketsByUserId($userId);
             $resultat["Tickets"]  = [];
             foreach ($tickets as $ticket) {
                 $resultat["Tickets"][] = [

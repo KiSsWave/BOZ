@@ -21,7 +21,7 @@ class GetTicketsByAdminIdAction extends AbstractAction
         try {
             $admin = $rq->getAttribute('user');
             $adminId = $admin->getID();
-            $tickets = $this->ticketService->getTicketByAdminId($adminId);
+            $tickets = $this->ticketService->getTicketsByAdminId($adminId);
             $resultat["Tickets"]  = [];
             foreach ($tickets as $ticket) {
                 $resultat["Tickets"][] = [
