@@ -1,114 +1,169 @@
 <template>
-  <header>
-      <img class="BOZ" src="../assets/logoBOZ.png" />
-      <h1>Boz - Dépensez n'importe où !</h1>
-      <img class="user" src="../assets/user.png" @click="login" />
-  </header>
-  <body>
-        <label>VOTRE SOLDE EST DE :</label>
-        <div>
-         €</div>
-    </body>
+  <div class="bank-app">
+    <HeaderComponent />
+
+    <main class="balance-container">
+      <label class="balance-label">VOTRE SOLDE EST DE :</label>
+      <div class="balance-display">
+        {{ balance }}€
+      </div>
+    </main>
+
     <footer>
-        <boutton name="Contact">Contacter l'administrateur</boutton>
-        <boutton name="Consulter">Consulter les transactions</boutton>
+      <button @click="contactAdmin" v-if="userStore.isAuthenticated">Contacter l'administrateur</button>
+      <button @click="viewFactures" v-if="userStore.isAuthenticated">Consulter les factures</button>
+      <button @click="viewTransactions" v-if="userStore.isAuthenticated">Consulter les transactions</button>
+      <label v-if="!userStore.isAuthenticated">Pour accéder aux fonctionnalités, veuillez vous connecter.</label>
     </footer>
+  </div>
 </template>
 
-
 <script>
+import { useUserStore } from '@/stores/userStore';
+import HeaderComponent from '@/components/HeaderComponent.vue';
+import axios from '../api/index.js';
+import { onMounted } from 'vue';
+import { ref } from 'vue';
+import { getToken } from '@/services/authProvider.js';
 
 export default {
-  methods: {
-      login() {
-          this.$router.push('/login')
+  setup() {
+    const balance = ref(0);
+    const userStore = useUserStore();
+    console.log(getToken());
+    onMounted(async () => {
+      if (userStore.isAuthenticated) {
+        try {
+          const response = await axios.get("/balance");
+          if (response.data) {
+            balance.value = response.data.balance || 0;
+          }
+        } catch (error) {
+          console.error("Erreur lors de la récupération du solde :", error);
+        }
       }
-  }
+    });
+
+    return {
+      balance,
+      userStore
+    };
+  },
+  components: {
+    HeaderComponent,
+  },
+
+
+  methods: {
+    login() {
+      this.$router.push('/login')
+    },
+    logout() {
+      this.userStore.logout()
+      this.$router.push('/')
+    },
+    contactAdmin() {
+      this.$router.push('/contact')
+    },
+    viewTransactions() {
+      this.$router.push('/transaction')
+    },
+    viewFactures() {
+      this.$router.push('/facture')
+    },
+  },
 }
 </script>
 
 
 <style scoped>
-header {
-  position: sticky;
-  display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
-  grid-row: auto;
-  justify-content: space-between;
-  align-items: center;
-  top: 0;
-  width: 100%;
-  height: auto;
-  padding: 0;
+* {
   margin: 0;
-
-  .user {
-      width: 25%;
-      padding: 0;
-      margin: 0;
-      top:0;
-      columns:3;
-      cursor:pointer;
-      justify-content: end;
-      border:solid red 5px;
-
-  }
-
-  .BOZ {
-      width: 50%;
-      padding: 0;
-      margin: 0;
-      columns:1;
-  }
-  h1{
-      text-align: center;
-      padding: 0;
-      margin: 0;
-  }
+  padding: 0;
+  box-sizing: border-box;
 }
+
 body {
-    color: blue;
-    flex-direction: column;
-    display: flex;
-    font-size: 30px;
-    text-align: center;
-    height: 15%;
-    label{
-        margin-bottom:1%;
-    }
-    div {
-        text-overflow: fill;
-        align-self: center;
-        font-size: 50px;
-        color: blue;
-        height: 150px;
-        width: 20%;
-        border: dashed 3px black;
-        border-radius: 40px;
-        padding: 1%;
-        padding-top:3%;
-        text-align: end;
-    }
-
-    footer {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    column-gap: 5px;
-    background-color: blue;
-    height: 100%;
-    width: 100%;
-    bottom: 0px;
-align-items: center;
-    boutton {
-        width: 25%;
-        height: 100%;
-        text-align: center;
-
-        border-radius: 10px;
-        background-color: rgb(221, 205, 205);
-        box-shadow: 1px 1px 3px 2px black;
-        font-size: 25px;
-    }
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f7f6;
+  color: #333;
+  max-width: 500px;
+  margin: 0 auto;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
+
+.balance-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+  padding: 20px;
+}
+
+.balance-label {
+  font-size: 1rem;
+  margin-bottom: 10px;
+  color: #7f8c8d;
+}
+
+.balance-display {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #2ecc71;
+  background-color: #ffffff;
+  border: 2px dashed #3498db;
+  border-radius: 15px;
+  padding: 20px;
+  min-width: 250px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 15px;
+  padding: 20px;
+  background-color: #ffffff;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+}
+
+footer button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 15px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+footer button:hover {
+  background-color: #2980b9;
+  transform: translateY(-3px);
+}
+
+footer label {
+  grid-column: span 3;
+  text-align: center;
+  color: #000000;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+
+@media (max-width: 375px) {
+  header h1 {
+    font-size: 1rem;
+  }
+
+  .balance-display {
+    font-size: 2rem;
+  }
 }
 </style>

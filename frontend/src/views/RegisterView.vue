@@ -1,158 +1,167 @@
 <template>
-  <img class="BOZ" src="../assets/logoBOZ.png" />
-  <h1>Inscription</h1>
-  <form @submit.prevent="envoie">
-      <input
-          type="text"
-          name="login"
-          v-model="form.login"
-          placeholder="Login"
-          required
-      />
-      <input
-          type="email"
-          name="email"
-          v-model="form.email"
-          placeholder="Email"
-          required
-      />
-      <input
-          type="password"
-          name="password"
-          v-model="form.password"
-          placeholder="Mot de passe"
-          required
-      />
-      <input
-          type="password"
-          name="confirmPassword"
-          v-model="form.confirmPassword"
-          placeholder="Confirmer le mot de passe"
-          required
-      />
-      <button type="submit">S'inscrire</button>
-  </form>
-  <div>
-      <label>Déjà un compte ?</label>
-      <label class="link" @click="connexion"> Se Connecter</label>
+  <div class="register-container">
+    <div class="register-header">
+      <img class="BOZ" src="../assets/logoBOZ.png" alt="BOZ Logo" />
+    </div>
+
+    <h1>Inscription</h1>
+
+    <form @submit.prevent="envoie" class="register-form">
+      <div class="input-group">
+        <input type="text" v-model="form.login" placeholder="Login" required />
+        <input type="email" v-model="form.email" placeholder="Email" required autocomplete="email" />
+        <input type="password" v-model="form.password" placeholder="Mot de passe" required minlength="8" />
+        <input type="password" v-model="form.confirmPassword" placeholder="Confirmer le mot de passe" required
+          minlength="8" />
+      </div>
+
+      <button type="submit" class="register-button">
+        S'inscrire
+      </button>
+    </form>
+
+    <div class="login-prompt">
+      <span>Déjà un compte ?</span>
+      <label class="login-link" @click="connexion">
+        Se Connecter
+      </label>
+    </div>
   </div>
 </template>
 
 <script>
+import axios from '../api/index.js';
 export default {
   data() {
-      return {
-          form: {
-              login: '',
-              email: '',
-              password: '',
-              confirmPassword: '',
-          },
-      };
+    return {
+      form: {
+        login: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+      },
+    };
   },
   methods: {
-      connexion() {
+    connexion() {
+      this.$router.push('/login');
+    },
+    async envoie() {
+      if (this.form.password !== this.form.confirmPassword) {
+        alert("Les mots de passe ne correspondent pas !");
+        return;
+      }
+
+      try {
+        const response = await axios.post("register", {
+          login: this.form.login,
+          email: this.form.email,
+          password: this.form.password,
+        });
+
+        if (response.data) {
+          alert('Inscription réussie !');
           this.$router.push('/login');
-      },
-      async envoie() {
-          if (this.form.password !== this.form.confirmPassword) {
-              alert("Les mots de passe ne correspondent pas !");
-              return;
-          }
-          console.log("Formulaire soumis avec les données :", this.form);
-          try {
-              const response = await fetch("http://localhost:44050/register", {
-                  method: 'POST',
-                  headers: {
-                      'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                      login: this.form.login,
-                      email: this.form.email,
-                      password: this.form.password,
-                  }),
-              });
-              console.log("Requête envoyée, en attente de réponse...");
-              if (response.ok) {
-                  const data = await response.json();
-                  console.log("la Réponse du serveur :", data);
-              } else {
-                  console.error('Réponse du serveur :', response.status, response.statusText);
-              }
-          } catch (error) {
-              console.error("Erreur lors de l'envoi :", error);
-          }
-      },
+        } else {
+          alert('Erreur lors de l\'inscription');
+        }
+      } catch (error) {
+        console.error("Erreur lors de l'inscription :", error);
+        if (error.response && error.response.data && error.response.data.message) {
+          alert(error.response.data.message);
+        } else {
+          alert("Erreur lors de l'inscription. Veuillez réessayer.");
+        }
+      }
+    },
   },
 };
 </script>
 
-
 <style scoped>
-body {
-
-  display: grid;
-  grid-template-columns: 2fr 1fr 2fr;
-  text-align: center;
+.register-container {
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  min-height: 100vh;
+  background-color: #f4f6f7;
+  padding: 20px;
+}
 
-  div{
-      text-align: center;
-  }
-  .link{
-      color: blue;
-      cursor: pointer;
-  }
-  .link:hover{
-          color: red;
-      }
-  form {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      margin: 5%;
-      columns: 2;
-  }
+.register-header {
+  margin-bottom: 30px;
+}
 
-  img {
-      columns: 2;
-      width: 15%;
-      padding: 0;
-      margin: 0;
-      align-self: middle;
-      text-align: middle;
-      justify-content: middle;
+.BOZ {
+  width: 150px;
+  height: auto;
+}
 
-  }
+h1 {
+  font-size: 24px;
+  color: #2c3e50;
+  margin-bottom: 30px;
+}
 
-  .back{
-      cursor: pointer;
-      width: 5%;
-      top:0;
-      border:solid red 5px;
-  }
+.register-form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 400px;
+}
 
-  h1 {
-      font-size: 30px;
-      columns: 2;
-      color: black;
-  }
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 25px;
+}
 
-  input {
-      background-color: antiquewhite;
-      columns: 2;
-      color: gray;
-      margin: 5%;
-  }
+input {
+  padding: 12px;
+  border: 1px solid #bdc3c7;
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: white;
+  transition: border-color 0.3s ease;
+}
 
-  button {
-      background-color: black;
-      columns: 2;
-      color: white;
-      width: 20%;
-      border-radius: 10px;
-  }
+input:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.register-button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.register-button:hover {
+  background-color: #2980b9;
+}
+
+.login-prompt {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.login-link {
+  color: #3498db;
+  cursor: pointer;
+  margin-left: 5px;
+  font-weight: bold;
+  transition: color 0.3s ease;
+}
+
+.login-link:hover {
+  color: #2980b9;
+  text-decoration: underline;
 }
 </style>

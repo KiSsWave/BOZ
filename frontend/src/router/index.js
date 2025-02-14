@@ -2,7 +2,11 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
-
+import AdminView from '@/views/AdminView.vue'
+import ContactView from '@/views/ContactView.vue'
+import FactureView from '@/views/FactureView.vue'
+import TransactionView from '@/views/TransactionView.vue'
+import { useUserStore } from '@/stores/userStore'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -21,7 +25,46 @@ const router = createRouter({
       name: 'register',
       component: RegisterView,
     },
+    {
+      path: '/admin',
+      name: 'admin',
+      component: AdminView,
+      meta: { requiresAuth: true ,role:2}
+    },
+    {
+      path: '/contact',
+      name: 'contact',
+      component: ContactView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/facture',
+      name: 'facture',
+      component: FactureView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/transaction',
+      name: 'transaction',
+      component: TransactionView,
+      meta: { requiresAuth: true }
+    },
+
+
+
   ],
 })
+router.beforeEach((to, from, next) => {
+  const userStore = useUserStore();
+
+  if (to.meta.requiresAuth && !userStore.isAuthenticated) {
+    next("/login");
+  } else if (to.meta.role && userStore.user?.role !== to.meta.role) {
+    next("/");
+  } else {
+    next();
+  }
+
+});
 
 export default router
