@@ -11,7 +11,9 @@ interface TicketServiceInterface
 
     public function takeTicket(string $ticketId, string $adminId): void;
 
-    public function getTicketByAdminId(string $id): array;
+    public function getTicketsByAdminId(string $id): array;
 
-    public function getTicketByUserId(string $iduser): array;
+    public function getTicketsByUserId(string $iduser): array;
+
+    public function getTicketsPending(): array;
 }

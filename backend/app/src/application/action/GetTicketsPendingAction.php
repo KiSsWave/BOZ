@@ -3,15 +3,15 @@
 namespace boz\application\action;
 
 use boz\application\action\AbstractAction;
-use boz\core\services\tickets\TicketService;
+use boz\core\dto\TicketDTO;
 use boz\core\services\tickets\TicketServiceInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-class GetTicketByAdminIdAction extends AbstractAction
-{
-    private TicketServiceInterface $ticketService;
 
+class GetTicketsPendingAction extends AbstractAction {
+
+    private TicketServiceInterface $ticketService;
     public function __construct(TicketServiceInterface $ticketService){
         $this->ticketService = $ticketService;
     }
@@ -19,9 +19,7 @@ class GetTicketByAdminIdAction extends AbstractAction
     public function __invoke(ServerRequestInterface $rq, ResponseInterface $rs, array $args): ResponseInterface
     {
         try {
-            $admin = $rq->getAttribute('user');
-            $adminId = $admin->getID();
-            $tickets = $this->ticketService->getTicketByAdminId($adminId);
+            $tickets = $this->ticketService->getTicketsPending();
             $resultat["Tickets"]  = [];
             foreach ($tickets as $ticket) {
                 $resultat["Tickets"][] = [

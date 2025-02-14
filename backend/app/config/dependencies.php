@@ -5,6 +5,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use boz\application\action\CreateFactureAction;
 use boz\application\action\GetBalanceAction;
 use boz\application\action\GetHistoryAction;
+use boz\application\action\GetTicketsPendingAction;
 use boz\application\action\PayFactureAction;
 use boz\application\action\RegisterAction;
 use boz\application\action\SignInAction;
@@ -33,10 +34,10 @@ use boz\core\repositoryInterfaces\BlockRepositoryInterface;
 use boz\core\services\tickets\TicketServiceInterface;
 use boz\core\repositoryInterfaces\TicketRepositoryInterface;
 use boz\application\action\AddTicketAction;
-use boz\application\action\GetTicketByAdminIdAction;
+use boz\application\action\GetTicketsByAdminIdAction;
 use boz\application\action\TakeTicketByAdminAction;
 use boz\application\action\CloseTicketAction;
-use boz\application\action\GetTicketByUserIdAction;
+use boz\application\action\GetTicketsByUserIdAction;
 
 return [
     'dotenv' => function () {
@@ -142,8 +143,12 @@ return [
     return new AddTicketAction($c->get(TicketServiceInterface::class));
     },
 
-    GetTicketByAdminIdAction::class => function (ContainerInterface $c){
-    return new GetTicketByAdminIdAction($c->get(TicketServiceInterface::class));
+    GetTicketsByAdminIdAction::class => function (ContainerInterface $c){
+    return new GetTicketsByAdminIdAction($c->get(TicketServiceInterface::class));
+    },
+
+    GetTicketsPendingAction::class => function (ContainerInterface $c){
+    return new GetTicketsPendingAction($c->get(TicketServiceInterface::class));
     },
 
     TakeTicketByAdminAction::class => function(ContainerInterface $c){
@@ -154,8 +159,8 @@ return [
         return new CloseTicketAction($c->get(TicketServiceInterface::class));
     },
 
-    GetTicketByUserIdAction::class => function (ContainerInterface $c) {
-        return new GetTicketByUserIdAction($c->get(TicketServiceInterface::class));
+    GetTicketsByUserIdAction::class => function (ContainerInterface $c) {
+        return new GetTicketsByUserIdAction($c->get(TicketServiceInterface::class));
     },
     CreateFactureAction::class => function (ContainerInterface $container) {
         return new CreateFactureAction($container->get(BlockServiceInterface::class));
@@ -164,4 +169,6 @@ return [
     PayFactureAction::class => function (ContainerInterface $container) {
         return new PayFactureAction($container->get(BlockServiceInterface::class));
     },
+
+
 ];

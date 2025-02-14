@@ -59,7 +59,7 @@ class TicketRepository implements TicketRepositoryInterface
         }
     }
 
-    public function getTicketByAdminId(string $id): array
+    public function getTicketsByAdminId(string $id): array
     {
         try {
             $query = $this->pdo->prepare("SELECT * FROM tickets WHERE idadmin = :id");
@@ -84,7 +84,32 @@ class TicketRepository implements TicketRepositoryInterface
         }
     }
 
-    public function getTicketByUserId(string $id): array
+    public function getTicketsPending(): array
+    {
+        try {
+            $query = $this->pdo->prepare("SELECT * FROM tickets WHERE status = 'en attente'");
+            $query->execute();
+            $resultat = $query->fetchAll(PDO::FETCH_ASSOC);
+
+            $tickets = [];
+            foreach ($resultat as $row) {
+                $ticket = new Ticket(
+                    $row['iduser'],
+                    $row['idadmin'],
+                    $row['message'],
+                    $row['type'],
+                    $row['status']
+                );
+                $ticket->setId($row['id']);
+                $tickets[] = $ticket;
+            }
+            return $tickets;
+        } catch (Exception $e) {
+            throw new \RuntimeException('Erreur lors de la recherche des tickets : ' . $e->getMessage());
+        }
+    }
+
+    public function getTicketsByUserId(string $id): array
     {
         try {
             $query = $this->pdo->prepare("SELECT * FROM tickets WHERE iduser = :id");

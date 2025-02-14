@@ -34,9 +34,9 @@ class TicketService implements TicketServiceInterface
         $this->ticketRepository->takeTicket($ticketId, $adminId);
     }
 
-    public function getTicketByAdminId(string $id): array
+    public function getTicketsByAdminId(string $id): array
     {
-        $tickets = $this->ticketRepository->getTicketByAdminId($id);
+        $tickets = $this->ticketRepository->getTicketsByAdminId($id);
         $ticketsDTO = [];
         foreach ($tickets as $ticket) {
             $ticketsDTO[] = new TicketDTO($ticket);
@@ -44,9 +44,19 @@ class TicketService implements TicketServiceInterface
         return $ticketsDTO;
     }
 
-    public function getTicketByUserId(string $iduser): array
+    public function getTicketsByUserId(string $iduser): array
     {
-        $tickets = $this->ticketRepository->getTicketByUserId($iduser);
+        $tickets = $this->ticketRepository->getTicketsByUserId($iduser);
+        $ticketsDTO = [];
+        foreach ($tickets as $ticket) {
+            $ticketsDTO[] = new TicketDTO($ticket);
+        }
+        return $ticketsDTO;
+    }
+
+    public function getTicketsPending(): array
+    {
+        $tickets = $this->ticketRepository->getTicketsPending();
         $ticketsDTO = [];
         foreach ($tickets as $ticket) {
             $ticketsDTO[] = new TicketDTO($ticket);

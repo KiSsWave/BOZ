@@ -23,7 +23,7 @@ return function (\Slim\App $app): \Slim\App {
 
         $app->post('/pay', boz\application\action\PayFactureAction::class)->add(boz\application\middleware\AuthzUserMiddleware::class);
         $app->post('/tickets', boz\application\action\AddTicketAction::class)->add(boz\application\middleware\AuthzUserMiddleware::class);
-        $app->get('/ticket', boz\application\action\GetTicketByUserIdAction::class)->add(boz\application\middleware\AuthzUserMiddleware::class);
+        $app->get('/tickets', boz\application\action\GetTicketsByUserIdAction::class)->add(boz\application\middleware\AuthzUserMiddleware::class);
 
 
     })->add(boz\application\middleware\AuthnMiddleware::class);
@@ -41,7 +41,9 @@ return function (\Slim\App $app): \Slim\App {
 
         $app->post('/give', boz\application\action\GiveCashAction::class)->add(boz\application\middleware\AuthzAdminMiddleware::class);
 
-        $app->get('/tickets/admin', boz\application\action\GetTicketByAdminIdAction::class)->add(boz\application\middleware\AuthzAdminMiddleware::class);
+        $app->get('/tickets/pending', boz\application\action\GetTicketsPendingAction::class)->add(boz\application\middleware\AuthzAdminMiddleware::class);
+
+        $app->get('/tickets/admin', boz\application\action\GetTicketsByAdminIdAction::class)->add(boz\application\middleware\AuthzAdminMiddleware::class);
         $app->patch('/tickets/close/{ticketId}', boz\application\action\CloseTicketAction::class)->add(boz\application\middleware\AuthzAdminMiddleware::class);
         $app->patch('/tickets', boz\application\action\TakeTicketByAdminAction::class)->add(boz\application\middleware\AuthzAdminMiddleware::class);
     })->add(boz\application\middleware\AuthnMiddleware::class);

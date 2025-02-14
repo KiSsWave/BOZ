@@ -8,7 +8,7 @@ use boz\core\services\tickets\TicketServiceInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-class GetTicketByUserIdAction extends AbstractAction
+class GetTicketsByUserIdAction extends AbstractAction
 {
 
 
