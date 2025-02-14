@@ -35,7 +35,7 @@ use boz\core\repositoryInterfaces\TicketRepositoryInterface;
 use boz\application\action\AddTicketAction;
 use boz\application\action\GetTicketByAdminIdAction;
 use boz\application\action\TakeTicketByAdminAction;
-use boz\application\action\CloseGameAction;
+use boz\application\action\CloseTicketAction;
 use boz\application\action\GetTicketByUserIdAction;
 
 return [
@@ -150,8 +150,8 @@ return [
     return new TakeTicketByAdminAction($c->get(TicketServiceInterface::class));
     },
 
-    CloseGameAction::class => function (ContainerInterface $c){
-        return new CloseGameAction($c->get(TicketServiceInterface::class));
+    CloseTicketAction::class => function (ContainerInterface $c){
+        return new CloseTicketAction($c->get(TicketServiceInterface::class));
     },
 
     GetTicketByUserIdAction::class => function (ContainerInterface $c) {

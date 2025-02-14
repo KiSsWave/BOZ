@@ -20,13 +20,15 @@ class AddTicketAction extends AbstractAction
     {
         try{
             $body = $rq->getParsedBody();
-            $userid = $body['userid'];
             $adminid = $body['adminid'] ?? null;
             $message = $body['message'];
             $type = $body['type'];
-            $status = $body['status'];
 
-            $this->ticketService->addTicket($userid, $adminid, $message, $type, $status);
+            $user = $rq->getAttribute('user');
+            $userid = $user->getID();
+
+
+            $this->ticketService->addTicket($userid, $adminid, $message, $type, "en attente");
 
             return $rs->withStatus(201)->withHeader('Content-Type', 'application/json');
         }catch(\Exception $e){

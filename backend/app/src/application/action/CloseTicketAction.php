@@ -7,7 +7,7 @@ use boz\core\services\tickets\TicketServiceInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-class CloseGameAction extends AbstractAction
+class CloseTicketAction extends AbstractAction
 {
 
     private TicketServiceInterface $ticketService;

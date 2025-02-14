@@ -21,7 +21,7 @@ class JWTManager
     public function createAccessToken(array $payload): string
     {
         $payload['iat'] = time();
-        $payload['exp'] = time() + 3600;
+        $payload['exp'] = time() + 36000;
         return JWT::encode($payload, $this->jwtSecret, 'HS256');
     }
 
