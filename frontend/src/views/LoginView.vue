@@ -48,30 +48,38 @@ export default {
       this.$router.push('/');
     },
     async envoie() {
-  try {
-    const response = await axios.post("/signin", this.form);
+      try {
+        const response = await axios.post("/signin", this.form);
 
-    if (response.data && response.data.token) { // Vérifiez data.token au lieu de response.ok
-      const userStore = useUserStore();
-      userStore.login(response.data.token);
+        if (response.data && response.data.token) {
+          const userStore = useUserStore();
+          userStore.login(response.data.token);
 
-      // Redirection selon le rôle
-      const user = userStore.user;
-      if (user.role == 1) {
-        this.$router.push('/');
-      } else if (user.role == 3) {
-        this.$router.push('/admin');
-      } else if (user.role == 2) {
-        this.$router.push('/vendeur');
+          const role = parseInt(userStore.user.role);
+
+          switch(role) {
+            case 1:
+              this.$router.push('/');
+              break;
+            case 3:
+              this.$router.push('/admin');
+              break;
+            default:
+              this.$router.push('/');
+              break;
+          }
+        } else {
+          alert('Identifiants incorrects');
+        }
+      } catch (error) {
+        console.error("Erreur de connexion :", error);
+        if (error.response?.data?.error) {
+          alert(error.response.data.error);
+        } else {
+          alert('Erreur de connexion. Réessayez plus tard.');
+        }
       }
-    } else {
-      alert('Identifiants incorrects');
     }
-  } catch (error) {
-    console.error("Erreur de connexion :", error);
-    alert('Erreur de connexion. Réessayez plus tard.');
-  }
-}
   },
 };
 </script>

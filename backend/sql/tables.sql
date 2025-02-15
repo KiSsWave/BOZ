@@ -1,4 +1,4 @@
-
+-- Adminer 4.8.1 PostgreSQL 17.2 (Debian 17.2-1.pgdg120+1) dump
 
 DROP TABLE IF EXISTS "blocks";
 CREATE TABLE "public"."blocks" (
@@ -27,11 +27,11 @@ CREATE TABLE "public"."facture" (
 DROP TABLE IF EXISTS "tickets";
 CREATE TABLE "public"."tickets" (
                                     "id" uuid DEFAULT gen_random_uuid() NOT NULL,
-                                    "iduser" uuid NOT NULL,
+                                    "user_login" character varying(100) NOT NULL,
                                     "idadmin" uuid,
                                     "message" text NOT NULL,
                                     "type" character varying(50) NOT NULL,
-                                    "status" character varying(20) DEFAULT 'open' NOT NULL,
+                                    "status" character varying(20) DEFAULT 'en attente' NOT NULL,
                                     CONSTRAINT "tickets_pkey" PRIMARY KEY ("id")
 ) WITH (oids = false);
 
@@ -64,8 +64,7 @@ ALTER TABLE ONLY "public"."blocks" ADD CONSTRAINT "blocks_transaction_id_fkey" F
 ALTER TABLE ONLY "public"."facture" ADD CONSTRAINT "facture_seller_login_fkey" FOREIGN KEY (seller_login) REFERENCES users(login) NOT DEFERRABLE;
 
 ALTER TABLE ONLY "public"."tickets" ADD CONSTRAINT "tickets_idadmin_fkey" FOREIGN KEY (idadmin) REFERENCES users(id) NOT DEFERRABLE;
-ALTER TABLE ONLY "public"."tickets" ADD CONSTRAINT "tickets_iduser_fkey" FOREIGN KEY (iduser) REFERENCES users(id) NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."tickets" ADD CONSTRAINT "tickets_user_login_fkey" FOREIGN KEY (user_login) REFERENCES users(login) NOT DEFERRABLE;
 
 ALTER TABLE ONLY "public"."transactions" ADD CONSTRAINT "transactions_account_fkey" FOREIGN KEY (account) REFERENCES users(login) NOT DEFERRABLE;
 
--- 2025-02-14 10:27:19.892225+00

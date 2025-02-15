@@ -72,7 +72,29 @@ class BlockRepository implements BlockRepositoryInterface
         }
     }
 
-    public function createFacture(string $login, float $tarif, string $label): void
+    public function getLoginByUserId(string $userId): string
+    {
+        try {
+            $stmt = $this->pdo->prepare("
+                SELECT login
+                FROM users
+                WHERE id = :user_id
+            ");
+
+            $stmt->execute(['user_id' => $userId]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$result) {
+                throw new RepositoryEntityNotFoundException("Utilisateur non trouvé.");
+            }
+
+            return $result['login'];
+        } catch (\PDOException $e) {
+            throw new RepositoryEntityNotFoundException("Erreur lors de la récupération du login : " . $e->getMessage());
+        }
+    }
+
+    public function createFacture(string $userId, float $tarif, string $label): void
     {
         try {
             $factureId = Uuid::uuid4()->toString();
@@ -81,6 +103,8 @@ class BlockRepository implements BlockRepositoryInterface
             $qrCode = new QrCode($factureId);
             $writer = new PngWriter();
             $result = $writer->writeString($qrCode);
+
+            $login = $this->getLoginByUserId($userId);
 
 
             $stmt = $this->pdo->prepare("
@@ -99,6 +123,7 @@ class BlockRepository implements BlockRepositoryInterface
         } catch (Exception $e) {
             error_log("Erreur lors de la création de la facture : " . $e->getMessage());
             throw new RepositoryEntityNotFoundException("Erreur lors de la création de la facture : " . $e->getMessage());
+        } catch (RepositoryEntityNotFoundException $e) {
         }
     }
 

@@ -25,10 +25,10 @@ class AddTicketAction extends AbstractAction
             $type = $body['type'];
 
             $user = $rq->getAttribute('user');
-            $userid = $user->getID();
+            $userLogin = $user->getEmail();
 
 
-            $this->ticketService->addTicket($userid, $adminid, $message, $type, "en attente");
+            $this->ticketService->addTicket($userLogin, $adminid, $message, $type, "en attente");
 
             return $rs->withStatus(201)->withHeader('Content-Type', 'application/json');
         }catch(\Exception $e){

@@ -18,9 +18,12 @@ class TakeTicketByAdminAction extends AbstractAction
     public function __invoke(ServerRequestInterface $rq, ResponseInterface $rs, array $args): ResponseInterface
     {
         try{
+            $admin = $rq->getAttribute('user');
+            $adminId = $admin->getID();
+
             $body = $rq->getParsedBody();
             $ticketId = $body['ticketId'];
-            $adminId = $body['adminId'];
+
 
             $this->ticketService->takeTicket($ticketId, $adminId);
 

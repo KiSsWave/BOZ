@@ -26,7 +26,7 @@ class GetTicketsByAdminIdAction extends AbstractAction
             foreach ($tickets as $ticket) {
                 $resultat["Tickets"][] = [
                     'Id' => $ticket->ID,
-                    'Id User' => $ticket->userId,
+                    'User Login' => $ticket->userLogin,
                     'Id Admin' => $ticket->adminId,
                     'message' => $ticket->message,
                     'type' => $ticket->type,

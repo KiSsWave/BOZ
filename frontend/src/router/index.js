@@ -29,7 +29,7 @@ const router = createRouter({
       path: '/admin',
       name: 'admin',
       component: AdminView,
-      meta: { requiresAuth: true ,role:2}
+      meta: { requiresAuth: true ,role: "3"}
     },
     {
       path: '/contact',
@@ -59,12 +59,12 @@ router.beforeEach((to, from, next) => {
 
   if (to.meta.requiresAuth && !userStore.isAuthenticated) {
     next("/login");
-  } else if (to.meta.role && userStore.user?.role !== to.meta.role) {
+  } else if (to.meta.role && String(userStore.user?.role) !== String(to.meta.role)) {
+
     next("/");
   } else {
     next();
   }
-
 });
 
 export default router

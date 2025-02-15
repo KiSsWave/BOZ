@@ -39,11 +39,10 @@ class GiveCashAction extends AbstractAction
                 throw new HttpBadRequestException($rq, "Le montant doit être un nombre positif");
             }
 
-
             $this->blockService->giveCash($adminLogin, $userLogin, floatval($amount));
 
             $rs->getBody()->write(json_encode([
-                'message' => "Transaction de {$amount} effectuée pour l'utilisateur {$userLogin} par l'admin {$adminLogin}"
+                'message' => "Transaction de {$amount} effectuée pour l'utilisateur {$userLogin}"
             ]));
             return $rs->withHeader('Content-Type', 'application/json')->withStatus(200);
 

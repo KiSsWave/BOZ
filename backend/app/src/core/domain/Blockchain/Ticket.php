@@ -6,20 +6,16 @@ use boz\core\domain\Entity;
 
 class Ticket extends Entity
 {
-
-    public string $user_id;
-    public ?string $admin_id;
-
+    public string $userLogin;
+    public ?string $adminId;
     public string $message;
-
     public string $type;
-
     public string $status;
 
-    public function __construct(string $user_id, ?string $admin_id, string $message, string $type, string $status)
+    public function __construct(string $userLogin, ?string $adminId, string $message, string $type, string $status)
     {
-        $this->user_id = $user_id;
-        $this->admin_id = $admin_id;
+        $this->userLogin = $userLogin;
+        $this->adminId = $adminId;
         $this->message = $message;
         $this->type = $type;
         $this->status = $status;
@@ -30,11 +26,11 @@ class Ticket extends Entity
     }
 
     public function getAdminId(): ?string{
-        return $this->admin_id;
+        return $this->adminId;
     }
 
-    public function getUserId(): string{
-        return $this->user_id;
+    public function getUserLogin(): string{
+        return $this->userLogin;
     }
 
     public function getMessage(): string{
@@ -44,5 +40,4 @@ class Ticket extends Entity
     public function getStatus(): string{
         return $this->status;
     }
-
 }

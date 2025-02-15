@@ -22,10 +22,13 @@ class TicketRepository implements TicketRepositoryInterface
     public function addTicket(TicketDTO $ticketDTO): void
     {
         try {
-            $query = $this->pdo->prepare("INSERT INTO tickets(id, iduser, idadmin, message, type, status) VALUES (:id, :iduser, :idadmin, :message, :type, :status)");
+            $query = $this->pdo->prepare("
+            INSERT INTO tickets(id, user_login, idadmin, message, type, status) 
+            VALUES (:id, :userLogin, :idadmin, :message, :type, :status)
+        ");
             $query->execute([
                 ':id' => $ticketDTO->getId(),
-                ':iduser' => $ticketDTO->getUserId(),
+                ':userLogin' => $ticketDTO->getUserLogin(),
                 ':idadmin' => $ticketDTO->getAdminId(),
                 ':message' => $ticketDTO->getMessage(),
                 ':type' => $ticketDTO->getType(),
@@ -49,10 +52,10 @@ class TicketRepository implements TicketRepositoryInterface
     public function takeTicket(string $ticketId, string $adminId): void
     {
         try {
-            $query = $this->pdo->prepare("UPDATE tickets SET idadmin = :idadmin WHERE id = :id");
+            $query = $this->pdo->prepare("UPDATE tickets SET idadmin = :idadmin, status = 'en cours' WHERE id = :id");
             $query->execute([
                 ':id' => $ticketId,
-                ':idadmin' => $adminId,
+                ':idadmin' => $adminId
             ]);
         } catch (Exception $e) {
             throw new \RuntimeException('Erreur lors de la mise à jour du ticket : ' . $e->getMessage());
@@ -62,14 +65,18 @@ class TicketRepository implements TicketRepositoryInterface
     public function getTicketsByAdminId(string $id): array
     {
         try {
-            $query = $this->pdo->prepare("SELECT * FROM tickets WHERE idadmin = :id");
+            $query = $this->pdo->prepare("
+            SELECT t.* 
+            FROM tickets t 
+            WHERE t.idadmin = :id
+        ");
             $query->execute([':id' => $id]);
             $resultat = $query->fetchAll(PDO::FETCH_ASSOC);
 
             $tickets = [];
             foreach ($resultat as $row) {
                 $ticket = new Ticket(
-                    $row['iduser'],
+                    $row['user_login'],
                     $row['idadmin'],
                     $row['message'],
                     $row['type'],
@@ -87,14 +94,18 @@ class TicketRepository implements TicketRepositoryInterface
     public function getTicketsPending(): array
     {
         try {
-            $query = $this->pdo->prepare("SELECT * FROM tickets WHERE status = 'en attente'");
+            $query = $this->pdo->prepare("
+            SELECT t.*, t.user_login as user_login 
+            FROM tickets t 
+            WHERE t.status = 'en attente'
+        ");
             $query->execute();
             $resultat = $query->fetchAll(PDO::FETCH_ASSOC);
 
             $tickets = [];
             foreach ($resultat as $row) {
                 $ticket = new Ticket(
-                    $row['iduser'],
+                    $row['user_login'],
                     $row['idadmin'],
                     $row['message'],
                     $row['type'],
@@ -109,17 +120,21 @@ class TicketRepository implements TicketRepositoryInterface
         }
     }
 
-    public function getTicketsByUserId(string $id): array
+    public function getTicketsByUserId(string $userLogin): array
     {
         try {
-            $query = $this->pdo->prepare("SELECT * FROM tickets WHERE iduser = :id");
-            $query->execute([':id' => $id]);
+            $query = $this->pdo->prepare("
+            SELECT t.* 
+            FROM tickets t 
+            WHERE t.user_login = :userLogin
+        ");
+            $query->execute([':userLogin' => $userLogin]);
             $resultat = $query->fetchAll(PDO::FETCH_ASSOC);
 
             $tickets = [];
             foreach ($resultat as $row) {
                 $ticket = new Ticket(
-                    $row['iduser'],
+                    $row['user_login'],
                     $row['idadmin'],
                     $row['message'],
                     $row['type'],

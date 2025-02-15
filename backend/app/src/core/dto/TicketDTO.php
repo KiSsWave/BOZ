@@ -8,7 +8,7 @@ use boz\core\dto\DTO;
 class TicketDTO extends DTO
 {
     protected string $ID;
-    protected string $userId;
+    protected string $userLogin;
     protected ?string $adminId;
     protected string $message;
     protected string $type;
@@ -16,7 +16,7 @@ class TicketDTO extends DTO
 
     public function __construct(Ticket $ticket){
         $this->ID = $ticket->getId();
-        $this->userId = $ticket->getUserId();
+        $this->userLogin = $ticket->getUserLogin();
         $this->adminId = $ticket->getAdminId();
         $this->message = $ticket->getMessage();
         $this->type = $ticket->getType();
@@ -26,18 +26,23 @@ class TicketDTO extends DTO
     public function getId(): string{
         return $this->ID;
     }
-    public function getUserId(): string{
-        return $this->userId;
+
+    public function getUserLogin(): string{
+        return $this->userLogin;
     }
+
     public function getAdminId(): ?string{
         return $this->adminId;
     }
+
     public function getMessage(): string{
         return $this->message;
     }
+
     public function getType(): string{
         return $this->type;
     }
+
     public function getStatus(): string{
         return $this->status;
     }
