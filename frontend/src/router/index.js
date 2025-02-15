@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import AdminView from '@/views/AdminView.vue'
+import VendeurView from '@/views/VendeurView.vue'
 import ContactView from '@/views/ContactView.vue'
 import FactureView from '@/views/FactureView.vue'
 import TransactionView from '@/views/TransactionView.vue'
@@ -30,6 +31,12 @@ const router = createRouter({
       name: 'admin',
       component: AdminView,
       meta: { requiresAuth: true ,role: "3"}
+    },
+    {
+      path: '/vendeur',
+      name: 'vendeur',
+      component: VendeurView,
+      meta: { requiresAuth: true ,role: "2"}
     },
     {
       path: '/contact',

@@ -94,7 +94,7 @@ class BlockRepository implements BlockRepositoryInterface
         }
     }
 
-    public function createFacture(string $userId, float $tarif, string $label): void
+    public function createFacture($login, float $tarif, string $label): void
     {
         try {
             $factureId = Uuid::uuid4()->toString();
@@ -103,9 +103,6 @@ class BlockRepository implements BlockRepositoryInterface
             $qrCode = new QrCode($factureId);
             $writer = new PngWriter();
             $result = $writer->writeString($qrCode);
-
-            $login = $this->getLoginByUserId($userId);
-
 
             $stmt = $this->pdo->prepare("
             INSERT INTO facture (id, seller_login, qr_code, label, amount, status)

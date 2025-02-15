@@ -194,7 +194,7 @@ export default {
         console.log("User login:", selectedTicket.value['User Login'])
 
         await axios.post('/give', {
-          user_login: selectedTicket.value['User Login'], 
+          user_login: selectedTicket.value['User Login'],
           amount: parseFloat(amount.value)
         })
         closeModal()
