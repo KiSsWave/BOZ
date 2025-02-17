@@ -62,4 +62,28 @@ class UserRepository implements UserRepositoryInterface
         }
         throw new RepositoryEntityNotFoundException('User not found');
     }
+
+    public function searchByLogin(string $query, string $currentUserLogin): array
+    {
+        try {
+            $stmt = $this->pdo->prepare("
+                SELECT login, email
+                FROM users
+                WHERE login ILIKE :query
+                AND login != :currentUserLogin
+                LIMIT 10
+            ");
+
+            $stmt->execute([
+                'query' => "%$query%",
+                'currentUserLogin' => $currentUserLogin
+            ]);
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            throw new \RuntimeException('Erreur lors de la recherche d\'utilisateurs: ' . $e->getMessage());
+        }
+    }
+
+
 }

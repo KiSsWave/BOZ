@@ -37,4 +37,9 @@ class AuthnService implements AuthnServiceInterface
             throw new AuthServiceBadDataException('Erreur 400 : Email ou mot de passe incorrect', 400);
         }
     }
+
+    public function searchUsers(string $query, string $currentUserLogin): array
+    {
+        return $this->userRepository->searchByLogin($query, $currentUserLogin);
+    }
 }

@@ -11,5 +11,7 @@ interface AuthnServiceInterface
 
     public function byCredentials(CredentialDTO $c): UserDTO;
 
+    public function searchUsers(string $query, string $currentUserLogin): array;
+
 
 }

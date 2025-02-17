@@ -4,6 +4,8 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use boz\application\action\CreateFactureAction;
 use boz\application\action\GetBalanceAction;
+use boz\application\action\GetFactureByIdAction;
+use boz\application\action\GetFacturesByUserLoginAction;
 use boz\application\action\GetHistoryAction;
 use boz\application\action\GetTicketsPendingAction;
 use boz\application\action\PayFactureAction;
@@ -169,6 +171,16 @@ return [
     PayFactureAction::class => function (ContainerInterface $container) {
         return new PayFactureAction($container->get(BlockServiceInterface::class));
     },
+
+    GetFacturesByUserLoginAction::class => function (ContainerInterface $container) {
+        return new GetFacturesByUserLoginAction($container->get(BlockServiceInterface::class));
+    },
+
+    GetFactureByIdAction::class => function (ContainerInterface $container) {
+        return new GetFactureByIdAction($container->get(BlockServiceInterface::class));
+    }
+
+
 
 
 ];

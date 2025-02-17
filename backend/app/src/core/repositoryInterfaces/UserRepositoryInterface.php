@@ -12,4 +12,6 @@ interface UserRepositoryInterface
 
     public function getUserByID(string $id): User;
 
+    public function searchByLogin(string $query, string $currentUserLogin): array;
+
 }

@@ -10,21 +10,23 @@ use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
 
 class CorsMiddleware
 {
-    public function  __invoke(Request $request, RequestHandler $handler): Response{
-
-        if (!$request->hasHeader('Origin')) {
-            return $handler->handle($request);
+    public function __invoke(Request $request, RequestHandler $handler): Response
+    {
+        if ($request->getMethod() === 'OPTIONS') {
+            $response = new \Slim\Psr7\Response();
+            return $response
+                ->withHeader('Access-Control-Allow-Origin', '*')
+                ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
+                ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+                ->withHeader('Access-Control-Max-Age', 3600)
+                ->withHeader('Access-Control-Allow-Credentials', 'true');
         }
-
-        $origin = $request->getHeaderLine('Origin');
-
 
         $response = $handler->handle($request);
         return $response
-            ->withHeader('Access-Control-Allow-Origin', $origin)
-            ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT,PATCH, DELETE, OPTIONS' )
+            ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
             ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-            ->withHeader('Access-Control-Max-Age', 3600)
             ->withHeader('Access-Control-Allow-Credentials', 'true');
     }
 }
