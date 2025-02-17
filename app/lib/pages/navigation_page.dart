@@ -3,6 +3,7 @@ import 'package:boz/pages/settings_page.dart';
 import 'package:flutter/material.dart';
 import 'home_page.dart';
 import 'package:boz/services/remote_service.dart';
+import 'help_page.dart';
 
 class MyNavigation extends StatefulWidget {
   MyNavigation({Key? key}) : super(key: key);
@@ -16,9 +17,9 @@ class MyNavigationBar extends State<MyNavigation> {
 
   final List<Widget> body = [
     const HomePage(),
-    const QRPage(), // Placeholder pour le scanner
-    const Center(child: Text("Aide")),
-    const SettingsPage() // Placeholder pour le profil
+    const QRPage(),
+    const HelpPage(),
+    const SettingsPage()
   ];
 
   @override
