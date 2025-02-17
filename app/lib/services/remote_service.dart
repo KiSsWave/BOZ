@@ -67,7 +67,7 @@ class RemoteService {
     await storage.delete(key: 'jwt');
     await storage.delete(key: 'role'); // Supprimer également le rôle
   }
-  
+
   // Vérifier si l'utilisateur est connecté
   Future<bool> isConnected() async {
     return await storage.read(key: 'jwt') != null;
@@ -118,8 +118,8 @@ class RemoteService {
       });
 
       if (response.statusCode != 200) {
-        return http.Response(
-            'Failed to fetch transactions: ${response.body}', response.statusCode);
+        return http.Response('Failed to fetch transactions: ${response.body}',
+            response.statusCode);
       }
 
       return response;
@@ -132,5 +132,78 @@ class RemoteService {
   // Récupérer le rôle de l'utilisateur stocké
   Future<String?> getRole() async {
     return await storage.read(key: 'role');
+  }
+
+  Future<List<Map<String, dynamic>>> fetchTickets() async {
+    try {
+      var client = http.Client();
+      var uri = Uri.parse('$baseUrl/tickets');
+
+      var token = await storage.read(key: 'jwt');
+
+      if (token == null) {
+        return [];
+      }
+
+      var response = await client.get(uri, headers: {
+        HttpHeaders.authorizationHeader: 'Bearer $token',
+      });
+
+      if (response.statusCode == 200) {
+        var jsonResponse = jsonDecode(response.body);
+
+        if (jsonResponse is Map<String, dynamic> &&
+            jsonResponse.containsKey("Tickets")) {
+          var ticketsList = jsonResponse["Tickets"];
+
+          if (ticketsList is List) {
+            return ticketsList
+                .map((ticket) => {
+                      "id": ticket["Id"],
+                      "title": ticket["type"],
+                      "status": ticket["status"]
+                    })
+                .toList();
+          }
+        }
+        return [];
+      } else {
+        print("Failed to fetch tickets: ${response.body}");
+        return [];
+      }
+    } catch (e) {
+      print("Error during tickets fetch: $e");
+      return [];
+    }
+  }
+
+  Future<http.Response> openTicket(String type, String message) async {
+    try {
+      var client = http.Client();
+      var uri = Uri.parse('$baseUrl/tickets');
+
+      var token = await storage.read(key: 'jwt');
+
+      if (token == null) {
+        return http.Response('Missing authorization token', 401);
+      }
+
+      var response = await client.post(uri, headers: {
+        HttpHeaders.authorizationHeader: 'Bearer $token',
+      }, body: {
+        "type": type,
+        "message": message,
+      });
+
+      if (response.statusCode != 200) {
+        return http.Response(
+            'Failed to open ticket: ${response.body}', response.statusCode);
+      }
+
+      return response;
+    } catch (e) {
+      print("Error during ticket opening: $e");
+      return http.Response('Error during ticket opening: $e', 500);
+    }
   }
 }
