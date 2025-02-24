@@ -4,13 +4,11 @@ import HeaderComponent from '@/components/HeaderComponent.vue';
 import axios from '../api/index.js';
 import { onMounted } from 'vue';
 import { ref } from 'vue';
-import { getToken } from '@/services/authProvider.js';
 
 export default {
   setup() {
     const balance = ref(0);
     const userStore = useUserStore();
-    console.log(getToken());
     onMounted(async () => {
       if (userStore.isAuthenticated) {
         try {
