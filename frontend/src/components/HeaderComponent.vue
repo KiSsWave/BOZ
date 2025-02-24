@@ -4,11 +4,11 @@
     <h1>Boz - Dépensez n'importe où !</h1>
     <div class="icons-container">
       <font-awesome-icon
-        :icon="['fas', 'user']"
-        @click="login"
-        alt="User Login"
-        class="user-icon"
-        v-if="!userStore.isAuthenticated"
+        :icon="['fas', 'gear']"
+        style="color: #000000;"
+        class="param"
+        v-if="userStore.isAuthenticated"
+        @click="modification"
       />
       <font-awesome-icon
         :icon="['fas', 'comments']"
@@ -23,6 +23,13 @@
         @click="index"
         title="Retour à l'accueil"
         v-if="isNotHome"
+      />
+      <font-awesome-icon
+        :icon="['fas', 'user']"
+        @click="login"
+        alt="User Login"
+        class="user-icon"
+        v-if="!userStore.isAuthenticated"
       />
       <font-awesome-icon
         :icon="['fas', 'right-from-bracket']"
@@ -64,6 +71,9 @@ export default {
     },
     openChat() {
       this.$router.push('/chat');
+    },
+    modification() {
+      this.$router.push('/account');
     }
   },
 };
@@ -89,7 +99,7 @@ header {
   height: auto;
 }
 
-/* Nouveau conteneur pour les icônes */
+/* Conteneur pour les icônes */
 .icons-container {
   display: flex;
   align-items: center;
@@ -97,14 +107,15 @@ header {
 }
 
 /* Styles des icônes */
-.user-icon, .exit, .chat-icon {
+.user-icon, .exit, .param, .back-icon, .chat-icon {
   width: 24px;
   height: 24px;
   cursor: pointer;
   transition: transform 0.2s ease;
+  margin-left: 15px;
 }
 
-.user-icon:hover, .exit:hover, .chat-icon:hover {
+.user-icon:hover, .exit:hover, .param:hover, .chat-icon:hover, .back-icon:hover {
   transform: scale(1.1);
 }
 
@@ -121,10 +132,7 @@ header {
 }
 
 .back-icon {
-  cursor: pointer;
   color: #3498db;
-  font-size: 24px;
-  transition: color 0.3s ease;
 }
 
 .back-icon:hover {
