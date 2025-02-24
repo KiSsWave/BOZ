@@ -13,7 +13,7 @@ class RemoteService {
       String email, String username, String password) async {
     try {
       var client = http.Client();
-      var uri = Uri.parse('http://localhost:44050/register');
+      var uri = Uri.parse('http://docketu.iutnc.univ-lorraine.fr:44050/register');
 
       var response = await client.post(uri,
           body: {"email": email, "login": username, "password": password});
@@ -34,7 +34,7 @@ class RemoteService {
   Future<http.Response> loginUser(String username, String password) async {
     try {
       var client = http.Client();
-      var uri = Uri.parse('http://localhost:44050/signin');
+      var uri = Uri.parse('http://docketu.iutnc.univ-lorraine.fr:44050/signin');
 
       var response = await client
           .post(uri, body: {"email": username, "password": password});
@@ -77,7 +77,7 @@ class RemoteService {
   Future<http.Response> fetchBalance() async {
     try {
       var client = http.Client();
-      var uri = Uri.parse('http://localhost:44050/balance');
+      var uri = Uri.parse('http://docketu.iutnc.univ-lorraine.fr:44050/balance');
 
       var token = await storage.read(key: 'jwt');
 
@@ -104,7 +104,7 @@ class RemoteService {
  Future<http.Response> fetchHistory() async {
   try {
     var client = http.Client();
-    var uri = Uri.parse('http://localhost:44050/history');
+    var uri = Uri.parse('http://docketu.iutnc.univ-lorraine.fr:44050/history');
     var token = await storage.read(key: 'jwt');
 
     if (token == null) {
@@ -135,7 +135,7 @@ class RemoteService {
   Future<List<Map<String, dynamic>>> fetchTickets() async {
   try {
     var client = http.Client();
-    var uri = Uri.parse('http://localhost:44050/tickets');
+    var uri = Uri.parse('http://docketu.iutnc.univ-lorraine.fr:44050/tickets');
     var token = await storage.read(key: 'jwt');
 
     if (token == null) {
@@ -173,7 +173,7 @@ class RemoteService {
   Future<http.Response> openTicket(String type, String message) async {
     try {
       var client = http.Client();
-      var uri = Uri.parse('http://localhost:44050/tickets');
+      var uri = Uri.parse('http://docketu.iutnc.univ-lorraine.fr:44050/tickets');
       var token = await storage.read(key: 'jwt');
 
       if (token == null) {
