@@ -16,8 +16,10 @@ class _HomePageState extends State<HomePage> {
   late String lastUpdateFormatted = "01/01/1970";
   List<Transaction> allTransactions = [];
   List<Transaction> displayedTransactions = [];
+  bool isLoading = false;
 
   final Preferences _preferences = Preferences();
+  final RemoteService _remoteService = RemoteService();
 
   @override
   void initState() {
@@ -27,46 +29,61 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _initializePreferences() async {
     await _preferences.init();
-
     setState(() {
       balance = _preferences.getBalance();
       lastUpdateFormatted = _preferences.getLastUpdate();
       allTransactions = _preferences.getTransactions();
     });
-
-    if (allTransactions.isEmpty) {
-      await _generateMockTransactions();
-    }
-
-    _filterTransactions(true); // Par défaut, afficher les rechargements
+    
+    await _loadTransactions();
     await _fetchBalance();
   }
 
-  Future<void> _generateMockTransactions() async {
-    final mockTransactions = List.generate(
-      10,
-      (index) => Transaction(
-        type: index % 2 == 0 ? "Recharge" : "Achat",
-        amount: index % 2 == 0 ? (20 + index).toDouble() : -(15 + index).toDouble(),
-      ),
-    );
-
+  Future<void> _loadTransactions() async {
+    if (isLoading) return;
+    
     setState(() {
-      allTransactions = mockTransactions;
+      isLoading = true;
     });
 
-    await _preferences.setTransactions(mockTransactions);
+    try {
+      final response = await _remoteService.fetchHistory();
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final historyList = (data['history'] as List);
+        
+        setState(() {
+          allTransactions = historyList
+              .map((item) => Transaction.fromJson(item))
+              .toList();
+        });
+
+        await _preferences.setTransactions(allTransactions);
+        _filterTransactions(true);
+      } else {
+        print('Error loading transactions: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error loading transactions: $e');
+      setState(() {
+        allTransactions = _preferences.getTransactions();
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   Future<void> _fetchBalance() async {
     try {
-      final response = await RemoteService().fetchBalance();
+      final response = await _remoteService.fetchBalance();
       final data = jsonDecode(response.body);
       final now = DateTime.now();
       final formattedDate = "${now.day}/${now.month}/${now.year}";
 
       setState(() {
-        balance = data['balance'];
+        balance = data['balance'].toDouble();
         lastUpdateFormatted = formattedDate;
       });
 
@@ -80,11 +97,11 @@ class _HomePageState extends State<HomePage> {
   void _filterTransactions(bool? isRecharge) {
     setState(() {
       if (isRecharge == null) {
-        displayedTransactions = allTransactions; // Affiche toutes les transactions
+        displayedTransactions = allTransactions;
       } else if (isRecharge) {
-        displayedTransactions = allTransactions.where((t) => t.amount > 0).toList();
+        displayedTransactions = allTransactions.where((t) => t.isRecharge()).toList();
       } else {
-        displayedTransactions = allTransactions.where((t) => t.amount < 0).toList();
+        displayedTransactions = allTransactions.where((t) => t.isPayment()).toList();
       }
     });
   }
@@ -94,8 +111,8 @@ class _HomePageState extends State<HomePage> {
     return SafeArea(
       child: RefreshIndicator(
         onRefresh: () async {
+          await _loadTransactions();
           await _fetchBalance();
-          _filterTransactions(null);
         },
         color: Colors.black,
         backgroundColor: Colors.grey[300],
@@ -105,9 +122,10 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 20),
             _buildActionButtons(),
             const SizedBox(height: 20),
-            // Utilisation de Expanded pour faire en sorte que la ListView occupe l'espace restant
             Expanded(
-              child: _buildTransactionList(),
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _buildTransactionList(),
             ),
           ],
         ),
@@ -115,17 +133,15 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Carte avec solde et date dans un cercle
   Widget _buildBalanceCard() {
     return Container(
       margin: const EdgeInsets.only(top: 20),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.grey[300]!, width: 2)), // Bottom border
+        border: Border(bottom: BorderSide(color: Colors.grey[300]!, width: 2)),
       ),
       child: Column(
         children: [
-          // Cercle contenant le solde et la date
           Container(
             width: 200,
             height: 200,
@@ -145,7 +161,7 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "$balance €",
+                    "${balance.toStringAsFixed(2)} €",
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -191,7 +207,7 @@ class _HomePageState extends State<HomePage> {
     return displayedTransactions.isNotEmpty
         ? ListView.builder(
             shrinkWrap: true,
-            physics: const AlwaysScrollableScrollPhysics(), // Permet de rafraîchir même sans défilement
+            physics: const AlwaysScrollableScrollPhysics(),
             itemCount: displayedTransactions.length,
             itemBuilder: (context, index) {
               final transaction = displayedTransactions[index];
