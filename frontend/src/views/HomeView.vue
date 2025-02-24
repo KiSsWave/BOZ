@@ -47,7 +47,7 @@ export default {
       this.$router.push('/transaction')
     },
     viewFactures() {
-      this.$router.push('/facture')
+      this.$router.push('/userTicket')
     },
   },
 }
@@ -66,7 +66,7 @@ export default {
 
     <footer>
       <button @click="contactAdmin" v-if="userStore.isAuthenticated">Contacter l'administrateur</button>
-      <button @click="viewFactures" v-if="userStore.isAuthenticated">Consulter les factures</button>
+      <button @click="viewFactures" v-if="userStore.isAuthenticated">Consulter les tickets</button>
       <button @click="viewTransactions" v-if="userStore.isAuthenticated">Consulter les transactions</button>
       <label v-if="!userStore.isAuthenticated">Pour accéder aux fonctionnalités, veuillez vous connecter.</label>
     </footer>
@@ -74,6 +74,12 @@ export default {
 </template>
 
 <style scoped>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 .bank-app {
   display: flex;
   flex-direction: column;

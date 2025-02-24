@@ -9,7 +9,7 @@
 
     <form @submit.prevent="envoie" class="login-form">
       <div class="input-group">
-        <input type="email" placeholder="Email" v-model="form.email" required autocomplete="email" />
+        <input type="email" placeholder="Email" v-model="form.email" required />
         <input type="password" placeholder="Mot de passe" v-model="form.password" required
           autocomplete="current-password" />
       </div>

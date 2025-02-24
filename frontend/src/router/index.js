@@ -5,7 +5,7 @@ import RegisterView from '../views/RegisterView.vue'
 import AdminView from '@/views/AdminView.vue'
 import VendeurView from '@/views/VendeurView.vue'
 import ContactView from '@/views/ContactView.vue'
-import FactureView from '@/views/FactureView.vue'
+import UserTicketView from '@/views/UserTicketView.vue'
 import TransactionView from '@/views/TransactionView.vue'
 import ModifView from '@/views/ModifView.vue'
 import { useUserStore } from '@/stores/userStore'
@@ -46,9 +46,9 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
-      path: '/facture',
-      name: 'facture',
-      component: FactureView,
+      path: '/userTicket',
+      name: 'userTicket',
+      component: UserTicketView,
       meta: { requiresAuth: true }
     },
     {

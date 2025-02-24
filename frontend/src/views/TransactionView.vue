@@ -69,15 +69,12 @@ export default {
       </div>
 
       <div v-else class="transactions-list">
-        <div v-for="transaction in transactions"
-             :key="transaction.transaction_id"
-             class="transaction-card">
+        <div v-for="transaction in transactions" :key="transaction.transaction_id" class="transaction-card">
           <div class="transaction-details">
-            <div class="transaction-amount"
-                 :class="{
-                   'amount-add': transaction.type === 'add',
-                   'amount-pay': transaction.type === 'pay'
-                 }">
+            <div class="transaction-amount" :class="{
+              'amount-add': transaction.type === 'add',
+              'amount-pay': transaction.type === 'pay'
+            }">
               {{ transaction.type === 'pay' ? '-' : '+' }}{{ transaction.amount }}€
             </div>
             <div class="transaction-date">
@@ -94,7 +91,6 @@ export default {
 </template>
 
 <style scoped>
-
 * {
   margin: 0;
   padding: 0;
@@ -133,7 +129,9 @@ h1 {
   margin: 20px 0;
 }
 
-.loading, .error-message, .no-transactions {
+.loading,
+.error-message,
+.no-transactions {
   text-align: center;
   padding: 20px;
   background: #ffffff;
@@ -187,5 +185,4 @@ h1 {
   font-size: 0.8rem;
   color: #95a5a6;
 }
-
 </style>
