@@ -13,4 +13,10 @@ interface BlockServiceInterface
     public function creerFacture(string $login,float $tarif, string $label):void;
     public function payerFacture(string $factureId,string $buyerId):void;
 
+    public function giveCash(string $adminLogin, string $userLogin, float $amount): void;
+
+    public function getFactureById(string $factureId): array;
+
+    public function getFacturesByUserLogin(string $userLogin): array;
+
 }

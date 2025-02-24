@@ -25,13 +25,17 @@ return function (\Slim\App $app): \Slim\App {
         $app->post('/tickets', boz\application\action\AddTicketAction::class)->add(boz\application\middleware\AuthzUserMiddleware::class);
         $app->get('/tickets', boz\application\action\GetTicketsByUserIdAction::class)->add(boz\application\middleware\AuthzUserMiddleware::class);
 
+        $app->get('/users/search', boz\application\action\SearchUsersAction::class)->add(boz\application\middleware\AuthzUserMiddleware::class);
 
     })->add(boz\application\middleware\AuthnMiddleware::class);
 
 
 
     $app->group('vendeur', function () use ($app) {
+
         $app->post('/facture', boz\application\action\CreateFactureAction::class)->add(boz\application\middleware\AuthzVendeurMiddleware::class);
+        $app->get('/factures', boz\application\action\GetFacturesByUserLoginAction::class)->add(boz\application\middleware\AuthzVendeurMiddleware::class);
+        $app->get('/facture/{factureId}', boz\application\action\GetFactureByIdAction::class)->add(boz\application\middleware\AuthzVendeurMiddleware::class);
 
     })->add(boz\application\middleware\AuthnMiddleware::class);
 

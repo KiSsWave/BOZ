@@ -2,12 +2,45 @@
   <header>
     <img class="BOZ" src="../assets/logoBOZ.png" alt="BOZ Logo" />
     <h1>Boz - Dépensez n'importe où !</h1>
-    <font-awesome-icon :icon="['fas', 'gear']" style="color: #000000;" class="param" v-if="userStore.isAuthenticated" @click="modification"/>
-    <font-awesome-icon :icon="['fas', 'user']" @click="login" alt="User Login" class="user-icon" v-if="!userStore.isAuthenticated" />
-    <font-awesome-icon icon="reply" class="back-icon" @click="index" title="Retour à l'accueil" v-if="isNotHome" />
-    <font-awesome-icon :icon="['fas', 'right-from-bracket']" v-if="userStore.isAuthenticated" class="exit" @click="logout" />
+    <div class="icons-container">
+      <font-awesome-icon
+        :icon="['fas', 'gear']"
+        style="color: #000000;"
+        class="param"
+        v-if="userStore.isAuthenticated"
+        @click="modification"
+      />
+      <font-awesome-icon
+        :icon="['fas', 'comments']"
+        @click="openChat"
+        class="chat-icon"
+        v-if="userStore.isAuthenticated"
+        title="Messages"
+      />
+      <font-awesome-icon
+        icon="reply"
+        class="back-icon"
+        @click="index"
+        title="Retour à l'accueil"
+        v-if="isNotHome"
+      />
+      <font-awesome-icon
+        :icon="['fas', 'user']"
+        @click="login"
+        alt="User Login"
+        class="user-icon"
+        v-if="!userStore.isAuthenticated"
+      />
+      <font-awesome-icon
+        :icon="['fas', 'right-from-bracket']"
+        v-if="userStore.isAuthenticated"
+        class="exit"
+        @click="logout"
+      />
+    </div>
   </header>
 </template>
+
 <script>
 import { useUserStore } from '@/stores/userStore';
 import { useRoute } from 'vue-router';
@@ -26,9 +59,6 @@ export default {
     };
   },
   methods: {
-    modification() {
-      this.$router.push('/modification');
-    },
     login() {
       this.$router.push('/login');
     },
@@ -39,14 +69,18 @@ export default {
     index() {
       this.$router.push('/');
     },
+    openChat() {
+      this.$router.push('/chat');
+    },
+    modification() {
+      this.$router.push('/account');
+    }
   },
 };
 </script>
 
-
-
 <style scoped>
-/* Styles du header */
+/* Styles existants */
 header {
   display: flex;
   justify-content: space-between;
@@ -60,36 +94,45 @@ header {
   height: 70px;
 }
 
-/* Style fixe pour le logo */
 .BOZ {
   width: 80px;
   height: auto;
 }
 
+/* Conteneur pour les icônes */
+.icons-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
 /* Styles des icônes */
-.user-icon, .exit, .param, .back-icon{
+.user-icon, .exit, .param, .back-icon, .chat-icon {
   width: 24px;
   height: 24px;
   cursor: pointer;
   transition: transform 0.2s ease;
-  margin-left:15px;
+  margin-left: 15px;
 }
 
-.user-icon:hover, .exit:hover {
+.user-icon:hover, .exit:hover, .param:hover, .chat-icon:hover, .back-icon:hover {
   transform: scale(1.1);
+}
+
+.chat-icon {
+  color: #3498db;
+}
+
+.chat-icon:hover {
+  color: #2980b9;
 }
 
 .exit:hover {
   color: #e74c3c;
 }
 
-
-.param:hover {
-  transform: scale(1.2);
-}
-
 .back-icon {
-  font-size: 24px;
+  color: #3498db;
 }
 
 .back-icon:hover {
@@ -111,6 +154,10 @@ h1 {
 
   .BOZ {
     width: 60px;
+  }
+
+  .icons-container {
+    gap: 10px;
   }
 }
 </style>

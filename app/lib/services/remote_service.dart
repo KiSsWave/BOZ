@@ -2,18 +2,18 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+//import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class RemoteService {
   final storage = const FlutterSecureStorage();
-  final baseUrl = dotenv.env['BASE_URL']; // Chargement de l'URL de base
+ // final baseUrl = dotenv.env['BASE_URL']; // Chargement de l'URL de base
 
   // Inscription d'un utilisateur
   Future<http.Response> registerUser(
       String email, String username, String password) async {
     try {
       var client = http.Client();
-      var uri = Uri.parse('$baseUrl/register');
+      var uri = Uri.parse('http://localhost:44050/register');
 
       var response = await client.post(uri,
           body: {"email": email, "login": username, "password": password});
@@ -34,7 +34,7 @@ class RemoteService {
   Future<http.Response> loginUser(String username, String password) async {
     try {
       var client = http.Client();
-      var uri = Uri.parse('$baseUrl/signin');
+      var uri = Uri.parse('http://localhost:44050/signin');
 
       var response = await client
           .post(uri, body: {"email": username, "password": password});
@@ -77,7 +77,7 @@ class RemoteService {
   Future<http.Response> fetchBalance() async {
     try {
       var client = http.Client();
-      var uri = Uri.parse('$baseUrl/balance');
+      var uri = Uri.parse('http://localhost:44050/balance');
 
       var token = await storage.read(key: 'jwt');
 
@@ -101,33 +101,31 @@ class RemoteService {
     }
   }
 
-  // Récupérer les transactions de l'utilisateur
-  Future<http.Response> fetchTransactions() async {
-    try {
-      var client = http.Client();
-      var uri = Uri.parse('$baseUrl/transactions');
+ Future<http.Response> fetchHistory() async {
+  try {
+    var client = http.Client();
+    var uri = Uri.parse('http://localhost:44050/history');
+    var token = await storage.read(key: 'jwt');
 
-      var token = await storage.read(key: 'jwt');
-
-      if (token == null) {
-        return http.Response('Missing authorization token', 401);
-      }
-
-      var response = await client.get(uri, headers: {
-        HttpHeaders.authorizationHeader: 'Bearer $token',
-      });
-
-      if (response.statusCode != 200) {
-        return http.Response('Failed to fetch transactions: ${response.body}',
-            response.statusCode);
-      }
-
-      return response;
-    } catch (e) {
-      print("Error during transactions fetch: $e");
-      return http.Response('Error during transactions fetch: $e', 500);
+    if (token == null) {
+      return http.Response('Missing authorization token', 401);
     }
+
+    var response = await client.get(uri, headers: {
+      HttpHeaders.authorizationHeader: 'Bearer $token',
+    });
+
+    if (response.statusCode != 200) {
+      return http.Response(
+          'Failed to fetch history: ${response.body}', response.statusCode);
+    }
+
+    return response;
+  } catch (e) {
+    print("Error fetching history: $e");
+    return http.Response('Error fetching history: $e', 500);
   }
+}
 
   // Récupérer le rôle de l'utilisateur stocké
   Future<String?> getRole() async {
@@ -135,75 +133,73 @@ class RemoteService {
   }
 
   Future<List<Map<String, dynamic>>> fetchTickets() async {
-    try {
-      var client = http.Client();
-      var uri = Uri.parse('$baseUrl/tickets');
+  try {
+    var client = http.Client();
+    var uri = Uri.parse('http://localhost:44050/tickets');
+    var token = await storage.read(key: 'jwt');
 
-      var token = await storage.read(key: 'jwt');
-
-      if (token == null) {
-        return [];
-      }
-
-      var response = await client.get(uri, headers: {
-        HttpHeaders.authorizationHeader: 'Bearer $token',
-      });
-
-      if (response.statusCode == 200) {
-        var jsonResponse = jsonDecode(response.body);
-
-        if (jsonResponse is Map<String, dynamic> &&
-            jsonResponse.containsKey("Tickets")) {
-          var ticketsList = jsonResponse["Tickets"];
-
-          if (ticketsList is List) {
-            return ticketsList
-                .map((ticket) => {
-                      "id": ticket["Id"],
-                      "title": ticket["type"],
-                      "status": ticket["status"]
-                    })
-                .toList();
-          }
-        }
-        return [];
-      } else {
-        print("Failed to fetch tickets: ${response.body}");
-        return [];
-      }
-    } catch (e) {
-      print("Error during tickets fetch: $e");
+    if (token == null) {
       return [];
     }
+
+    var response = await client.get(
+      uri,
+      headers: {
+        HttpHeaders.authorizationHeader: 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      var tickets = data['Tickets'] as List;
+      
+      return tickets.map((ticket) => {
+        'Id': ticket['Id'],
+        'type': ticket['type'],
+        'message': ticket['message'],
+        'status': ticket['status'],
+        'adminId': ticket['Id Admin'],
+      }).toList();
+    } else {
+      print("Failed to fetch tickets: ${response.body}");
+      return [];
+    }
+  } catch (e) {
+    print("Error fetching tickets: $e");
+    return [];
   }
+}
 
   Future<http.Response> openTicket(String type, String message) async {
     try {
       var client = http.Client();
-      var uri = Uri.parse('$baseUrl/tickets');
-
+      var uri = Uri.parse('http://localhost:44050/tickets');
       var token = await storage.read(key: 'jwt');
 
       if (token == null) {
         return http.Response('Missing authorization token', 401);
       }
 
-      var response = await client.post(uri, headers: {
-        HttpHeaders.authorizationHeader: 'Bearer $token',
-      }, body: {
-        "type": type,
-        "message": message,
-      });
+      var response = await client.post(
+        uri,
+        headers: {
+          HttpHeaders.authorizationHeader: 'Bearer $token',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          "type": type,
+          "message": message,
+        },
+      );
 
-      if (response.statusCode != 200) {
-        return http.Response(
-            'Failed to open ticket: ${response.body}', response.statusCode);
+      if (response.statusCode != 201) {
+        return http.Response('Failed to create ticket: ${response.body}', response.statusCode);
       }
 
       return response;
     } catch (e) {
-      print("Error during ticket opening: $e");
-      return http.Response('Error during ticket opening: $e', 500);
+      print("Error creating ticket: $e");
+      return http.Response('Error creating ticket: $e', 500);
     }
   }
 }

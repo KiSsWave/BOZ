@@ -68,7 +68,7 @@ class TicketRepository implements TicketRepositoryInterface
             $query = $this->pdo->prepare("
             SELECT t.* 
             FROM tickets t 
-            WHERE t.idadmin = :id
+            WHERE t.idadmin = :id and t.status = 'en cours'
         ");
             $query->execute([':id' => $id]);
             $resultat = $query->fetchAll(PDO::FETCH_ASSOC);

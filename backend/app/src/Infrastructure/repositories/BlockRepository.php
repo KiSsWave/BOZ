@@ -310,6 +310,83 @@ class BlockRepository implements BlockRepositoryInterface
         return true;
     }
 
+    public function getFactureById(string $factureId): array
+    {
+        try {
+            $stmt = $this->pdo->prepare("
+                SELECT *
+                FROM facture
+                WHERE id = :id
+            ");
+
+            $stmt->execute(['id' => $factureId]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$result) {
+                throw new RepositoryEntityNotFoundException("Facture non trouvée.");
+            }
+
+            return $result;
+        } catch (\PDOException $e) {
+            throw new RepositoryEntityNotFoundException("Erreur lors de la récupération de la facture : " . $e->getMessage());
+        }
+    }
+
+    public function getFacturesByUserLogin(string $userLogin): array
+    {
+        try {
+            $stmt = $this->pdo->prepare("
+                SELECT *
+                FROM facture
+                WHERE seller_login = :seller_login
+            ");
+
+            $stmt->execute(['seller_login' => $userLogin]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            throw new RepositoryEntityNotFoundException("Erreur lors de la récupération des factures : " . $e->getMessage());
+        }
+    }
+
+    public function createGenesisBlock(string $adminLogin): void
+    {
+        try {
+            $genesisTransactionId = Uuid::uuid4()->toString();
+            $this->pdo->beginTransaction();
+
+            $genesisTransactionStmt = $this->pdo->prepare("
+            INSERT INTO transactions (id, account, amount, type)
+            VALUES (:id, :account, :amount, :type)
+        ");
+            $genesisTransactionStmt->execute([
+                'id' => $genesisTransactionId,
+                'account' => $adminLogin,
+                'amount' => 0.0,
+                'type' => 'add'
+            ]);
+
+            $genesisBlockStmt = $this->pdo->prepare("
+            INSERT INTO blocks (id, hash, previous_hash, transaction_id, timestamp)
+            VALUES (:id, :hash, :previous_hash, :transaction_id, to_timestamp(:timestamp))
+        ");
+            $genesisBlockId = Uuid::uuid4()->toString();
+            $genesisBlockHash = hash('sha256', $genesisBlockId . $genesisTransactionId . time());
+
+            $genesisBlockStmt->execute([
+                'id' => $genesisBlockId,
+                'hash' => $genesisBlockHash,
+                'previous_hash' => '0',
+                'transaction_id' => $genesisTransactionId,
+                'timestamp' => time()
+            ]);
+
+            $this->pdo->commit();
+        } catch (Exception $e) {
+            $this->pdo->rollBack();
+            throw new Exception("Erreur lors de la création du bloc de genèse : " . $e->getMessage());
+        }
+    }
+
 
 }
 
