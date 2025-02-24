@@ -9,6 +9,7 @@ import { faRightFromBracket } from '@fortawesome/free-solid-svg-icons'
 import { faReply } from '@fortawesome/free-solid-svg-icons'
 import { faCheckSquare } from '@fortawesome/free-solid-svg-icons'
 import {faX} from '@fortawesome/free-solid-svg-icons'
+import { faGear } from '@fortawesome/free-solid-svg-icons'
 
 const pinia = createPinia()
 const app = createApp(App)
@@ -17,6 +18,8 @@ library.add(faRightFromBracket)
 library.add(faReply)
 library.add(faCheckSquare)
 library.add(faX)
+library.add(faGear)
+
 
 app.component('font-awesome-icon', FontAwesomeIcon)
 app.use(router)

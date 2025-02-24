@@ -2,6 +2,7 @@
   <header>
     <img class="BOZ" src="../assets/logoBOZ.png" alt="BOZ Logo" />
     <h1>Boz - Dépensez n'importe où !</h1>
+    <font-awesome-icon :icon="['fas', 'gear']" style="color: #000000;" class="param" v-if="userStore.isAuthenticated" @click="modification"/>
     <font-awesome-icon :icon="['fas', 'user']" @click="login" alt="User Login" class="user-icon" v-if="!userStore.isAuthenticated" />
     <font-awesome-icon icon="reply" class="back-icon" @click="index" title="Retour à l'accueil" v-if="isNotHome" />
     <font-awesome-icon :icon="['fas', 'right-from-bracket']" v-if="userStore.isAuthenticated" class="exit" @click="logout" />
@@ -25,6 +26,9 @@ export default {
     };
   },
   methods: {
+    modification() {
+      this.$router.push('/modification');
+    },
     login() {
       this.$router.push('/login');
     },
@@ -63,11 +67,12 @@ header {
 }
 
 /* Styles des icônes */
-.user-icon, .exit {
+.user-icon, .exit, .param, .back-icon{
   width: 24px;
   height: 24px;
   cursor: pointer;
   transition: transform 0.2s ease;
+  margin-left:15px;
 }
 
 .user-icon:hover, .exit:hover {
@@ -78,11 +83,13 @@ header {
   color: #e74c3c;
 }
 
+
+.param:hover {
+  transform: scale(1.2);
+}
+
 .back-icon {
-  cursor: pointer;
-  color: #3498db;
   font-size: 24px;
-  transition: color 0.3s ease;
 }
 
 .back-icon:hover {

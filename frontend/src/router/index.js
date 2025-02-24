@@ -7,6 +7,7 @@ import VendeurView from '@/views/VendeurView.vue'
 import ContactView from '@/views/ContactView.vue'
 import FactureView from '@/views/FactureView.vue'
 import TransactionView from '@/views/TransactionView.vue'
+import ModifView from '@/views/ModifView.vue'
 import { useUserStore } from '@/stores/userStore'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -56,7 +57,12 @@ const router = createRouter({
       component: TransactionView,
       meta: { requiresAuth: true }
     },
-
+    {
+      path: '/modification',
+      name: 'modification',
+      component: ModifView,
+      meta: { requiresAuth: true }
+    }
 
 
   ],
