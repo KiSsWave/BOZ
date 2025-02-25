@@ -81,6 +81,7 @@
                 :src="`data:image/png;base64,${facture.qr_code}`"
                 :alt="'QR Code pour ' + facture.label"
                 class="qr-code"
+                @click="fullscreen"
               />
             </div>
           </div>
@@ -101,6 +102,11 @@ export default {
   components: {
     HeaderComponent
   },
+  methods: {
+    fullscreen(event) {
+      event.target.classList.toggle('fullscreen')
+    }
+  },
 
   setup() {
     const userStore = useUserStore()
@@ -113,7 +119,9 @@ export default {
     const isProcessing = ref(false)
     const loading = ref(true)
     const factures = ref([])
-
+    const fullscreen = (event) => {
+      event.target.classList.toggle('fullscreen')
+    }
     const fetchFactures = async () => {
       try {
         const response = await axios.get('/factures')
@@ -175,6 +183,7 @@ export default {
       factures,
       createInvoice
     }
+
   }
 }
 </script>
@@ -349,7 +358,25 @@ input:focus {
   width: 150px;
   height: 150px;
   object-fit: contain;
+  cursor: pointer;
 }
+
+
+.qr-code.fullscreen {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 70vw;
+  height: 70vw;
+  max-width: 80vh;
+  max-height: 80vh;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
 
 @media (max-width: 480px) {
   .vendor-container {
