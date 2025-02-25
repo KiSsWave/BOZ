@@ -3,40 +3,15 @@
     <img class="BOZ" src="../assets/logoBOZ.png" alt="BOZ Logo" />
     <h1>Boz - Dépensez n'importe où !</h1>
     <div class="icons-container">
-      <font-awesome-icon
-        :icon="['fas', 'gear']"
-        style="color: #000000;"
-        class="param"
-        v-if="userStore.isAuthenticated"
-        @click="modification"
-      />
-      <font-awesome-icon
-        :icon="['fas', 'comments']"
-        @click="openChat"
-        class="chat-icon"
-        v-if="userStore.isAuthenticated"
-        title="Messages"
-      />
-      <font-awesome-icon
-        icon="reply"
-        class="back-icon"
-        @click="index"
-        title="Retour à l'accueil"
-        v-if="isNotHome"
-      />
-      <font-awesome-icon
-        :icon="['fas', 'user']"
-        @click="login"
-        alt="User Login"
-        class="user-icon"
-        v-if="!userStore.isAuthenticated"
-      />
-      <font-awesome-icon
-        :icon="['fas', 'right-from-bracket']"
-        v-if="userStore.isAuthenticated"
-        class="exit"
-        @click="logout"
-      />
+      <font-awesome-icon :icon="['fas', 'gear']" style="color: #000000;" class="param" v-if="userStore.isAuthenticated"
+        @click="modification" />
+      <font-awesome-icon :icon="['fas', 'comments']" @click="openChat" class="chat-icon"
+        v-if="userStore.isAuthenticated" title="Messages" />
+      <font-awesome-icon icon="reply" class="back-icon" @click="index" title="Retour à l'accueil" v-if="isNotHome" />
+      <font-awesome-icon :icon="['fas', 'user']" @click="login" alt="User Login" class="user-icon"
+        v-if="!userStore.isAuthenticated" />
+      <font-awesome-icon :icon="['fas', 'right-from-bracket']" v-if="userStore.isAuthenticated" class="exit"
+        @click="logout" />
     </div>
   </header>
 </template>
@@ -107,7 +82,11 @@ header {
 }
 
 /* Styles des icônes */
-.user-icon, .exit, .param, .back-icon, .chat-icon {
+.user-icon,
+.exit,
+.param,
+.back-icon,
+.chat-icon {
   width: 24px;
   height: 24px;
   cursor: pointer;
@@ -115,7 +94,11 @@ header {
   margin-left: 15px;
 }
 
-.user-icon:hover, .exit:hover, .param:hover, .chat-icon:hover, .back-icon:hover {
+.user-icon:hover,
+.exit:hover,
+.param:hover,
+.chat-icon:hover,
+.back-icon:hover {
   transform: scale(1.1);
 }
 
@@ -132,7 +115,7 @@ header {
 }
 
 .back-icon {
-  color: #3498db;
+  color: #000000;
 }
 
 .back-icon:hover {
