@@ -18,6 +18,12 @@ return function (\Slim\App $app): \Slim\App {
     $app->get('/balance', boz\application\action\GetBalanceAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
     $app->get('/history', boz\application\action\GetHistoryAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
 
+    // Routes pour les conversations
+    $app->get('/conversations', boz\application\action\GetConversationsAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
+    $app->post('/conversations', boz\application\action\CreateConversationAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
+    $app->get('/conversations/{id}/messages', boz\application\action\GetMessagesAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
+    $app->post('/conversations/{id}/messages', boz\application\action\SendMessageAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
+
 
     $app->group('user', function () use ($app) {
 
@@ -50,6 +56,9 @@ return function (\Slim\App $app): \Slim\App {
         $app->get('/tickets/admin', boz\application\action\GetTicketsByAdminIdAction::class)->add(boz\application\middleware\AuthzAdminMiddleware::class);
         $app->patch('/tickets/close/{ticketId}', boz\application\action\CloseTicketAction::class)->add(boz\application\middleware\AuthzAdminMiddleware::class);
         $app->patch('/tickets', boz\application\action\TakeTicketByAdminAction::class)->add(boz\application\middleware\AuthzAdminMiddleware::class);
+
+
+        $app->post('/tickets/start-conversation', boz\application\action\StartConversationFromTicketAction::class)->add(boz\application\middleware\AuthzAdminMiddleware::class);
     })->add(boz\application\middleware\AuthnMiddleware::class);
 
 
@@ -58,5 +67,3 @@ return function (\Slim\App $app): \Slim\App {
 
     return $app;
 };
-
-

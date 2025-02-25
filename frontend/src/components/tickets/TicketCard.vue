@@ -27,6 +27,12 @@
           Donner de l'argent
         </button>
         <button
+          @click="startConversation"
+          class="chat-button"
+        >
+          Discuter
+        </button>
+        <button
           @click="$emit('close-ticket', ticket.Id)"
           :disabled="isProcessing"
           class="close-button"
@@ -39,6 +45,8 @@
 </template>
 
 <script>
+import axios from '@/api/index.js';
+
 export default {
   name: 'TicketCard',
   props: {
@@ -55,7 +63,24 @@ export default {
       required: true
     }
   },
-  emits: ['take-ticket', 'give-cash', 'close-ticket']
+  emits: ['take-ticket', 'give-cash', 'close-ticket'],
+  methods: {
+    async startConversation() {
+      try {
+        const response = await axios.post('/tickets/start-conversation', {
+          ticketId: this.ticket.Id
+        });
+
+
+        if (response.data && response.data.conversation) {
+          this.$router.push(`/chat/${response.data.conversation.id}`);
+        }
+      } catch (error) {
+        console.error('Erreur lors de la création de la conversation:', error);
+        alert('Erreur lors de la création de la conversation. Veuillez réessayer.');
+      }
+    }
+  }
 }
 </script>
 
@@ -106,7 +131,7 @@ export default {
   gap: 10px;
 }
 
-.take-button, .give-button, .close-button {
+.take-button, .give-button, .close-button, .chat-button {
   border: none;
   padding: 8px 15px;
   border-radius: 4px;
@@ -129,6 +154,14 @@ export default {
 
 .give-button:hover {
   background-color: #f39c12;
+}
+
+.chat-button {
+  background-color: #3498db;
+}
+
+.chat-button:hover {
+  background-color: #2980b9;
 }
 
 .close-button {

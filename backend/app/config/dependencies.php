@@ -2,15 +2,21 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+use boz\application\action\CreateConversationAction;
 use boz\application\action\CreateFactureAction;
 use boz\application\action\GetBalanceAction;
+use boz\application\action\GetConversationsAction;
 use boz\application\action\GetFactureByIdAction;
 use boz\application\action\GetFacturesByUserLoginAction;
 use boz\application\action\GetHistoryAction;
+use boz\application\action\GetMessagesAction;
 use boz\application\action\GetTicketsPendingAction;
+use boz\application\action\GiveCashAction;
 use boz\application\action\PayFactureAction;
 use boz\application\action\RegisterAction;
+use boz\application\action\SendMessageAction;
 use boz\application\action\SignInAction;
+use boz\application\action\StartConversationFromTicketAction;
 use boz\application\middleware\AuthnMiddleware;
 use boz\application\middleware\AuthzUserMiddleware;
 use boz\application\middleware\AuthzAdminMiddleware;
@@ -18,12 +24,14 @@ use boz\application\middleware\AuthzVendeurMiddleware;
 use boz\application\providers\AuthnProviderInterface;
 use boz\application\providers\JWTAuthnProvider;
 use boz\application\providers\JWTManager;
+use boz\core\repositoryInterfaces\ConversationRepositoryInterface;
 use boz\core\repositoryInterfaces\UserRepositoryInterface;
 use boz\core\services\auth\AuthnService;
 use boz\core\services\auth\AuthnServiceInterface;
 use boz\core\services\auth\AuthzService;
 use boz\core\services\Blockchain\BlockService;
 use boz\core\services\auth\AuthzServiceInterface;
+use boz\core\services\conversations\ConversationServiceInterface;
 use boz\core\services\tickets\TicketService;
 use boz\Infrastructure\repositories\BlockRepository;
 use boz\Infrastructure\repositories\TicketRepository;
@@ -89,6 +97,10 @@ return [
     return new TicketRepository($c->get(PDO::class));
     },
 
+    ConversationRepositoryInterface::class => function(ContainerInterface $c){
+    return new ConversationRepository($c->get(PDO::class));
+    },
+
     AuthnServiceInterface::class => function (ContainerInterface $c){
         return new AuthnService($c->get(UserRepositoryInterface::class));
     },
@@ -109,6 +121,10 @@ return [
     return new TicketService($c->get(TicketRepositoryInterface::class));
     },
 
+    ConversationServiceInterface::class => function(ContainerInterface $c){
+    return new ConversationService($c->get(ConversationRepositoryInterface::class));
+    },
+
     AuthnMiddleware::class =>function (ContainerInterface $c){
         return new AuthnMiddleware($c->get(AuthnProviderInterface::class));
     },
@@ -116,6 +132,7 @@ return [
     AuthzUserMiddleware::class =>function (ContainerInterface $c){
         return new AuthzUserMiddleware($c->get(AuthzServiceInterface::class));
     },
+
 
     AuthzAdminMiddleware::class =>function (ContainerInterface $c){
         return new AuthzAdminMiddleware($c->get(AuthzServiceInterface::class));
@@ -178,7 +195,31 @@ return [
 
     GetFactureByIdAction::class => function (ContainerInterface $container) {
         return new GetFactureByIdAction($container->get(BlockServiceInterface::class));
-    }
+    },
+
+    CreateConversationAction::class => function (ContainerInterface $c){
+        return new CreateConversationAction($c->get(ConversationServiceInterface::class));
+    },
+
+    GetConversationsAction::class => function (ContainerInterface $c){
+        return new GetConversationsAction($c->get(ConversationServiceInterface::class));
+    },
+
+    StartConversationFromTicketAction::class => function (ContainerInterface $c){
+        return new StartConversationFromTicketAction($c->get(ConversationServiceInterface::class), $c->get(TicketServiceInterface::class));
+    },
+
+    GetMessagesAction::class => function (ContainerInterface $c){
+        return new GetMessagesAction($c->get(ConversationServiceInterface::class));
+    },
+
+    SendMessageAction::class => function (ContainerInterface $c){
+        return new SendMessageAction($c->get(ConversationServiceInterface::class));
+    },
+
+    GiveCashAction::class => function (ContainerInterface $c){
+        return new GiveCashAction($c->get(BlockServiceInterface::class));
+    },
 
 
 

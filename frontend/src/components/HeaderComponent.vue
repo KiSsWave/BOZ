@@ -70,7 +70,7 @@ export default {
       this.$router.push('/');
     },
     openChat() {
-      this.$router.push('/chat');
+      this.$router.push('/conversations');
     },
     modification() {
       this.$router.push('/account');

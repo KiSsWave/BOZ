@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
+import ConversationsListView from '@/views/ConversationsListView.vue'
 import ChatView from '@/views/ChatView.vue'
 import AdminView from '@/views/AdminView.vue'
 import VendeurView from '@/views/VendeurView.vue'
@@ -29,10 +30,18 @@ const router = createRouter({
       component: RegisterView,
     },
     {
-      path: '/chat',
+      path: '/conversations',
+      name: 'Conversations',
+      component: ConversationsListView,
+      meta: { requiresAuth: true }
+    },
+
+    {
+      path: '/chat/:id',
       name: 'chat',
       component: ChatView,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true },
+      props: true
     },
     {
       path: '/admin',

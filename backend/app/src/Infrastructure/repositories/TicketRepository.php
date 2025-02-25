@@ -100,6 +100,7 @@ class TicketRepository implements TicketRepositoryInterface
             SELECT t.* 
             FROM tickets t 
             WHERE t.user_login = :userLogin
+            AND t.status <> 'finish'
         ");
             $query->execute([':userLogin' => $userLogin]);
             $resultat = $query->fetchAll(PDO::FETCH_ASSOC);
@@ -121,6 +122,7 @@ class TicketRepository implements TicketRepositoryInterface
             throw new \RuntimeException('Erreur lors de la recherche des tickets : ' . $e->getMessage());
         }
     }
+
 
     public function getTicketsByAdminId(string $id): array
     {
