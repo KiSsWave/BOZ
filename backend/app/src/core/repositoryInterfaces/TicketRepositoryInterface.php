@@ -17,7 +17,7 @@ interface TicketRepositoryInterface
 
     public function getTicketsByAdminId(string $id): array;
 
-    public function getTicketsByUserId(string $id): array;
+    public function getTicketsByUserLogin(string $id): array;
 
     public function getTicketsPending(): array;
 

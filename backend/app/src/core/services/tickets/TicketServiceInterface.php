@@ -13,7 +13,7 @@ interface TicketServiceInterface
 
     public function getTicketsByAdminId(string $id): array;
 
-    public function getTicketsByUserId(string $iduser): array;
+    public function getTicketsByUserLogin(string $userLogin): array;
 
     public function getTicketsPending(): array;
 }

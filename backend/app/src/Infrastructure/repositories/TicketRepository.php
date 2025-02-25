@@ -62,34 +62,7 @@ class TicketRepository implements TicketRepositoryInterface
         }
     }
 
-    public function getTicketsByAdminId(string $id): array
-    {
-        try {
-            $query = $this->pdo->prepare("
-            SELECT t.* 
-            FROM tickets t 
-            WHERE t.idadmin = :id and t.status = 'en cours'
-        ");
-            $query->execute([':id' => $id]);
-            $resultat = $query->fetchAll(PDO::FETCH_ASSOC);
 
-            $tickets = [];
-            foreach ($resultat as $row) {
-                $ticket = new Ticket(
-                    $row['user_login'],
-                    $row['idadmin'],
-                    $row['message'],
-                    $row['type'],
-                    $row['status']
-                );
-                $ticket->setId($row['id']);
-                $tickets[] = $ticket;
-            }
-            return $tickets;
-        } catch (Exception $e) {
-            throw new \RuntimeException('Erreur lors de la recherche des tickets : ' . $e->getMessage());
-        }
-    }
 
     public function getTicketsPending(): array
     {
@@ -120,7 +93,7 @@ class TicketRepository implements TicketRepositoryInterface
         }
     }
 
-    public function getTicketsByUserId(string $userLogin): array
+    public function getTicketsByUserLogin(string $userLogin): array
     {
         try {
             $query = $this->pdo->prepare("
@@ -129,6 +102,35 @@ class TicketRepository implements TicketRepositoryInterface
             WHERE t.user_login = :userLogin
         ");
             $query->execute([':userLogin' => $userLogin]);
+            $resultat = $query->fetchAll(PDO::FETCH_ASSOC);
+
+            $tickets = [];
+            foreach ($resultat as $row) {
+                $ticket = new Ticket(
+                    $row['user_login'],
+                    $row['idadmin'],
+                    $row['message'],
+                    $row['type'],
+                    $row['status']
+                );
+                $ticket->setId($row['id']);
+                $tickets[] = $ticket;
+            }
+            return $tickets;
+        } catch (Exception $e) {
+            throw new \RuntimeException('Erreur lors de la recherche des tickets : ' . $e->getMessage());
+        }
+    }
+
+    public function getTicketsByAdminId(string $id): array
+    {
+        try {
+            $query = $this->pdo->prepare("
+            SELECT t.* 
+            FROM tickets t 
+            WHERE t.idadmin = :id and t.status = 'en cours'
+        ");
+            $query->execute([':id' => $id]);
             $resultat = $query->fetchAll(PDO::FETCH_ASSOC);
 
             $tickets = [];

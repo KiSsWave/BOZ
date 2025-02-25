@@ -44,9 +44,9 @@ class TicketService implements TicketServiceInterface
         return $ticketsDTO;
     }
 
-    public function getTicketsByUserId(string $iduser): array
+    public function getTicketsByUserLogin(string $userLogin): array
     {
-        $tickets = $this->ticketRepository->getTicketsByUserId($iduser);
+        $tickets = $this->ticketRepository->getTicketsByUserLogin($userLogin);
         $ticketsDTO = [];
         foreach ($tickets as $ticket) {
             $ticketsDTO[] = new TicketDTO($ticket);
