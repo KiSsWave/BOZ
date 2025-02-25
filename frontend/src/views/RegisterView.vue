@@ -8,7 +8,7 @@
 
     <form @submit.prevent="envoie" class="register-form">
       <div class="input-group">
-        <input type="text" v-model="form.login" placeholder="Login" required />
+        <input type="text" v-model="form.login" placeholder="Login" required minlength="4" />
         <input type="email" v-model="form.email" placeholder="Email" required autocomplete="email" />
         <input type="password" v-model="form.password" placeholder="Mot de passe" required
           pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?:{}|<>]).{8,}"
