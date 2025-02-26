@@ -1,5 +1,5 @@
 <template>
-  <HeaderComponent />
+  <HeaderComponent/>
   <div class="modif-container">
     <div class="modif-card">
       <h1>Modifier votre profil</h1>
@@ -11,13 +11,45 @@
 
         <div class="input-group">
           <label for="email">Email</label>
-          <input id="email" type="email" placeholder="Votre email" v-model="form.email" required autocomplete="email" />
+          <input id="email" type="email" placeholder="Votre email" v-model="form.email"  autocomplete="email" />
         </div>
 
         <div class="input-group">
-          <label for="password">Mot de passe</label>
-          <input id="password" type="password" placeholder="Votre mot de passe" v-model="form.password" required
+          <label for="password">Votre mot de passe actuel</label>
+          <input id="Oldpassword" type="password" placeholder="Mot de passe actuel" v-model="form.oldpassword" required
+          />
+        </div>
+
+        <div class="input-group">
+          <label for="password">Votre nouveau mot de passe</label>
+          <input id="password" type="password" placeholder="Nouveau mot de passe" v-model="form.password" required
             autocomplete="current-password" />
+        </div>
+
+        <div class="password-requirements" v-if="form.password">
+          <p>Le mot de passe doit contenir :</p>
+          <ul>
+            <li :class="{ valid: form.password.length >= 8 }">
+              <font-awesome-icon :icon="form.password.length >= 8 ? 'check-square' : 'x'" />
+              8 caractères minimum
+            </li>
+            <li :class="{ valid: /[a-z]/.test(form.password) }">
+              <font-awesome-icon :icon="/[a-z]/.test(form.password) ? 'check-square' : 'x'" />
+              Une lettre minuscule
+            </li>
+            <li :class="{ valid: /[A-Z]/.test(form.password) }">
+              <font-awesome-icon :icon="/[A-Z]/.test(form.password) ? 'check-square' : 'x'" />
+              Une lettre majuscule
+            </li>
+            <li :class="{ valid: /[0-9]/.test(form.password) }">
+              <font-awesome-icon :icon="/[0-9]/.test(form.password) ? 'check-square' : 'x'" />
+              Un chiffre
+            </li>
+            <li :class="{ valid: /[!@#$%^&*(),.?:{}|<>]/.test(form.password) }">
+              <font-awesome-icon :icon="/[!@#$%^&*(),.?:{}|<>]/.test(form.password) ? 'check-square' : 'x'" />
+              Un caractère spécial
+            </li>
+          </ul>
         </div>
 
         <button type="submit" class="modif-button">Modifier</button>
@@ -34,23 +66,53 @@ export default {
       form: {
         user: '',
         email: '',
+        oldpassword: '',
         password: '',
       },
     };
   },
   methods: {
+    validatePassword(password) {
+      const minLength = password.length >= 8;
+      const hasLowerCase = /[a-z]/.test(password);
+      const hasUpperCase = /[A-Z]/.test(password);
+      const hasNumber = /[0-9]/.test(password);
+      const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+      const errors = [];
+      if (!minLength) errors.push("8 caractères minimum");
+      if (!hasLowerCase) errors.push("une lettre minuscule");
+      if (!hasUpperCase) errors.push("une lettre majuscule");
+      if (!hasNumber) errors.push("un chiffre");
+      if (!hasSpecialChar) errors.push("un caractère spécial");
+
+      return {
+        isValid: minLength && hasLowerCase && hasUpperCase && hasNumber && hasSpecialChar,
+        errors: errors
+      };
+    },
     async envoie() {
+      if (this.form.password === this.form.oldpassword) {
+        alert("Les mots de passe sont identiques !");
+        return;
+      }
+
+      const passwordValidation = this.validatePassword(this.form.password);
+      if (!passwordValidation.isValid) {
+        alert(`Le mot de passe doit contenir : ${passwordValidation.errors.join(', ')}`);
+        return;
+      }
       try {
-        // const response = await axios.post("/modification", this.form);
+        // const response = await axios.patch("/modification", this.form);
 
       } catch (error) {
         console.error("Erreur lors de la modification du profil :", error);
       }
     },
-    components: {
+  },
+  components: {
       HeaderComponent,
     },
-  },
 };
 </script>
 
@@ -127,5 +189,39 @@ input:focus {
 
 .modif-button:hover {
   background-color: #2980b9;
+}
+
+.password-requirements {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #666;
+  text-align: left;
+}
+
+.password-requirements ul {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 5px;
+}
+
+.password-requirements li {
+  margin: 3px 0;
+  color: #e74c3c;
+}
+
+.password-requirements li.valid {
+  color: #27ae60;
+}
+
+.password-requirements i {
+  margin-right: 8px;
+}
+
+.password-requirements li:not(.valid) i {
+  color: #e74c3c;
+}
+
+.password-requirements li.valid i {
+  color: #27ae60;
 }
 </style>

@@ -10,6 +10,7 @@ import ContactView from '@/views/ContactView.vue'
 import UserTicketView from '@/views/UserTicketView.vue'
 import TransactionView from '@/views/TransactionView.vue'
 import ModifView from '@/views/ModifView.vue'
+import FaqView from '@/views/FaqView.vue'
 import { useUserStore } from '@/stores/userStore'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -77,6 +78,12 @@ const router = createRouter({
       path: '/modification',
       name: 'modification',
       component: ModifView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/faq',
+      name: 'faq',
+      component: FaqView,
       meta: { requiresAuth: true }
     }
 

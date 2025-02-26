@@ -3,7 +3,7 @@
     <img class="BOZ" src="../assets/logoBOZ.png" alt="BOZ Logo" />
     <h1>Boz - Dépensez n'importe où !</h1>
     <div class="icons-container">
-      <font-awesome-icon :icon="['fas', 'gear']" style="color: #000000;" class="param" v-if="userStore.isAuthenticated"
+      <font-awesome-icon :icon="['fas', 'gear']" style="color: #000000;" class="param" v-if="userStore.isAuthenticated && isNotModification"
         @click="modification" />
       <font-awesome-icon :icon="['fas', 'comments']" @click="openChat" class="chat-icon"
         v-if="userStore.isAuthenticated" title="Messages" />
@@ -27,10 +27,12 @@ export default {
     const route = useRoute();
     const userStore = useUserStore();
     const isNotHome = computed(() => route.path !== '/');
+    const isNotModification = computed(() => route.path !== '/modification');
 
     return {
       userStore,
-      isNotHome
+      isNotHome,
+      isNotModification
     };
   },
   methods: {
@@ -64,7 +66,7 @@ export default {
       this.$router.push('/conversations');
     },
     modification() {
-      this.$router.push('/account');
+      this.$router.push('/modification');
     }
   },
 };
