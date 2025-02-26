@@ -118,7 +118,7 @@ export const useAppStore = defineStore('app', {
       this.errorStates.pendingTickets = null;
 
       try {
-        const response = await axios.get('/admin/tickets/pending');
+        const response = await axios.get('/tickets/pending');
         this.pendingTickets = response.data.Tickets || [];
         this.dataLoaded.pendingTickets = true;
         return this.pendingTickets;
@@ -138,7 +138,7 @@ export const useAppStore = defineStore('app', {
       this.errorStates.myTickets = null;
 
       try {
-        const response = await axios.get('/admin/tickets/admin');
+        const response = await axios.get('/tickets/admin');
         this.myTickets = response.data.Tickets || [];
         this.dataLoaded.myTickets = true;
         return this.myTickets;
@@ -156,7 +156,7 @@ export const useAppStore = defineStore('app', {
       this.isProcessing = true;
 
       try {
-        await axios.patch('/admin/tickets', {
+        await axios.patch('/tickets', {
           ticketId: ticketId,
           adminId: userStore.user.id
         });
@@ -180,7 +180,7 @@ export const useAppStore = defineStore('app', {
       this.isProcessing = true;
 
       try {
-        await axios.patch(`/admin/tickets/close/${ticketId}`);
+        await axios.patch(`/tickets/close/${ticketId}`);
         await this.fetchMyTickets(true);
         return true;
       } catch (error) {
@@ -195,7 +195,7 @@ export const useAppStore = defineStore('app', {
       this.isProcessing = true;
 
       try {
-        await axios.post('/admin/give', {
+        await axios.post('/give', {
           user_login,
           amount
         });
@@ -343,7 +343,7 @@ export const useAppStore = defineStore('app', {
       this.isProcessing = true;
 
       try {
-        const response = await axios.post('/admin/tickets/start-conversation', {
+        const response = await axios.post('/tickets/start-conversation', {
           ticketId
         });
 
