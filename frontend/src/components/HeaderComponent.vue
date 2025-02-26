@@ -42,7 +42,23 @@ export default {
       this.$router.push('/');
     },
     index() {
-      this.$router.push('/');
+      if (this.userStore.isAuthenticated) {
+        const userRole = this.userStore.user?.role;
+
+        switch (userRole) {
+          case '2':
+            this.$router.push('/vendeur');
+            break;
+          case '3':
+            this.$router.push('/admin');
+            break;
+          default:
+            this.$router.push('/');
+            break;
+        }
+      } else {
+        this.$router.push('/');
+      }
     },
     openChat() {
       this.$router.push('/conversations');
