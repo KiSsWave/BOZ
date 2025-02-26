@@ -1,4 +1,5 @@
 import 'package:boz/pages/navigation_page.dart';
+import 'package:boz/pages/seller_navigation_page.dart';
 import 'package:flutter/material.dart';
 import 'pages/login_page.dart';
 import 'pages/register_page.dart';
@@ -25,6 +26,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => LoginPage(),
         '/register': (context) => RegisterPage(),
         '/home': (context) => MyNavigation(),
+        '/seller': (context) => SellerNavigation(),
       },
     );
   }

@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 
 class RemoteService {
   final storage = const FlutterSecureStorage();
-  static const String _baseUrl = 'http://localhost:44050';
+  static const String _baseUrl = 'http://docketu.iutnc.univ-lorraine.fr:44050';
 
   Future<http.Response> registerUser(String email, String username, String password) async {
     try {
@@ -77,8 +77,9 @@ class RemoteService {
     );
   }
 
-  Future<String?> getRole() async {
-    return await storage.read(key: 'role');
+  Future<int?> getRole() async {
+    var roleString = await storage.read(key: 'role');
+    return roleString != null ? int.parse(roleString) : null;
   }
 
   Future<http.Response> _authenticatedGetRequest(String url) async {

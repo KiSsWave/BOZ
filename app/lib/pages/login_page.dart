@@ -58,7 +58,21 @@ class LoginPage extends StatelessWidget {
         final response = await signUserIn();
 
         if (response.statusCode == 200) {
-          Navigator.pushNamed(context, "/home");
+          int? role = await RemoteService().getRole();
+          switch (role) {
+            case 1:
+              Navigator.pushReplacementNamed(context, "/home");
+              break;
+            case 2:
+              Navigator.pushReplacementNamed(context, "/seller");
+              break;
+            default:
+              _showSnackBar(
+                context,
+                "Erreur lors de la connexion: rôle inconnu",
+                Colors.red,
+              );
+          }
         } else {
           _showSnackBar(
             context,

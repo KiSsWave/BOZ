@@ -1,22 +1,23 @@
 import 'package:boz/pages/qr_page.dart';
 import 'package:flutter/material.dart';
 import 'home_page.dart';
+import 'settings_page.dart';
 import 'package:boz/services/remote_service.dart';
 
-class MyNavigation extends StatefulWidget {
-  MyNavigation({Key? key}) : super(key: key);
+class SellerNavigation extends StatefulWidget {
+  SellerNavigation({Key? key}) : super(key: key);
 
   @override
-  State<MyNavigation> createState() => MyNavigationBar();
+  State<SellerNavigation> createState() => SellerNavigationBar();
 }
 
-class MyNavigationBar extends State<MyNavigation> {
+class SellerNavigationBar extends State<SellerNavigation> {
   int _currentIndex = 0;
 
   final List<Widget> body = [
     const HomePage(),
-    const QRPage(), // Placeholder pour le scanner
-    const Center(child: Text("Paramètres")), // Placeholder pour le profil
+    const QRPage(),
+    const SettingsPage(),
   ];
 
   @override
