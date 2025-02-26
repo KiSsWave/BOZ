@@ -3,11 +3,9 @@
     <HeaderComponent />
     <div class="vendor-container">
       <h1>Interface Vendeur</h1>
-
       <!-- Formulaire de création de facture -->
       <div class="invoice-creation-form">
         <h2>Créer une nouvelle facture</h2>
-
         <form @submit.prevent="createInvoice" class="form-container">
           <div class="form-group">
             <label for="label">Description :</label>
@@ -19,7 +17,6 @@
               placeholder="Description de la facture"
             />
           </div>
-
           <div class="form-group">
             <label for="amount">Montant (€) :</label>
             <input
@@ -32,15 +29,12 @@
               placeholder="Montant"
             />
           </div>
-
           <div class="error-message" v-if="error">
             {{ error }}
           </div>
-
           <div class="success-message" v-if="success">
             {{ success }}
           </div>
-
           <button
             type="submit"
             class="submit-button"
@@ -50,19 +44,15 @@
           </button>
         </form>
       </div>
-
       <!-- Liste des factures -->
       <div class="invoices-list">
         <h2>Mes factures</h2>
-
         <div v-if="loading" class="loading-message">
           Chargement des factures...
         </div>
-
         <div v-else-if="factures.length === 0" class="no-invoices">
           Aucune facture créée
         </div>
-
         <div v-else class="invoices-grid">
           <div v-for="facture in factures" :key="facture.id" class="invoice-card">
             <div class="invoice-header">
@@ -70,12 +60,10 @@
                 {{ facture.status }}
               </span>
             </div>
-
             <div class="invoice-body">
               <p class="invoice-description">{{ facture.label }}</p>
               <p class="invoice-amount">{{ facture.amount }}€</p>
             </div>
-
             <div class="invoice-qr">
               <img
                 :src="`data:image/png;base64,${facture.qr_code}`"
