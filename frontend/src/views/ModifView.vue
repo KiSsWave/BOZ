@@ -11,7 +11,7 @@
 
         <div class="input-group">
           <label for="email">Email</label>
-          <input id="email" type="email" placeholder="Votre email" v-model="form.email"  autocomplete="email" />
+          <input id="email" type="email" placeholder="Votre email" v-model="form.email"  required autocomplete="email" />
         </div>
 
         <div class="input-group">
