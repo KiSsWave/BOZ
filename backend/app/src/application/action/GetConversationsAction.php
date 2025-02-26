@@ -21,7 +21,7 @@ class GetConversationsAction extends AbstractAction
         try {
             // Récupérer l'utilisateur connecté depuis l'attribut user
             $user = $request->getAttribute('user');
-            $userLogin = $user->getLogin();
+            $userLogin = $user->getEmail();
 
             // Récupérer les conversations de l'utilisateur
             $conversations = $this->conversationService->getConversationsByUserLogin($userLogin);

@@ -27,7 +27,7 @@ class StartConversationFromTicketAction extends AbstractAction
             // Récupérer l'administrateur connecté à partir de l'attribut user
             $admin = $request->getAttribute('user');
             $adminId = $admin->getID();
-            $adminLogin = $admin->getLogin(); // Utilisez le login depuis l'objet user
+            $adminLogin = $admin->getEmail(); // Utilisez le login depuis l'objet user
 
             // Récupérer les données du corps de la requête
             $data = $request->getParsedBody();

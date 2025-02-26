@@ -13,8 +13,8 @@
     <div class="ticket-actions">
       <button
         v-if="activeView === 'pending'"
-        @click="$emit('take-ticket', ticket.Id)"
-        :disabled="isProcessing"
+        @click="handleTakeTicket"
+        :disabled="appStore.isProcessing"
         class="take-button"
       >
         Prendre en charge
@@ -27,14 +27,15 @@
           Donner de l'argent
         </button>
         <button
-          @click="startConversation"
+          @click="handleStartConversation"
           class="chat-button"
+          :disabled="appStore.isProcessing"
         >
           Discuter
         </button>
         <button
-          @click="$emit('close-ticket', ticket.Id)"
-          :disabled="isProcessing"
+          @click="handleCloseTicket"
+          :disabled="appStore.isProcessing"
           class="close-button"
         >
           Fermer le ticket
@@ -45,7 +46,8 @@
 </template>
 
 <script>
-import axios from '@/api/index.js';
+import { useRouter } from 'vue-router';
+import { useAppStore } from '@/stores/appStore';
 
 export default {
   name: 'TicketCard',
@@ -54,34 +56,55 @@ export default {
       type: Object,
       required: true
     },
-    isProcessing: {
-      type: Boolean,
-      default: false
-    },
     activeView: {
       type: String,
       required: true
     }
   },
-  emits: ['take-ticket', 'give-cash', 'close-ticket'],
-  methods: {
-    async startConversation() {
+  emits: ['give-cash'],
+  setup(props) {
+    const router = useRouter();
+    const appStore = useAppStore();
+
+    const handleTakeTicket = async () => {
       try {
-        const response = await axios.post('/tickets/start-conversation', {
-          ticketId: this.ticket.Id
-        });
+        await appStore.takeTicket(props.ticket.Id);
+      } catch (error) {
+        alert('Erreur lors de la prise en charge du ticket. Veuillez réessayer.');
+      }
+    };
 
+    const handleCloseTicket = async () => {
+      try {
+        const result = await appStore.closeTicket(props.ticket.Id);
+        if (result) {
+          alert('Ticket fermé avec succès !');
+        }
+      } catch (error) {
+        alert('Erreur lors de la fermeture du ticket. Veuillez réessayer.');
+      }
+    };
 
-        if (response.data && response.data.conversation) {
-          this.$router.push(`/chat/${response.data.conversation.id}`);
+    const handleStartConversation = async () => {
+      try {
+        const conversation = await appStore.startConversation(props.ticket.Id);
+        if (conversation && conversation.id) {
+          router.push(`/chat/${conversation.id}`);
         }
       } catch (error) {
         console.error('Erreur lors de la création de la conversation:', error);
         alert('Erreur lors de la création de la conversation. Veuillez réessayer.');
       }
-    }
+    };
+
+    return {
+      appStore,
+      handleTakeTicket,
+      handleCloseTicket,
+      handleStartConversation
+    };
   }
-}
+};
 </script>
 
 <style scoped>
@@ -160,7 +183,7 @@ export default {
   background-color: #3498db;
 }
 
-.chat-button:hover {
+.chat-button:hover:not(:disabled) {
   background-color: #2980b9;
 }
 

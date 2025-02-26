@@ -10,8 +10,8 @@
     <p>{{ error }}</p>
   </div>
 
-  <div v-else-if="myTicketsUser && myTicketsUser.length > 0" class="ticket-container">
-    <div v-for="ticket in myTicketsUser" :key="ticket.Id" class="ticket" :class="getStatusClass(ticket.status)">
+  <div v-else-if="userTickets && userTickets.length > 0" class="ticket-container">
+    <div v-for="ticket in userTickets" :key="ticket.Id" class="ticket" :class="getStatusClass(ticket.status)">
       <div class="ticket-header">
         <span class="ticket-type">{{ ticket.type }}</span>
         <span class="ticket-status">Statut: {{ ticket.status }}</span>
@@ -32,19 +32,24 @@
 </template>
 
 <script>
+import { computed, onMounted } from 'vue';
 import HeaderComponent from '@/components/HeaderComponent.vue';
-import { useTicketsUser } from '@/composables/useTicketsUser';
-import { onMounted } from 'vue';
+import { useAppStore } from '@/stores/appStore';
 
 export default {
   components: {
     HeaderComponent,
   },
   setup() {
-    const { myTicketsUser, fetchMyTicketsUser, loading, error } = useTicketsUser();
+    const appStore = useAppStore();
+    const userTickets = computed(() => appStore.userTickets);
+    const loading = computed(() => appStore.loadingStates.userTickets);
+    const error = computed(() => appStore.errorStates.userTickets);
 
     onMounted(async () => {
-      await fetchMyTicketsUser();
+      if (!appStore.isDataLoaded('userTickets')) {
+        await appStore.fetchUserTickets();
+      }
     });
 
     const getStatusClass = (status) => {
@@ -56,7 +61,7 @@ export default {
     };
 
     return {
-      myTicketsUser,
+      userTickets,
       getStatusClass,
       loading,
       error

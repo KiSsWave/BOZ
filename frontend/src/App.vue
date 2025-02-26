@@ -1,5 +1,28 @@
 <script setup>
 import { RouterView } from 'vue-router'
+import { useUserStore } from '@/stores/userStore'
+import { useAppStore } from '@/stores/appStore'
+import { onMounted, watch } from 'vue'
+
+const userStore = useUserStore()
+const appStore = useAppStore()
+
+onMounted(() => {
+  if (userStore.isAuthenticated) {
+    appStore.loadInitialData()
+  }
+})
+
+watch(
+  () => userStore.isAuthenticated,
+  (newValue, oldValue) => {
+    if (newValue && !oldValue) {
+      appStore.loadInitialData()
+    } else if (!newValue && oldValue) {
+      appStore.resetStore()
+    }
+  }
+)
 </script>
 
 <template>

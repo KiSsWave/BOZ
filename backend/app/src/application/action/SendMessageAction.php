@@ -21,7 +21,7 @@ class SendMessageAction extends AbstractAction
         try {
             // Récupérer l'utilisateur connecté depuis l'attribut user
             $user = $request->getAttribute('user');
-            $senderLogin = $user->getLogin();
+            $senderLogin = $user->getEmail();
 
             // Récupérer l'ID de conversation depuis les arguments de route
             $conversationId = $args['id'] ?? null;

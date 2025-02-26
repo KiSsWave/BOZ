@@ -11,17 +11,14 @@
         :tickets="displayedTickets"
         :loading="loading"
         :error="error"
-        :isProcessing="isProcessing"
         :activeView="activeView"
-        @take-ticket="takeTicket"
         @give-cash="openGiveCashModal"
-        @close-ticket="closeTicket"
       />
     </div>
     <GiveCashModal
       v-if="showModal"
       :ticket="selectedTicket"
-      :isProcessing="isProcessing"
+      :isProcessing="appStore.isProcessing"
       @close="closeModal"
       @submit="giveCash"
     />
@@ -29,11 +26,12 @@
 </template>
 
 <script>
-import HeaderComponent from '@/components/HeaderComponent.vue'
-import ViewSelector from '@/components/tickets/ViewSelector.vue'
-import TicketList from '@/components/tickets/TicketList.vue'
-import GiveCashModal from '@/components/tickets/GiveCashModal.vue'
-import { useTickets } from '@/composables/useTickets'
+import { ref, computed, onMounted, watch } from 'vue';
+import HeaderComponent from '@/components/HeaderComponent.vue';
+import ViewSelector from '@/components/tickets/ViewSelector.vue';
+import TicketList from '@/components/tickets/TicketList.vue';
+import GiveCashModal from '@/components/tickets/GiveCashModal.vue';
+import { useAppStore } from '@/stores/appStore';
 
 export default {
   name: 'AdminView',
@@ -44,37 +42,84 @@ export default {
     GiveCashModal
   },
   setup() {
-    const {
-      activeView,
-      displayedTickets,
-      loading,
-      error,
-      isProcessing,
-      showModal,
-      selectedTicket,
-      takeTicket,
-      closeTicket,
-      openGiveCashModal,
-      closeModal,
-      giveCash
-    } = useTickets()
+    const appStore = useAppStore();
+    const activeView = ref('pending');
+    const showModal = ref(false);
+    const selectedTicket = ref(null);
+
+    // Computed properties pour obtenir les données depuis le store
+    const displayedTickets = computed(() => {
+      return activeView.value === 'pending'
+        ? appStore.pendingTickets
+        : appStore.myTickets;
+    });
+
+    const loading = computed(() => {
+      return activeView.value === 'pending'
+        ? appStore.loadingStates.pendingTickets
+        : appStore.loadingStates.myTickets;
+    });
+
+    const error = computed(() => {
+      return activeView.value === 'pending'
+        ? appStore.errorStates.pendingTickets
+        : appStore.errorStates.myTickets;
+    });
+
+    // Méthodes pour interagir avec les tickets
+    const openGiveCashModal = (ticket) => {
+      selectedTicket.value = ticket;
+      showModal.value = true;
+    };
+
+    const closeModal = () => {
+      showModal.value = false;
+      selectedTicket.value = null;
+    };
+
+    const giveCash = async (params) => {
+      try {
+        const result = await appStore.giveCash(params);
+        if (result) {
+          closeModal();
+          alert('Argent envoyé avec succès !');
+        }
+      } catch (error) {
+        alert('Erreur lors de l\'envoi d\'argent. Veuillez réessayer.');
+      }
+    };
+
+    // Charger les données au montage et lors des changements de vue
+    onMounted(async () => {
+      if (activeView.value === 'pending') {
+        await appStore.fetchPendingTickets();
+      } else {
+        await appStore.fetchMyTickets();
+      }
+    });
+
+    watch(activeView, async (newValue) => {
+      if (newValue === 'pending') {
+        await appStore.fetchPendingTickets();
+      } else {
+        await appStore.fetchMyTickets();
+      }
+    });
 
     return {
+      appStore,
       activeView,
       displayedTickets,
       loading,
       error,
-      isProcessing,
       showModal,
       selectedTicket,
-      takeTicket,
-      closeTicket,
       openGiveCashModal,
       closeModal,
       giveCash
-    }
+    };
   }
-}
+};
 </script>
 
 <style scoped>

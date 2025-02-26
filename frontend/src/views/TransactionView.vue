@@ -1,55 +1,3 @@
-<script>
-import HeaderComponent from '../components/HeaderComponent.vue'
-import axios from '../api/index.js'
-import { ref, onMounted } from 'vue'
-
-export default {
-  name: 'TransactionView',
-  components: {
-    HeaderComponent
-  },
-  setup() {
-    const transactions = ref([])
-    const loading = ref(true)
-    const error = ref(null)
-
-    const formatDate = (timestamp) => {
-      const date = new Date(timestamp)
-      return date.toLocaleDateString('fr-FR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      })
-    }
-
-    const fetchTransactions = async () => {
-      try {
-        const response = await axios.get('/history')
-        transactions.value = response.data.history
-      } catch (err) {
-        error.value = "Erreur lors de la récupération de l'historique"
-        console.error('Erreur:', err)
-      } finally {
-        loading.value = false
-      }
-    }
-
-    onMounted(() => {
-      fetchTransactions()
-    })
-
-    return {
-      transactions,
-      loading,
-      error,
-      formatDate
-    }
-  }
-}
-</script>
-
 <template>
   <div>
     <HeaderComponent />
@@ -89,6 +37,52 @@ export default {
     </div>
   </div>
 </template>
+
+<script>
+import { computed, onMounted } from 'vue';
+import HeaderComponent from '@/components/HeaderComponent.vue';
+import { useAppStore } from '@/stores/appStore';
+
+export default {
+  name: 'TransactionView',
+  components: {
+    HeaderComponent
+  },
+  setup() {
+    const appStore = useAppStore();
+
+    // Récupérer les transactions depuis le store global
+    const transactions = computed(() => appStore.transactions);
+    const loading = computed(() => appStore.loadingStates.transactions);
+    const error = computed(() => appStore.errorStates.transactions);
+
+    const formatDate = (timestamp) => {
+      const date = new Date(timestamp);
+      return date.toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    };
+
+    onMounted(async () => {
+      // Charger les transactions si elles ne sont pas déjà chargées
+      if (!appStore.isDataLoaded('transactions')) {
+        await appStore.fetchTransactions();
+      }
+    });
+
+    return {
+      transactions,
+      loading,
+      error,
+      formatDate
+    };
+  }
+};
+</script>
 
 <style scoped>
 * {

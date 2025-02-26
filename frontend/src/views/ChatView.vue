@@ -86,11 +86,11 @@
 </template>
 
 <script>
-import { ref, onMounted, computed, nextTick, watch } from 'vue';
+import { ref, onMounted, computed, nextTick, watch, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import HeaderComponent from '@/components/HeaderComponent.vue';
-import axios from '@/api/index.js';
 import { useUserStore } from '@/stores/userStore';
+import { useAppStore } from '@/stores/appStore';
 
 export default {
   name: 'ChatView',
@@ -101,16 +101,22 @@ export default {
     const route = useRoute();
     const router = useRouter();
     const userStore = useUserStore();
+    const appStore = useAppStore();
 
+    // Refs locaux
     const conversationId = computed(() => route.params.id);
-    const messages = ref([]);
-    const loading = ref(true);
-    const error = ref(null);
     const newMessage = ref('');
     const sending = ref(false);
     const messagesContainer = ref(null);
     const messageInput = ref(null);
     const otherUser = ref('');
+    const loading = ref(true);
+    const error = ref(null);
+
+    // Messages actuels de cette conversation
+    const messages = computed(() => {
+      return appStore.getMessagesByConversationId(conversationId.value) || [];
+    });
 
     // Définir le polling pour rafraîchir les messages
     let pollingInterval = null;
@@ -122,28 +128,26 @@ export default {
         loading.value = true;
         error.value = null;
 
-        const response = await axios.get(`/conversations/${conversationId.value}/messages`);
+        await appStore.fetchMessages(conversationId.value);
 
-        if (response.data.messages) {
-          messages.value = response.data.messages;
-
-          // Déterminer l'autre utilisateur
-          if (messages.value.length > 0) {
-            const firstMessage = messages.value[0];
-            otherUser.value = firstMessage.senderLogin === userStore.user.login
-              ? firstMessage.receiverLogin
-              : firstMessage.senderLogin;
-          } else if (response.data.conversation) {
-            // Si pas de messages mais des infos sur la conversation
-            otherUser.value = response.data.conversation.user1Login === userStore.user.login
-              ? response.data.conversation.user2Login
-              : response.data.conversation.user1Login;
+        // Déterminer l'autre utilisateur
+        if (messages.value.length > 0) {
+          const firstMessage = messages.value[0];
+          otherUser.value = firstMessage.senderLogin === userStore.user.login
+            ? firstMessage.receiverLogin
+            : firstMessage.senderLogin;
+        } else {
+          const conversation = appStore.getConversationById(conversationId.value);
+          if (conversation) {
+            otherUser.value = conversation.user1Login === userStore.user.login
+              ? conversation.user2Login
+              : conversation.user1Login;
           }
-
-          // Défiler vers le bas après le chargement des messages
-          await nextTick();
-          scrollToBottom();
         }
+
+        // Défiler vers le bas après le chargement des messages
+        await nextTick();
+        scrollToBottom();
       } catch (err) {
         console.error('Erreur lors de la récupération des messages:', err);
         error.value = 'Impossible de charger les messages. Veuillez réessayer plus tard.';
@@ -158,18 +162,17 @@ export default {
       try {
         sending.value = true;
 
-        await axios.post(`/conversations/${conversationId.value}/messages`, {
-          content: newMessage.value
-        });
+        await appStore.sendMessage(conversationId.value, newMessage.value);
 
         // Vider le champ de message
         newMessage.value = '';
 
-        // Refetch messages pour afficher le nouveau message
-        await fetchMessages();
-
         // Focus sur le champ d'entrée
         messageInput.value.focus();
+
+        // Défiler vers le bas
+        await nextTick();
+        scrollToBottom();
       } catch (err) {
         console.error('Erreur lors de l\'envoi du message:', err);
         alert('Erreur lors de l\'envoi du message. Veuillez réessayer.');
@@ -235,14 +238,13 @@ export default {
       // Configurer un nouveau polling toutes les 10 secondes
       pollingInterval = setInterval(async () => {
         if (!loading.value && !error.value) {
-          await fetchMessages();
+          await appStore.fetchMessages(conversationId.value, false);
         }
       }, 10000); // 10 secondes
     };
 
     // Surveiller les changements d'ID de conversation
     watch(conversationId, () => {
-      messages.value = [];
       fetchMessages();
     });
 
@@ -259,11 +261,11 @@ export default {
     });
 
     // Nettoyer le polling lors de la destruction du composant
-    const onBeforeUnmount = () => {
+    onBeforeUnmount(() => {
       if (pollingInterval) {
         clearInterval(pollingInterval);
       }
-    };
+    });
 
     return {
       conversationId,
@@ -280,12 +282,8 @@ export default {
       formatTime,
       formatDayDate,
       shouldShowDate,
-      goBack,
-      onBeforeUnmount
+      goBack
     };
-  },
-  unmounted() {
-    this.onBeforeUnmount();
   }
 };
 </script>

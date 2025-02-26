@@ -1,58 +1,3 @@
-<script>
-import { useUserStore } from '@/stores/userStore';
-import HeaderComponent from '@/components/HeaderComponent.vue';
-import axios from '../api/index.js';
-import { onMounted } from 'vue';
-import { ref } from 'vue';
-
-export default {
-  setup() {
-    const balance = ref(0);
-    const userStore = useUserStore();
-    onMounted(async () => {
-      if (userStore.isAuthenticated) {
-        try {
-          const response = await axios.get("/balance");
-          if (response.data) {
-            balance.value = response.data.balance || 0;
-          }
-        } catch (error) {
-          console.error("Erreur lors de la récupération du solde :", error);
-        }
-      }
-    });
-
-    return {
-      balance,
-      userStore
-    };
-  },
-  components: {
-    HeaderComponent,
-  },
-
-
-  methods: {
-    login() {
-      this.$router.push('/login')
-    },
-    logout() {
-      this.userStore.logout()
-      this.$router.push('/')
-    },
-    contactAdmin() {
-      this.$router.push('/contact')
-    },
-    viewTransactions() {
-      this.$router.push('/transaction')
-    },
-    viewFactures() {
-      this.$router.push('/userTicket')
-    },
-  },
-}
-</script>
-
 <template>
   <div class="bank-app">
     <HeaderComponent />
@@ -72,6 +17,60 @@ export default {
     </footer>
   </div>
 </template>
+
+<script>
+import { computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import HeaderComponent from '@/components/HeaderComponent.vue';
+import { useUserStore } from '@/stores/userStore';
+import { useAppStore } from '@/stores/appStore';
+
+export default {
+  components: {
+    HeaderComponent,
+  },
+  setup() {
+    const router = useRouter();
+    const userStore = useUserStore();
+    const appStore = useAppStore();
+
+    // Utiliser le solde depuis le store global
+    const balance = computed(() => appStore.balance);
+
+    onMounted(async () => {
+      // Charger le solde si l'utilisateur est authentifié
+      if (userStore.isAuthenticated) {
+        try {
+          await appStore.fetchBalance();
+        } catch (error) {
+          console.error("Erreur lors de la récupération du solde :", error);
+        }
+      }
+    });
+
+    // Méthodes de navigation
+    const contactAdmin = () => {
+      router.push('/contact');
+    };
+
+    const viewFactures = () => {
+      router.push('/userTicket');
+    };
+
+    const viewTransactions = () => {
+      router.push('/transaction');
+    };
+
+    return {
+      balance,
+      userStore,
+      contactAdmin,
+      viewFactures,
+      viewTransactions
+    };
+  }
+}
+</script>
 
 <style scoped>
 * {
