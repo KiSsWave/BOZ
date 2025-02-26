@@ -38,36 +38,6 @@ class SellerNavigationBar extends State<SellerNavigation> {
     Navigator.pushReplacementNamed(context, "/login");
   }
 
-  void _showLogoutConfirmation(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Confirmation"),
-          content: const Text("Êtes-vous sûr de vouloir vous déconnecter ?"),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Fermer la boîte de dialogue
-              },
-              child: const Text("Annuler"),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Fermer la boîte de dialogue
-                _handleLogout(); // Exécuter la déconnexion
-              },
-              child: const Text(
-                "Confirmer",
-                style: TextStyle(color: Colors.red),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -91,7 +61,8 @@ class SellerNavigationBar extends State<SellerNavigation> {
         ),
       ),
       backgroundColor: Colors.grey[300],
-      body: _currentIndex < body.length ? body[_currentIndex] : const SizedBox(),
+      body:
+          _currentIndex < body.length ? body[_currentIndex] : const SizedBox(),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         type: BottomNavigationBarType.fixed, // Fond constant
@@ -111,19 +82,11 @@ class SellerNavigationBar extends State<SellerNavigation> {
             icon: Icon(Icons.settings),
             label: "Paramètres",
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.logout),
-            label: "Déconnexion",
-          ),
         ],
         onTap: (index) {
-          if (index == 3) {
-            _showLogoutConfirmation(context);
-          } else {
-            setState(() {
-              _currentIndex = index;
-            });
-          }
+          setState(() {
+            _currentIndex = index;
+          });
         },
       ),
     );
