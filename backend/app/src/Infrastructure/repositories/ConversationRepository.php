@@ -145,7 +145,7 @@ class ConversationRepository implements ConversationRepositoryInterface
                 ':receiver_login' => $messageDTO->receiverLogin,
                 ':content' => $messageDTO->content,
                 ':timestamp' => $messageDTO->timestamp,
-                ':read' => $messageDTO->read
+                ':read' => $messageDTO->read ?? false
             ]);
 
 
