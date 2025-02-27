@@ -18,7 +18,7 @@ return function (\Slim\App $app): \Slim\App {
     $app->get('/balance', boz\application\action\GetBalanceAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
     $app->get('/history', boz\application\action\GetHistoryAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
 
-    // Routes pour les conversations
+
     $app->get('/conversations', boz\application\action\GetConversationsAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
     $app->post('/conversations', boz\application\action\CreateConversationAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
     $app->get('/conversations/{id}/messages', boz\application\action\GetMessagesAction::class)->add(boz\application\middleware\AuthnMiddleware::class);

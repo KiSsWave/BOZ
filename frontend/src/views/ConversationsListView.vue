@@ -4,37 +4,42 @@
     <div class="conversations-container">
       <h1>Mes conversations</h1>
 
-      <div v-if="loading" class="loading-container">
+      <div v-if="initialLoading" class="loading-container">
         <div class="loading-spinner"></div>
         <p>Chargement des conversations...</p>
       </div>
 
-      <div v-else-if="error" class="error-container">
-        <p class="error-message">{{ error }}</p>
-        <button @click="fetchConversations" class="retry-button">Réessayer</button>
+      <div v-if="silentLoading" class="refresh-indicator">
+        <div class="loading-spinner-small"></div>
       </div>
 
-      <div v-else-if="conversations.length === 0" class="empty-state">
+      <div v-if="error" class="error-container">
+        <p class="error-message">{{ error }}</p>
+        <button @click="loadConversations" class="retry-button">Réessayer</button>
+      </div>
+
+      <div v-if="!initialLoading && conversations.length === 0" class="empty-state">
         <div class="empty-icon">
           <font-awesome-icon :icon="['far', 'comments']" size="3x" />
         </div>
         <p>Vous n'avez pas encore de conversations</p>
       </div>
 
-      <div v-else class="conversations-list">
+      <div v-if="conversations.length > 0" class="conversations-list">
         <div
           v-for="conversation in conversations"
           :key="conversation.id"
           class="conversation-card"
-          @click="openConversation(conversation.id)"
+          @click="openConversation(conversation)"
+          v-memo="[conversation.lastMessage, conversation.last_message_timestamp]"
         >
           <div class="conversation-avatar">
             <font-awesome-icon :icon="['fas', 'user']" size="lg" />
           </div>
           <div class="conversation-details">
             <div class="conversation-header">
-              <h3 class="other-user">{{ conversation.otherUser }}</h3>
-              <span class="last-time">{{ formatDate(conversation.lastMessageTimestamp) }}</span>
+              <h3 class="other-user">{{ getOtherUserName(conversation) }}</h3>
+              <span class="last-time">{{ formatDate(conversation.last_message_timestamp) }}</span>
             </div>
             <p v-if="conversation.lastMessage" class="last-message">
               {{ truncateMessage(conversation.lastMessage) }}
@@ -49,9 +54,10 @@
 
 <script>
 import HeaderComponent from '@/components/HeaderComponent.vue';
-import axios from '@/api/index.js';
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useUserStore } from '@/stores/userStore';
+import { useConversations } from '@/composables/useConversations';
 
 export default {
   name: 'ConversationsListView',
@@ -59,41 +65,62 @@ export default {
     HeaderComponent
   },
   setup() {
-    const conversations = ref([]);
-    const loading = ref(true);
-    const error = ref(null);
     const router = useRouter();
+    const userStore = useUserStore();
+    const { conversations, error, fetchConversations, setCurrentConversation } = useConversations();
 
-    const fetchConversations = async () => {
-      loading.value = true;
-      error.value = null;
+    const initialLoading = ref(true);
+    const silentLoading = ref(false);
+    const refreshInterval = ref(null);
 
+    const loadConversations = async (silent = false) => {
       try {
-        const response = await axios.get('/conversations');
-        conversations.value = response.data.conversations || [];
-
-        // Récupérer le dernier message pour chaque conversation
-        for (const conversation of conversations.value) {
-          try {
-            const messagesResponse = await axios.get(`/conversations/${conversation.id}/messages`);
-            const messages = messagesResponse.data.messages || [];
-            if (messages.length > 0) {
-              conversation.lastMessage = messages[messages.length - 1].content;
-            }
-          } catch (err) {
-            console.error(`Erreur lors de la récupération des messages pour la conversation ${conversation.id}:`, err);
-          }
+        if (silent) {
+          silentLoading.value = true;
+        } else {
+          initialLoading.value = true;
         }
+
+        await fetchConversations(true);
+        console.log('Conversations loaded:', conversations.value);
       } catch (err) {
         console.error('Erreur lors de la récupération des conversations:', err);
-        error.value = 'Impossible de charger vos conversations. Veuillez réessayer plus tard.';
       } finally {
-        loading.value = false;
+        initialLoading.value = false;
+        silentLoading.value = false;
       }
     };
 
-    const openConversation = (conversationId) => {
-      router.push(`/chat/${conversationId}`);
+    const startAutoRefresh = () => {
+      stopAutoRefresh();
+      refreshInterval.value = setInterval(() => {
+        loadConversations(true);
+      }, 30000); // Actualiser toutes les 30 secondes
+    };
+
+    const stopAutoRefresh = () => {
+      if (refreshInterval.value) {
+        clearInterval(refreshInterval.value);
+        refreshInterval.value = null;
+      }
+    };
+
+    const getOtherUserName = (conversation) => {
+      const currentUserLogin = userStore.user.login;
+
+      if (conversation.otherUser) {
+        return conversation.otherUser;
+      }
+
+      return conversation.user1Login === currentUserLogin
+        ? conversation.user2Login
+        : conversation.user1Login;
+    };
+
+    const openConversation = (conversation) => {
+      console.log('Opening conversation:', conversation);
+      setCurrentConversation(conversation);
+      router.push(`/chat/${conversation.id}`);
     };
 
     const formatDate = (timestamp) => {
@@ -124,16 +151,34 @@ export default {
       return message.substring(0, maxLength) + '...';
     };
 
-    onMounted(fetchConversations);
+    onMounted(() => {
+      console.log('ConversationsListView mounted');
+      // Utiliser les données en cache si disponibles, puis actualiser en arrière-plan
+      if (conversations.value.length > 0) {
+        initialLoading.value = false;
+        loadConversations(true);
+      } else {
+        loadConversations(false);
+      }
+
+      // Démarrer la mise à jour automatique
+      startAutoRefresh();
+    });
+
+    onUnmounted(() => {
+      stopAutoRefresh();
+    });
 
     return {
       conversations,
-      loading,
+      initialLoading,
+      silentLoading,
       error,
       openConversation,
-      fetchConversations,
+      loadConversations,
       formatDate,
-      truncateMessage
+      truncateMessage,
+      getOtherUserName
     };
   }
 };
@@ -146,6 +191,7 @@ export default {
   padding: 20px;
   min-height: calc(100vh - 70px);
   background-color: #f4f7f6;
+  position: relative;
 }
 
 h1 {
@@ -172,6 +218,29 @@ h1 {
   margin-bottom: 15px;
 }
 
+.loading-spinner-small {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: #3498db;
+  animation: spin 1s ease-in-out infinite;
+}
+
+.refresh-indicator {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background-color: white;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
@@ -182,6 +251,7 @@ h1 {
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
 }
 
 .error-message {

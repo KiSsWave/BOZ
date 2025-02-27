@@ -23,6 +23,13 @@ class GetConversationsAction extends AbstractAction
             $user = $request->getAttribute('user');
             $userLogin = $user->getEmail();
 
+            // Vérifier si on doit inclure le dernier message
+            $includeLastMessage = false;
+            $params = $request->getQueryParams();
+            if (isset($params['include_last_message']) && $params['include_last_message'] === 'true') {
+                $includeLastMessage = true;
+            }
+
             // Récupérer les conversations de l'utilisateur
             $conversations = $this->conversationService->getConversationsByUserLogin($userLogin);
 
@@ -38,10 +45,23 @@ class GetConversationsAction extends AbstractAction
                     ? $conversation->user2Login
                     : $conversation->user1Login;
 
+                $lastMessage = '';
+
+                // Si on a demandé le dernier message, le récupérer
+                if ($includeLastMessage && $conversation->last_message_timestamp) {
+                    // Obtenir le dernier message (vous devrez peut-être implémenter cette méthode)
+                    $messages = $this->conversationService->getMessagesByConversationId($conversation->ID, 1);
+                    if (!empty($messages)) {
+                        $lastMessage = $messages[0]->content;
+                    }
+                }
+
                 $responseData['conversations'][] = [
                     'id' => $conversation->ID,
-                    'otherUser' => $otherUserLogin,
-                    'lastMessageTimestamp' => $conversation->last_message_timestamp
+                    'user1Login' => $conversation->user1Login,
+                    'user2Login' => $conversation->user2Login,
+                    'lastMessage' => $lastMessage,
+                    'last_message_timestamp' => $conversation->last_message_timestamp
                 ];
             }
 

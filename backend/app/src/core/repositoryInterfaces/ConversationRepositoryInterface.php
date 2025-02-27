@@ -15,5 +15,5 @@ interface ConversationRepositoryInterface {
     public function updateLastMessageTimestamp(string $conversationId, int $timestamp): void;
     public function saveMessage(MessageDTO $messageDTO): void;
     public function getMessagesByConversationId(string $conversationId): array;
-    public function markMessagesAsRead(string $conversationId, string $userLogin): void;
+
 }

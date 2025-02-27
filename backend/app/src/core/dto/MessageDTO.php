@@ -10,7 +10,6 @@ class MessageDTO extends DTO {
     public string $receiverLogin;
     public string $content;
     public int $timestamp;
-    public bool $read;
     public string $conversationId;
 
     public function __construct(Message $message) {
@@ -18,8 +17,7 @@ class MessageDTO extends DTO {
         $this->senderLogin = $message->getSenderLogin();
         $this->receiverLogin = $message->getReceiverLogin();
         $this->content = $message->getContent();
-        $this->timestamp = $message->getTimestamp();
-        $this->read = $message->isRead();
+        $this->timestamp = $message->getTimestamp();;
         $this->conversationId = $message->getConversationId();
     }
 }

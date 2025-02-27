@@ -74,7 +74,6 @@ class SendMessageAction extends AbstractAction
                     'receiverLogin' => $message->receiverLogin,
                     'content' => $message->content,
                     'timestamp' => $message->timestamp,
-                    'read' => $message->read
                 ]
             ];
 

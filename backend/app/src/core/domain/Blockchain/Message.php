@@ -9,7 +9,6 @@ class Message extends Entity {
     private string $receiverLogin;
     private string $content;
     private int $timestamp;
-    private bool $read;
     private string $conversationId;
 
     public function __construct(
@@ -18,14 +17,12 @@ class Message extends Entity {
         string $content,
         string $conversationId,
         int $timestamp = null,
-        bool $read = false
     ) {
         $this->senderLogin = $senderLogin;
         $this->receiverLogin = $receiverLogin;
         $this->content = $content;
         $this->conversationId = $conversationId;
         $this->timestamp = $timestamp ?? time();
-        $this->read = $read;
     }
 
     public function getSenderLogin(): string {
@@ -46,13 +43,5 @@ class Message extends Entity {
 
     public function getTimestamp(): int {
         return $this->timestamp;
-    }
-
-    public function isRead(): bool {
-        return $this->read;
-    }
-
-    public function markAsRead(): void {
-        $this->read = true;
     }
 }

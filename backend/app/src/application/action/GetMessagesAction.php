@@ -42,9 +42,6 @@ class GetMessagesAction extends AbstractAction
                 throw new \Exception('Vous n\'avez pas accès à cette conversation');
             }
 
-            // Marquer les messages comme lus pour cet utilisateur
-            $this->conversationService->markMessagesAsRead($conversationId, $userLogin);
-
             // Récupérer les messages
             $messages = $this->conversationService->getMessagesByConversationId($conversationId);
 
@@ -67,7 +64,6 @@ class GetMessagesAction extends AbstractAction
                     'receiverLogin' => $message->receiverLogin,
                     'content' => $message->content,
                     'timestamp' => $message->timestamp,
-                    'read' => $message->read,
                     'isMine' => ($message->senderLogin === $userLogin)
                 ];
             }

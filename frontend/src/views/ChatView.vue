@@ -3,94 +3,71 @@
     <HeaderComponent />
 
     <div class="chat-container">
-      <!-- En-tête du chat -->
       <div class="chat-header">
         <button class="back-button" @click="goBack">
           <font-awesome-icon :icon="['fas', 'arrow-left']" />
         </button>
-        <div v-if="otherUser" class="chat-user">
-          <div class="user-avatar">
-            <font-awesome-icon :icon="['fas', 'user']" />
-          </div>
-          <div class="user-info">
-            <h2>{{ otherUser }}</h2>
-          </div>
-        </div>
-        <div v-else class="placeholder-user"></div>
+        <h2 v-if="currentConversation">{{ getOtherUserName(currentConversation) }}</h2>
+        <div class="placeholder" aria-hidden="true"></div>
       </div>
 
-      <!-- Corps du chat -->
-      <div v-if="loading" class="chat-loading">
+      <div v-if="initialLoading" class="loading-container">
         <div class="loading-spinner"></div>
         <p>Chargement des messages...</p>
       </div>
 
-      <div v-else-if="error" class="chat-error">
-        <p>{{ error }}</p>
-        <button @click="fetchMessages" class="retry-button">Réessayer</button>
+      <div v-else-if="error" class="error-container">
+        <p class="error-message">{{ error }}</p>
+        <button @click="loadMessages(false)" class="retry-button">Réessayer</button>
       </div>
 
-      <div v-else class="chat-messages" ref="messagesContainer">
-        <div v-if="messages.length === 0" class="no-messages">
-          <p>Aucun message. Commencez la conversation !</p>
+      <div v-else class="messages-container" ref="messagesContainer">
+        <div v-if="!messages || messages.length === 0" class="empty-chat">
+          <p>Aucun message dans cette conversation.</p>
+          <p>Commencez à discuter maintenant!</p>
         </div>
 
-        <template v-else>
+        <div v-else class="messages-list">
           <div
             v-for="(message, index) in messages"
-            :key="message.id"
-            :class="['message-wrapper', message.isMine ? 'my-message' : 'their-message']"
+            :key="message?.id || index"
+            :class="['message', (message?.senderLogin === userStore.user?.login) ? 'sent' : 'received']"
           >
-            <!-- Afficher la date si c'est un nouveau jour ou le premier message -->
-            <div
-              v-if="shouldShowDate(message, index)"
-              class="date-separator"
-            >
-              {{ formatDayDate(message.timestamp) }}
-            </div>
-
-            <div class="message">
-              <div class="message-content">{{ message.content }}</div>
-              <div class="message-time">{{ formatTime(message.timestamp) }}</div>
-              <div v-if="message.isMine" class="message-status">
-                <font-awesome-icon
-                  :icon="['fas', message.read ? 'check-double' : 'check']"
-                  :class="{ 'read': message.read }"
-                />
-              </div>
+            <div class="message-content">
+              <p>{{ message?.content || '' }}</p>
+              <span class="message-time">{{ formatTime(message?.timestamp) }}</span>
             </div>
           </div>
-        </template>
+        </div>
       </div>
 
-      <!-- Formulaire d'envoi de messages -->
-      <div class="chat-input">
-        <form @submit.prevent="sendMessage">
-          <div class="input-container">
-            <textarea
-              v-model="newMessage"
-              placeholder="Écrivez votre message..."
-              @keydown.enter.prevent="sendMessage"
-              ref="messageInput"
-              :disabled="sending"
-            ></textarea>
-            <button type="submit" class="send-button" :disabled="!newMessage.trim() || sending">
-              <font-awesome-icon v-if="sending" :icon="['fas', 'spinner']" spin />
-              <font-awesome-icon v-else :icon="['fas', 'paper-plane']" />
-            </button>
-          </div>
-        </form>
+      <div class="message-form">
+        <textarea
+          v-model="newMessage"
+          placeholder="Écrivez votre message..."
+          @keyup.enter="handleEnter"
+          class="message-input"
+          :disabled="sendingMessage"
+        ></textarea>
+        <button
+          @click="sendMessageHandler"
+          class="send-button"
+          :disabled="!newMessage.trim() || sendingMessage"
+        >
+          <font-awesome-icon v-if="!sendingMessage" :icon="['fas', 'paper-plane']" />
+          <font-awesome-icon v-else :icon="['fas', 'circle-notch']" spin />
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, onMounted, computed, nextTick, watch, onBeforeUnmount } from 'vue';
+import { ref, computed, onMounted, nextTick, watch, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import HeaderComponent from '@/components/HeaderComponent.vue';
 import { useUserStore } from '@/stores/userStore';
-import { useAppStore } from '@/stores/appStore';
+import { useConversations } from '@/composables/useConversations';
 
 export default {
   name: 'ChatView',
@@ -98,191 +75,233 @@ export default {
     HeaderComponent
   },
   setup() {
+    console.log("ChatView setup init");
     const route = useRoute();
     const router = useRouter();
     const userStore = useUserStore();
-    const appStore = useAppStore();
+    const {
+      messages,
+      currentConversation,
+      loading,
+      error,
+      fetchMessages,
+      fetchConversations,
+      sendMessage,
+      addOptimisticMessage,
+      setCurrentConversation,
+      refreshMessages
+    } = useConversations();
 
-    // Refs locaux
+    // Références et états locaux
+    const messagesContainer = ref(null);
     const conversationId = computed(() => route.params.id);
     const newMessage = ref('');
-    const sending = ref(false);
-    const messagesContainer = ref(null);
-    const messageInput = ref(null);
-    const otherUser = ref('');
-    const loading = ref(true);
-    const error = ref(null);
+    const initialLoading = ref(true);
+    const silentLoading = ref(false);
+    const sendingMessage = ref(false);
+    const pollingInterval = ref(null);
 
-    // Messages actuels de cette conversation
-    const messages = computed(() => {
-      return appStore.getMessagesByConversationId(conversationId.value) || [];
-    });
+    // Valider les messages pour éviter les erreurs
+    const validateMessages = () => {
+      console.log("Validation des messages:", messages.value);
+      if (!Array.isArray(messages.value)) {
+        console.warn('Messages n\'est pas un tableau:', messages.value);
+        messages.value = []; // Initialiser comme un tableau vide
+      }
+    };
 
-    // Définir le polling pour rafraîchir les messages
-    let pollingInterval = null;
-
-    const fetchMessages = async () => {
-      if (!conversationId.value) return;
-
+    // Récupérer les messages
+    const loadMessages = async (silent = false) => {
       try {
-        loading.value = true;
-        error.value = null;
-
-        await appStore.fetchMessages(conversationId.value);
-
-        // Déterminer l'autre utilisateur
-        if (messages.value.length > 0) {
-          const firstMessage = messages.value[0];
-          otherUser.value = firstMessage.senderLogin === userStore.user.login
-            ? firstMessage.receiverLogin
-            : firstMessage.senderLogin;
-        } else {
-          const conversation = appStore.getConversationById(conversationId.value);
-          if (conversation) {
-            otherUser.value = conversation.user1Login === userStore.user.login
-              ? conversation.user2Login
-              : conversation.user1Login;
-          }
+        if (!conversationId.value) {
+          console.error("ID de conversation manquant");
+          error.value = "ID de conversation invalide";
+          initialLoading.value = false;
+          return;
         }
 
-        // Défiler vers le bas après le chargement des messages
-        await nextTick();
-        scrollToBottom();
+        if (silent) {
+          silentLoading.value = true;
+        } else {
+          initialLoading.value = true;
+        }
+
+        console.log(`Chargement des messages pour la conversation ${conversationId.value}`);
+        await fetchMessages(conversationId.value);
+        validateMessages();
+
+        if (!silent) {
+          scrollToBottom();
+        }
       } catch (err) {
         console.error('Erreur lors de la récupération des messages:', err);
-        error.value = 'Impossible de charger les messages. Veuillez réessayer plus tard.';
       } finally {
-        loading.value = false;
+        initialLoading.value = false;
+        silentLoading.value = false;
       }
     };
 
-    const sendMessage = async () => {
-      if (!newMessage.value.trim() || sending.value) return;
+    // Polling sécurisé pour les nouveaux messages
+    const startPolling = () => {
+      // Arrêter d'abord tout polling existant
+      stopPolling();
 
-      try {
-        sending.value = true;
+      // Créer un nouvel intervalle (toutes les 8 secondes pour éviter les requêtes trop fréquentes)
+      pollingInterval.value = setInterval(() => {
+        if (conversationId.value) {
+          refreshMessages(conversationId.value);
+        }
+      }, 8000);
 
-        await appStore.sendMessage(conversationId.value, newMessage.value);
+      console.log("Polling démarré");
+    };
 
-        // Vider le champ de message
-        newMessage.value = '';
-
-        // Focus sur le champ d'entrée
-        messageInput.value.focus();
-
-        // Défiler vers le bas
-        await nextTick();
-        scrollToBottom();
-      } catch (err) {
-        console.error('Erreur lors de l\'envoi du message:', err);
-        alert('Erreur lors de l\'envoi du message. Veuillez réessayer.');
-      } finally {
-        sending.value = false;
+    const stopPolling = () => {
+      if (pollingInterval.value) {
+        clearInterval(pollingInterval.value);
+        pollingInterval.value = null;
+        console.log("Polling arrêté");
       }
     };
 
-    const scrollToBottom = () => {
-      if (messagesContainer.value) {
-        messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
-      }
+    const getOtherUserName = (conversation) => {
+      if (!conversation) return '';
+      const currentUserLogin = userStore.user?.login;
+      if (!currentUserLogin) return conversation.user1Login || '';
+
+      return conversation.user1Login === currentUserLogin
+        ? conversation.user2Login
+        : conversation.user1Login;
     };
 
     const formatTime = (timestamp) => {
       if (!timestamp) return '';
-      const date = new Date(timestamp * 1000);
-      return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+      try {
+        const date = new Date(timestamp * 1000);
+        return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+      } catch (e) {
+        console.error("Erreur de formatage de l'heure:", e);
+        return '';
+      }
     };
 
-    const formatDayDate = (timestamp) => {
-      if (!timestamp) return '';
-
-      const date = new Date(timestamp * 1000);
-      const today = new Date();
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-
-      // Si c'est aujourd'hui
-      if (date.toDateString() === today.toDateString()) {
-        return 'Aujourd\'hui';
-      }
-
-      // Si c'est hier
-      if (date.toDateString() === yesterday.toDateString()) {
-        return 'Hier';
-      }
-
-      // Sinon, afficher la date complète
-      return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    const scrollToBottom = () => {
+      nextTick(() => {
+        if (messagesContainer.value) {
+          messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+        }
+      });
     };
 
-    const shouldShowDate = (message, index) => {
-      if (index === 0) return true;
+    const handleEnter = (event) => {
+      if (!event.shiftKey) {
+        event.preventDefault();
+        sendMessageHandler();
+      }
+    };
 
-      const currentDate = new Date(message.timestamp * 1000).toDateString();
-      const previousDate = new Date(messages.value[index - 1].timestamp * 1000).toDateString();
+    const sendMessageHandler = async () => {
+      if (!newMessage.value.trim() || sendingMessage.value) return;
+      if (!conversationId.value) {
+        console.error("Impossible d'envoyer le message: ID de conversation manquant");
+        return;
+      }
 
-      return currentDate !== previousDate;
+      // Optimistic update - ajouter immédiatement un message temporaire
+      const tempMessage = {
+        id: 'temp-' + Date.now(),
+        senderLogin: userStore.user?.login,
+        receiverLogin: getOtherUserName(currentConversation.value),
+        content: newMessage.value,
+        timestamp: Math.floor(Date.now() / 1000),
+        isTemp: true,
+        conversationId: conversationId.value
+      };
+
+      // Effacer l'input avant d'envoyer
+      const messageToSend = newMessage.value;
+      newMessage.value = '';
+
+      try {
+        // Ajouter temporairement le message à la liste
+        addOptimisticMessage(tempMessage);
+        scrollToBottom();
+
+        sendingMessage.value = true;
+        await sendMessage(conversationId.value, messageToSend);
+      } catch (err) {
+        console.error('Erreur lors de l\'envoi du message:', err);
+      } finally {
+        sendingMessage.value = false;
+        scrollToBottom();
+      }
     };
 
     const goBack = () => {
       router.push('/conversations');
     };
 
-    // Configurer le polling pour rafraîchir les messages
-    const setupPolling = () => {
-      // Nettoyer tout intervalle existant
-      if (pollingInterval) {
-        clearInterval(pollingInterval);
-      }
-
-      // Configurer un nouveau polling toutes les 10 secondes
-      pollingInterval = setInterval(async () => {
-        if (!loading.value && !error.value) {
-          await appStore.fetchMessages(conversationId.value, false);
-        }
-      }, 10000); // 10 secondes
-    };
-
-    // Surveiller les changements d'ID de conversation
-    watch(conversationId, () => {
-      fetchMessages();
+    // Observer les changements dans les messages pour auto-scroller
+    watch(messages, () => {
+      scrollToBottom();
     });
 
-    onMounted(() => {
-      fetchMessages();
-      setupPolling();
+    onMounted(async () => {
+      console.log("ChatView mounted");
 
-      // Focus sur le champ d'entrée
-      nextTick(() => {
-        if (messageInput.value) {
-          messageInput.value.focus();
+      try {
+        if (!currentConversation.value) {
+          // Si on accède directement à la page de chat sans passer par la liste
+          console.log("Pas de conversation courante, chargement initial");
+
+          try {
+            const conversations = await fetchConversations(false);
+            console.log(`${conversations.length} conversations récupérées`);
+
+            const conversation = conversations.find(c => c.id === conversationId.value);
+            if (conversation) {
+              console.log("Conversation trouvée:", conversation.id);
+              setCurrentConversation(conversation);
+            } else {
+              console.warn("Conversation non trouvée dans la liste:", conversationId.value);
+            }
+          } catch (err) {
+            console.error('Erreur lors de la récupération des conversations:', err);
+          }
+        } else {
+          console.log("Conversation courante déjà définie:", currentConversation.value.id);
         }
-      });
+
+        await loadMessages(false);
+        startPolling();
+      } catch (e) {
+        console.error("Erreur lors de l'initialisation:", e);
+      }
     });
 
-    // Nettoyer le polling lors de la destruction du composant
-    onBeforeUnmount(() => {
-      if (pollingInterval) {
-        clearInterval(pollingInterval);
-      }
+    onUnmounted(() => {
+      console.log("ChatView unmounted");
+      stopPolling();
     });
 
     return {
       conversationId,
       messages,
-      loading,
-      error,
       newMessage,
-      sending,
+      initialLoading,
+      silentLoading,
+      sendingMessage,
+      error,
       messagesContainer,
-      messageInput,
-      otherUser,
-      fetchMessages,
-      sendMessage,
+      currentConversation,
+      userStore,
+      sendMessageHandler,
+      handleEnter,
       formatTime,
-      formatDayDate,
-      shouldShowDate,
-      goBack
+      getOtherUserName,
+      goBack,
+      loadMessages
     };
   }
 };
@@ -290,87 +309,53 @@ export default {
 
 <style scoped>
 .chat-page {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f4f7f6;
 }
 
 .chat-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
   max-width: 800px;
   margin: 0 auto;
-  width: 100%;
-  background-color: #f4f7f6;
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 70px);
 }
 
 .chat-header {
   display: flex;
   align-items: center;
-  padding: 15px;
+  justify-content: space-between;
+  padding: 15px 20px;
   background-color: white;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chat-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #2c3e50;
 }
 
 .back-button {
   background: none;
   border: none;
+  cursor: pointer;
   color: #3498db;
   font-size: 1.2rem;
-  cursor: pointer;
   padding: 5px;
-  margin-right: 15px;
 }
 
-.chat-user {
-  display: flex;
-  align-items: center;
+.placeholder {
+  width: 24px;
 }
 
-.user-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #f1f2f6;
+.loading-container {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-right: 10px;
-  color: #3498db;
-}
-
-.user-info h2 {
-  margin: 0;
-  font-size: 1.1rem;
-  color: #2c3e50;
-}
-
-.placeholder-user {
-  height: 40px;
-}
-
-.chat-messages {
   flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.chat-loading, .chat-error, .no-messages {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 50px 20px;
-  text-align: center;
-  color: #7f8c8d;
+  background-color: white;
 }
 
 .loading-spinner {
@@ -387,148 +372,153 @@ export default {
   to { transform: rotate(360deg); }
 }
 
+.error-container {
+  text-align: center;
+  padding: 30px;
+  background-color: white;
+  flex: 1;
+}
+
+.error-message {
+  color: #e74c3c;
+  margin-bottom: 15px;
+}
+
 .retry-button {
-  margin-top: 15px;
   background-color: #3498db;
   color: white;
   border: none;
   padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
+  transition: background-color 0.3s;
 }
 
-.message-wrapper {
+.retry-button:hover {
+  background-color: #2980b9;
+}
+
+.messages-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  background-color: white;
+}
+
+.empty-chat {
   display: flex;
   flex-direction: column;
-  max-width: 80%;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #95a5a6;
+  text-align: center;
 }
 
-.my-message {
-  align-self: flex-end;
-}
-
-.their-message {
-  align-self: flex-start;
-}
-
-.date-separator {
-  align-self: center;
-  margin: 10px 0;
-  padding: 5px 10px;
-  background-color: rgba(0, 0, 0, 0.05);
-  border-radius: 15px;
-  font-size: 0.8rem;
-  color: #7f8c8d;
+.messages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .message {
-  position: relative;
-  padding: 10px 15px;
-  border-radius: 18px;
-  margin-bottom: 2px;
-  word-break: break-word;
+  display: flex;
+  margin-bottom: 10px;
 }
 
-.my-message .message {
+.message.sent {
+  justify-content: flex-end;
+}
+
+.message.received {
+  justify-content: flex-start;
+}
+
+.message-content {
+  max-width: 70%;
+  padding: 10px 15px;
+  border-radius: 18px;
+  position: relative;
+}
+
+.sent .message-content {
   background-color: #3498db;
   color: white;
   border-bottom-right-radius: 4px;
 }
 
-.their-message .message {
-  background-color: white;
+.received .message-content {
+  background-color: #f1f2f6;
   color: #2c3e50;
   border-bottom-left-radius: 4px;
 }
 
-.message-content {
-  margin-bottom: 15px;
+.message-content p {
+  margin: 0;
+  word-wrap: break-word;
 }
 
 .message-time {
-  position: absolute;
-  bottom: 5px;
-  right: 10px;
+  display: block;
   font-size: 0.7rem;
+  margin-top: 5px;
+  text-align: right;
   opacity: 0.8;
 }
 
-.my-message .message-time {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.their-message .message-time {
-  color: #7f8c8d;
-}
-
-.message-status {
-  position: absolute;
-  bottom: 5px;
-  left: 10px;
-  font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.message-status .read {
-  color: #2ecc71;
-}
-
-.chat-input {
+.message-form {
+  display: flex;
   padding: 15px;
   background-color: white;
-  border-top: 1px solid #eaeaea;
+  border-top: 1px solid #e5e5e5;
 }
 
-.input-container {
-  display: flex;
-  align-items: center;
-  background-color: #f9f9f9;
-  border-radius: 20px;
-  padding: 0 15px;
-}
-
-textarea {
+.message-input {
   flex: 1;
-  border: none;
-  outline: none;
-  background: transparent;
-  padding: 12px 0;
+  border: 1px solid #e5e5e5;
+  border-radius: 20px;
+  padding: 10px 15px;
   resize: none;
   max-height: 100px;
   font-family: inherit;
-  font-size: 1rem;
-  line-height: 1.5;
+}
+
+.message-input:focus {
+  outline: none;
+  border-color: #3498db;
 }
 
 .send-button {
-  background: none;
+  background-color: #3498db;
+  color: white;
   border: none;
-  color: #3498db;
-  font-size: 1.2rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-left: 10px;
   cursor: pointer;
-  padding: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.2s;
-}
-
-.send-button:hover:not(:disabled) {
-  color: #2980b9;
+  transition: background-color 0.3s;
 }
 
 .send-button:disabled {
-  color: #95a5a6;
+  background-color: #bdc3c7;
   cursor: not-allowed;
+}
+
+.send-button:not(:disabled):hover {
+  background-color: #2980b9;
 }
 
 @media (max-width: 768px) {
   .chat-container {
-    max-width: 100%;
+    height: calc(100vh - 70px);
   }
 
-  .message-wrapper {
-    max-width: 90%;
+  .message-content {
+    max-width: 85%;
   }
 }
 </style>

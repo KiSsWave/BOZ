@@ -134,9 +134,8 @@ class ConversationRepository implements ConversationRepositoryInterface
     public function saveMessage(MessageDTO $messageDTO): void
     {
         try {
-            $query = $this->pdo->prepare("
-                INSERT INTO messages (id, sender_login, receiver_login, content, timestamp, read)
-                VALUES (:id, :sender_login, :receiver_login, :content, to_timestamp(:timestamp), :read)
+            $query = $this->pdo->prepare("INSERT INTO messages (id, sender_login, receiver_login, content, timestamp)
+            VALUES (:id, :sender_login, :receiver_login, :content, to_timestamp(:timestamp))
             ");
 
             $query->execute([
@@ -145,7 +144,6 @@ class ConversationRepository implements ConversationRepositoryInterface
                 ':receiver_login' => $messageDTO->receiverLogin,
                 ':content' => $messageDTO->content,
                 ':timestamp' => $messageDTO->timestamp,
-                ':read' => $messageDTO->read ?? false
             ]);
 
 
@@ -188,7 +186,6 @@ class ConversationRepository implements ConversationRepositoryInterface
                     $result['content'],
                     $conversationId,
                     strtotime($result['timestamp']),
-                    (bool)$result['read']
                 );
                 $message->setId($result['id']);
                 $messages[] = $message;
@@ -200,32 +197,5 @@ class ConversationRepository implements ConversationRepositoryInterface
         }
     }
 
-    public function markMessagesAsRead(string $conversationId, string $userLogin): void
-    {
-        try {
 
-            $conversation = $this->getConversationById($conversationId);
-            if (!$conversation) {
-                throw new RepositoryEntityNotFoundException("Conversation non trouvée");
-            }
-
-
-            $query = $this->pdo->prepare("
-                UPDATE messages
-                SET read = true
-                WHERE receiver_login = :userLogin
-                AND (
-                    (sender_login = :user1Login AND receiver_login = :user2Login)
-                    OR (sender_login = :user2Login AND receiver_login = :user1Login)
-                )
-            ");
-            $query->execute([
-                ':userLogin' => $userLogin,
-                ':user1Login' => $conversation->getUser1Login(),
-                ':user2Login' => $conversation->getUser2Login()
-            ]);
-        } catch (Exception $e) {
-            throw new Exception('Erreur lors de la mise à jour des messages : ' . $e->getMessage());
-        }
-    }
 }
