@@ -1,17 +1,14 @@
-# BOZ - Blochain Oriented Zone
-*Le paiement sécurisé, partout, et sans connexion !*
+# BOZ - Blockchain Oriented Zone  
+*Le paiement sécurisé, partout, et sans connexion !*  
 
-## Groupe:
+## Équipe  
+- **CLAIR Mathieu**  
+- **COLSON Lenny**  
+- **JEANDIDIER Clément**  
+- **SZEZCPANSKI Gaëtan**  
 
-- CLAIR Mathieu 
-- COLSON Lenny
-- JEANDIDIER Clément
-- SZEZCPANSKI Gaëtan
-
-## Installation:
-
-    backend: /backend/app => **composer install**
-
-    frontend: /frontend => **npm install**
-
-    mobile: /app => **flutter run**
+## Installation  
+📂 **Backend** : `/backend/app` → `composer install`  
+📂 **Frontend** : `/frontend` → `npm install`  
+📂 **Mobile** : `/app` → `flutter run`  
+📂 **Base de données** : `/backend/sql` → Importer `tables.sql`  
