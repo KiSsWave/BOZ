@@ -77,8 +77,9 @@ class RemoteService {
     );
   }
 
-  Future<String?> getRole() async {
-    return await storage.read(key: 'role');
+  Future<int?> getRole() async {
+    var roleString = await storage.read(key: 'role');
+    return roleString != null ? int.parse(roleString) : null;
   }
 
   Future<http.Response> _authenticatedGetRequest(String url) async {

@@ -17,13 +17,8 @@
 
         <div class="form-group">
           <label for="message">Votre message :</label>
-          <textarea
-            id="message"
-            v-model="form.message"
-            required
-            rows="6"
-            placeholder="Décrivez votre problème en détail..."
-          ></textarea>
+          <textarea id="message" v-model="form.message" required rows="6"
+            placeholder="Décrivez votre problème en détail..."></textarea>
         </div>
 
         <div v-if="error" class="error-message">
@@ -38,6 +33,12 @@
           {{ loading ? 'Envoi en cours...' : 'Envoyer le ticket' }}
         </button>
       </form>
+      <div class="FAQ">
+        <span>Vous avez des questions ? Elles sont peut être</span>
+        <label class="link" @click="FAQ">
+          ici
+        </label>.
+      </div>
     </div>
   </div>
 </template>
@@ -62,6 +63,9 @@ export default {
     const error = ref(null)
     const success = ref(null)
 
+    const FAQ = () => {
+      window.location.href = '/faq'
+    }
     const submitTicket = async () => {
       loading.value = true
       error.value = null
@@ -92,7 +96,8 @@ export default {
       loading,
       error,
       success,
-      submitTicket
+      submitTicket,
+      FAQ
     }
   }
 }
@@ -132,7 +137,28 @@ label {
   font-weight: bold;
 }
 
-select, textarea {
+.link {
+  color: #3498db;
+  cursor: pointer;
+  font-weight: bold;
+  transition: color 0.3s ease;
+  display: inline-block;
+  margin-left: 5px;
+}
+
+.link:hover {
+  color: #2980b9;
+  text-decoration: underline;
+}
+
+.FAQ {
+  text-align: center;
+  margin-top: 20px;
+
+}
+
+select,
+textarea {
   width: 100%;
   padding: 12px;
   border: 1px solid #ddd;
@@ -141,7 +167,8 @@ select, textarea {
   transition: border-color 0.3s ease;
 }
 
-select:focus, textarea:focus {
+select:focus,
+textarea:focus {
   outline: none;
   border-color: #3498db;
 }
@@ -191,6 +218,7 @@ button:disabled {
   margin-bottom: 20px;
   text-align: center;
 }
+
 
 @media (max-width: 480px) {
   .contact-container {

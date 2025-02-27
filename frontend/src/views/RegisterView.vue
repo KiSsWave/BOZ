@@ -108,7 +108,6 @@ export default {
           email: this.form.email,
           password: this.form.password,
         });
-        // if (response.data) {
         if (response.status === 200) {
           alert('Inscription réussie !');
           this.$router.push('/login');

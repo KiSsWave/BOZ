@@ -5,3 +5,7 @@
 /.idea
 
 
+app/pubspec.lock
+/app/windows
+/app/linux
+/app/macos

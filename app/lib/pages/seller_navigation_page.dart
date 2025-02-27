@@ -1,22 +1,23 @@
 import 'package:boz/pages/qr_page.dart';
 import 'package:flutter/material.dart';
 import 'home_page.dart';
+import 'settings_page.dart';
 import 'package:boz/services/remote_service.dart';
 
-class MyNavigation extends StatefulWidget {
-  MyNavigation({Key? key}) : super(key: key);
+class SellerNavigation extends StatefulWidget {
+  SellerNavigation({Key? key}) : super(key: key);
 
   @override
-  State<MyNavigation> createState() => MyNavigationBar();
+  State<SellerNavigation> createState() => SellerNavigationBar();
 }
 
-class MyNavigationBar extends State<MyNavigation> {
+class SellerNavigationBar extends State<SellerNavigation> {
   int _currentIndex = 0;
 
   final List<Widget> body = [
     const HomePage(),
-    const QRPage(), // Placeholder pour le scanner
-    const Center(child: Text("Paramètres")), // Placeholder pour le profil
+    const QRPage(),
+    const SettingsPage(),
   ];
 
   @override
@@ -35,36 +36,6 @@ class MyNavigationBar extends State<MyNavigation> {
   void _handleLogout() async {
     await RemoteService().disconnectUser();
     Navigator.pushReplacementNamed(context, "/login");
-  }
-
-  void _showLogoutConfirmation(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Confirmation"),
-          content: const Text("Êtes-vous sûr de vouloir vous déconnecter ?"),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Fermer la boîte de dialogue
-              },
-              child: const Text("Annuler"),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Fermer la boîte de dialogue
-                _handleLogout(); // Exécuter la déconnexion
-              },
-              child: const Text(
-                "Confirmer",
-                style: TextStyle(color: Colors.red),
-              ),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
@@ -90,7 +61,8 @@ class MyNavigationBar extends State<MyNavigation> {
         ),
       ),
       backgroundColor: Colors.grey[300],
-      body: _currentIndex < body.length ? body[_currentIndex] : const SizedBox(),
+      body:
+          _currentIndex < body.length ? body[_currentIndex] : const SizedBox(),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         type: BottomNavigationBarType.fixed, // Fond constant
@@ -110,19 +82,11 @@ class MyNavigationBar extends State<MyNavigation> {
             icon: Icon(Icons.settings),
             label: "Paramètres",
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.logout),
-            label: "Déconnexion",
-          ),
         ],
         onTap: (index) {
-          if (index == 3) {
-            _showLogoutConfirmation(context);
-          } else {
-            setState(() {
-              _currentIndex = index;
-            });
-          }
+          setState(() {
+            _currentIndex = index;
+          });
         },
       ),
     );
