@@ -1,7 +1,8 @@
 import 'package:boz/pages/qr_page.dart';
 import 'package:flutter/material.dart';
-import 'home_page.dart';
+import 'seller_home_page.dart';
 import 'settings_page.dart';
+import 'bills.dart';
 import 'package:boz/services/remote_service.dart';
 
 class SellerNavigation extends StatefulWidget {
@@ -15,8 +16,8 @@ class SellerNavigationBar extends State<SellerNavigation> {
   int _currentIndex = 0;
 
   final List<Widget> body = [
-    const HomePage(),
-    const QRPage(),
+    const SellerHomePage(),
+    const BillsPage(),
     const SettingsPage(),
   ];
 
