@@ -28,11 +28,11 @@
         </div>
 
         <div v-else class="messages-list">
-          <div
-            v-for="(message, index) in messages"
-            :key="message?.id || index"
-            :class="['message', (message?.senderLogin === userStore.user?.login) ? 'sent' : 'received']"
-          >
+          <div v-for="(message, index) in messages" :key="message?.id || index" :class="[
+            'message',
+            (messages[0]?.senderLogin === message?.senderLogin) ? 'sent' : 'received',
+            (message?.id === messages[0]?.id) ? 'first-message' : '',
+          ]">
             <div class="message-content">
               <p>{{ message?.content || '' }}</p>
               <span class="message-time">{{ formatTime(message?.timestamp) }}</span>
@@ -42,18 +42,9 @@
       </div>
 
       <div class="message-form">
-        <textarea
-          v-model="newMessage"
-          placeholder="Écrivez votre message..."
-          @keyup.enter="handleEnter"
-          class="message-input"
-          :disabled="sendingMessage"
-        ></textarea>
-        <button
-          @click="sendMessageHandler"
-          class="send-button"
-          :disabled="!newMessage.trim() || sendingMessage"
-        >
+        <textarea v-model="newMessage" placeholder="Écrivez votre message..." @keyup.enter="handleEnter"
+          class="message-input" :disabled="sendingMessage"></textarea>
+        <button @click="sendMessageHandler" class="send-button" :disabled="!newMessage.trim() || sendingMessage">
           <font-awesome-icon v-if="!sendingMessage" :icon="['fas', 'paper-plane']" />
           <font-awesome-icon v-else :icon="['fas', 'circle-notch']" spin />
         </button>
@@ -369,7 +360,9 @@ export default {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .error-container {
@@ -426,14 +419,6 @@ export default {
   margin-bottom: 10px;
 }
 
-.message.sent {
-  justify-content: flex-end;
-}
-
-.message.received {
-  justify-content: flex-start;
-}
-
 .message-content {
   max-width: 70%;
   padding: 10px 15px;
@@ -441,6 +426,33 @@ export default {
   position: relative;
 }
 
+/* Correction pour les styles des messages */
+
+/* Aligner les messages à gauche/droite */
+/* Style pour le premier message qui sera placé à droite */
+.message.first-message {
+  justify-content: flex-end;
+}
+
+.message.first-message .message-content {
+  background-color: #3498db;
+  /* Bleu pour l'expéditeur du premier message */
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+/* Les autres messages restent à gauche, mais peuvent être personnalisés pour les autres utilisateurs */
+.message.received {
+  justify-content: flex-start;
+}
+
+.message.received .message-content {
+  background-color: #f1f2f6;
+  color: #2c3e50;
+  border-bottom-left-radius: 4px;
+}
+
+/* Style du contenu des messages */
 .sent .message-content {
   background-color: #3498db;
   color: white;
@@ -486,6 +498,19 @@ export default {
 .message-input:focus {
   outline: none;
   border-color: #3498db;
+}
+
+.received {
+  background-color: #f1f2f6;
+  color: #2c3e50;
+  border-bottom-left-radius: 4px;
+}
+
+.received-mine {
+  background-color: #d1e7dd;
+  /* Vert clair pour tes propres messages reçus */
+  color: #155724;
+  border-bottom-left-radius: 4px;
 }
 
 .send-button {

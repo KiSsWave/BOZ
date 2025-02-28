@@ -15,6 +15,7 @@ import { faPaperPlane } from '@fortawesome/free-solid-svg-icons'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons'
 import { faTicket} from '@fortawesome/free-solid-svg-icons'
+import { faCircleNotch } from '@fortawesome/free-solid-svg-icons'
 
 const pinia = createPinia()
 const app = createApp(App)
@@ -25,6 +26,7 @@ library.add(faCheckSquare)
 library.add(faX)
 library.add(faGear)
 library.add(faTicket)
+library.add(faCircleNotch)
 
 library.add(faComments)
 library.add(faPaperPlane)
