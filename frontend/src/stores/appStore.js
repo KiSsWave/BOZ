@@ -200,7 +200,6 @@ export const useAppStore = defineStore('app', {
           amount
         });
 
-        // Mettre à jour le solde
         await this.fetchBalance(true);
 
         return true;

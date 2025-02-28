@@ -17,7 +17,10 @@ return function (\Slim\App $app): \Slim\App {
 
     $app->get('/balance', boz\application\action\GetBalanceAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
     $app->get('/history', boz\application\action\GetHistoryAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
+    
 
+    $app->post('/tickets', boz\application\action\AddTicketAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
+    $app->get('/tickets', boz\application\action\GetTicketsByUserIdAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
 
     $app->get('/conversations', boz\application\action\GetConversationsAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
     $app->post('/conversations', boz\application\action\CreateConversationAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
@@ -28,8 +31,7 @@ return function (\Slim\App $app): \Slim\App {
     $app->group('user', function () use ($app) {
 
         $app->post('/pay', boz\application\action\PayFactureAction::class)->add(boz\application\middleware\AuthzUserMiddleware::class);
-        $app->post('/tickets', boz\application\action\AddTicketAction::class)->add(boz\application\middleware\AuthzUserMiddleware::class);
-        $app->get('/tickets', boz\application\action\GetTicketsByUserIdAction::class)->add(boz\application\middleware\AuthzUserMiddleware::class);
+    
 
         $app->get('/users/search', boz\application\action\SearchUsersAction::class)->add(boz\application\middleware\AuthzUserMiddleware::class);
 

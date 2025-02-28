@@ -28,7 +28,7 @@ class GiveCashAction extends AbstractAction
             throw new HttpBadRequestException($rq, "Admin non authentifié");
         }
 
-        $adminLogin = $admin->getLogin();
+        $adminLogin = $admin->getEmail();
 
         try {
             if (!$userLogin || !$amount) {
