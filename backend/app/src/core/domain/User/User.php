@@ -40,6 +40,16 @@ class User extends Entity
         $this->password = $p;
     }
 
+    public function setEmail(string $email): void
+    {
+        $this->email = $email;
+    }
+
+    public function setLogin(string $login): void
+    {
+        $this->login = $login;
+    }
+
 
 
 }
