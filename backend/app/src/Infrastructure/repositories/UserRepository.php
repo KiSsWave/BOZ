@@ -1,7 +1,5 @@
 <?php
 
-namespace boz\core\domain\Blockchain;
-
 namespace boz\infrastructure\repositories;
 use boz\core\domain\User\User;
 use boz\core\repositoryInterfaces\RepositoryEntityNotFoundException;
