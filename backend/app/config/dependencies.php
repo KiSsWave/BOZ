@@ -40,7 +40,7 @@ use boz\Infrastructure\repositories\TicketRepository;
 use Dotenv\Dotenv;
 use Psr\Container\ContainerInterface;
 use boz\application\middleware\CorsMiddleware;
-use boz\infrastructure\repositories\UserRepository;
+use boz\Infrastructure\repositories\UserRepository;
 use boz\core\services\Blockchain\BlockServiceInterface;
 use boz\core\repositoryInterfaces\BlockRepositoryInterface;
 use boz\core\services\tickets\TicketServiceInterface;

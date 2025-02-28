@@ -12,7 +12,7 @@ services:
       dockerfile: ./build/Dockerfile
     env_file: ./backend/app/config/token.env
     ports:
-      - '44050:80'
+      - '54050:80'
     volumes:
       - ./backend/app:/var/php
     working_dir: /var/php
@@ -28,7 +28,7 @@ services:
     restart: unless-stopped
     env_file: ./backend/app/config/postgres.env
     ports:
-      - '44051:5432'
+      - '54051:5432'
     networks:
       - boz.net
     volumes:
@@ -38,7 +38,7 @@ services:
     image: adminer
     restart: unless-stopped
     ports:
-      - '44052:8080'
+      - '54052:8080'
     networks:
       - boz.net
     command : php -S 0.0.0.0:8080 -t /var/www/html
@@ -47,9 +47,9 @@ services:
     image: ubuntu/apache2:latest
     restart: unless-stopped
     ports:
-      - "44053:80"
+      - "54053:80"
     volumes:
-      - ./frontend/:/var/www/html
+      - ./frontend/dist:/var/www/html
     networks:
       - boz.net
     depends_on:
