@@ -42,4 +42,42 @@ class AuthnService implements AuthnServiceInterface
     {
         return $this->userRepository->searchByLogin($query, $currentUserLogin);
     }
+
+    public function updateProfile(string $userId, string $login, string $email, ?string $newPassword = null): void
+    {
+
+        $user = $this->userRepository->getUserByID($userId);
+
+
+        $user->setLogin($login);
+        $user->setEmail($email);
+
+
+        if ($newPassword) {
+            $user->setPassword(password_hash($newPassword, PASSWORD_DEFAULT));
+        }
+
+
+        $this->userRepository->update($user);
+    }
+
+    public function verifyPassword(CredentialDTO $credentials): bool
+    {
+        try {
+            $user = $this->userRepository->getUserByEmail($credentials->getEmail());
+
+            if (!password_verify($credentials->getPassword(), $user->getPassword())) {
+                throw new AuthServiceBadDataException('Mot de passe incorrect', 401);
+            }
+
+            return true;
+        } catch (RepositoryEntityNotFoundException $e) {
+            throw new AuthServiceBadDataException('Utilisateur non trouvé', 404);
+        }
+    }
+
+    public function changeRole(string $userId, int $role): void
+    {
+        $this->userRepository->changeRole($userId, $role);
+    }
 }

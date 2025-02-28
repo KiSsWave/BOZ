@@ -19,37 +19,37 @@ class GetConversationsAction extends AbstractAction
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         try {
-            // Récupérer l'utilisateur connecté depuis l'attribut user
+
             $user = $request->getAttribute('user');
             $userLogin = $user->getEmail();
 
-            // Vérifier si on doit inclure le dernier message
+
             $includeLastMessage = false;
             $params = $request->getQueryParams();
             if (isset($params['include_last_message']) && $params['include_last_message'] === 'true') {
                 $includeLastMessage = true;
             }
 
-            // Récupérer les conversations de l'utilisateur
+
             $conversations = $this->conversationService->getConversationsByUserLogin($userLogin);
 
-            // Préparation de la réponse
+
             $responseData = [
                 'status' => 'success',
                 'conversations' => []
             ];
 
             foreach ($conversations as $conversation) {
-                // Déterminer l'autre utilisateur dans la conversation
+
                 $otherUserLogin = ($conversation->user1Login === $userLogin)
                     ? $conversation->user2Login
                     : $conversation->user1Login;
 
                 $lastMessage = '';
 
-                // Si on a demandé le dernier message, le récupérer
+
                 if ($includeLastMessage && $conversation->last_message_timestamp) {
-                    // Obtenir le dernier message (vous devrez peut-être implémenter cette méthode)
+
                     $messages = $this->conversationService->getMessagesByConversationId($conversation->ID, 1);
                     if (!empty($messages)) {
                         $lastMessage = $messages[0]->content;

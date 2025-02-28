@@ -26,13 +26,9 @@
       </div>
 
       <div v-if="conversations.length > 0" class="conversations-list">
-        <div
-          v-for="conversation in conversations"
-          :key="conversation.id"
-          class="conversation-card"
+        <div v-for="conversation in conversations" :key="conversation.id" class="conversation-card"
           @click="openConversation(conversation)"
-          v-memo="[conversation.lastMessage, conversation.last_message_timestamp]"
-        >
+          v-memo="[conversation.lastMessage, conversation.last_message_timestamp]">
           <div class="conversation-avatar">
             <font-awesome-icon :icon="['fas', 'user']" size="lg" />
           </div>
@@ -242,7 +238,9 @@ h1 {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .error-container {
@@ -345,7 +343,8 @@ h1 {
   color: #7f8c8d;
 }
 
-.last-message, .no-messages {
+.last-message,
+.no-messages {
   margin: 0;
   font-size: 0.9rem;
   color: #7f8c8d;

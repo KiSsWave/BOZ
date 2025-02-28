@@ -55,7 +55,7 @@
         </div>
       </div>
       <a @click="ticket">
-        <font-awesome-icon :icon="['fas', 'ticket']" /> Créer un ticket
+        <font-awesome-icon :icon="['fas', 'ticket']" /> Créer un ticket pour contacter l'administrateur
       </a>
     </div>
   </div>

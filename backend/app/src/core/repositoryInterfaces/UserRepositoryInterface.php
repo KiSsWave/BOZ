@@ -14,4 +14,9 @@ interface UserRepositoryInterface
 
     public function searchByLogin(string $query, string $currentUserLogin): array;
 
+    public function update(User $user): void;
+
+    public function changeRole(string $userId, int $role): void;
+
+
 }

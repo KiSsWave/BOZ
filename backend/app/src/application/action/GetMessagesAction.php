@@ -19,33 +19,33 @@ class GetMessagesAction extends AbstractAction
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         try {
-            // Récupérer l'utilisateur connecté depuis l'attribut user
+
             $user = $request->getAttribute('user');
             $userLogin = $user->getEmail();
 
-            // Récupérer l'ID de conversation depuis les arguments de route
+
             $conversationId = $args['id'] ?? null;
 
             if (!$conversationId) {
                 throw new \InvalidArgumentException('ID de conversation manquant');
             }
 
-            // Vérifier que la conversation existe
+
             $conversation = $this->conversationService->getConversationById($conversationId);
 
             if (!$conversation) {
                 throw new \Exception('Conversation non trouvée');
             }
 
-            // Vérifier que l'utilisateur fait partie de la conversation
+
             if ($conversation->user1Login !== $userLogin && $conversation->user2Login !== $userLogin) {
                 throw new \Exception('Vous n\'avez pas accès à cette conversation');
             }
 
-            // Récupérer les messages
+
             $messages = $this->conversationService->getMessagesByConversationId($conversationId);
 
-            // Préparation de la réponse
+
             $responseData = [
                 'status' => 'success',
                 'messages' => [],

@@ -4,15 +4,15 @@ namespace boz\application\action;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use boz\core\services\Blockchain\BlockServiceInterface;
+use boz\core\services\Blockchain\AuthnServiceInterface;
 use Slim\Exception\HttpBadRequestException;
 use boz\core\dto\UserDTO;
 
 class GiveCashAction extends AbstractAction
 {
-    private BlockServiceInterface $blockService;
+    private AuthnServiceInterface $blockService;
 
-    public function __construct(BlockServiceInterface $blockService)
+    public function __construct(AuthnServiceInterface $blockService)
     {
         $this->blockService = $blockService;
     }

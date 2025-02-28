@@ -24,12 +24,12 @@ class StartConversationFromTicketAction extends AbstractAction
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         try {
-            // Récupérer l'administrateur connecté à partir de l'attribut user
+
             $admin = $request->getAttribute('user');
             $adminId = $admin->getID();
-            $adminLogin = $admin->getEmail(); // Utilisez le login depuis l'objet user
+            $adminLogin = $admin->getEmail();
 
-            // Récupérer les données du corps de la requête
+
             $data = $request->getParsedBody();
 
             if (!isset($data['ticketId']) || empty($data['ticketId'])) {
@@ -38,7 +38,7 @@ class StartConversationFromTicketAction extends AbstractAction
 
             $ticketId = $data['ticketId'];
 
-            // Récupérer les informations du ticket pour obtenir le login de l'utilisateur
+
             $tickets = $this->ticketService->getTicketsByAdminId($adminId);
 
             $targetTicket = null;
@@ -55,9 +55,9 @@ class StartConversationFromTicketAction extends AbstractAction
 
             $userLogin = $targetTicket->getUserLogin();
 
-            // Vérifier si une conversation existe déjà
+
             if ($this->conversationService->conversationExists($adminLogin, $userLogin)) {
-                // Récupérer l'ID de la conversation existante
+
                 $conversations = $this->conversationService->getConversationsByUserLogin($adminLogin);
 
                 $existingConversation = null;
@@ -82,10 +82,10 @@ class StartConversationFromTicketAction extends AbstractAction
                     ]
                 ];
             } else {
-                // Créer une nouvelle conversation
+
                 $conversation = $this->conversationService->createConversation($adminLogin, $userLogin);
 
-                // Envoyer un message automatique pour démarrer la conversation
+
                 $this->conversationService->sendMessage(
                     $conversation->ID,
                     $adminLogin,
