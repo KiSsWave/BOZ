@@ -42,7 +42,7 @@ class LoginPage extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: const Image(
-        image: AssetImage("logoBOZ.png"),
+        image: AssetImage("assets/logoBOZ.png"),
         height: 100,
         width: 100,
         fit: BoxFit.cover,

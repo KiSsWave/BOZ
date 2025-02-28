@@ -57,7 +57,7 @@ class MyNavigationBar extends State<MyNavigation> {
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Image.asset(
-            "logoBOZ.png",
+            "assets/logoBOZ.png",
             fit: BoxFit.contain,
           ),
         ),

@@ -11,6 +11,7 @@ import UserTicketView from '@/views/UserTicketView.vue'
 import TransactionView from '@/views/TransactionView.vue'
 import ModifView from '@/views/ModifView.vue'
 import FaqView from '@/views/FaqView.vue'
+import VendeurTicketView from '@/views/VendeurTicketView.vue'
 import { useUserStore } from '@/stores/userStore'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -85,6 +86,12 @@ const router = createRouter({
       name: 'faq',
       component: FaqView,
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/VendeurTicket',
+      name: 'VendeurTicket',
+      component: VendeurTicketView,
+      meta: { requiresAuth: true, role: "2" }
     }
 
 
