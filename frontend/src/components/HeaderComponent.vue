@@ -7,7 +7,7 @@
         @click="modification" />
       <font-awesome-icon :icon="['fas', 'comments']" @click="openChat" class="chat-icon"
         v-if="userStore.isAuthenticated" title="Messages" />
-      <font-awesome-icon icon="reply" class="back-icon" @click="index" title="Retour à l'accueil" v-if="isNotHome" />
+      <font-awesome-icon icon="reply" class="back-icon" @click="index" title="Retour à l'accueil" v-if="isNotHome && isNotAdmin && isNotVendeur" />
       <font-awesome-icon :icon="['fas', 'user']" @click="login" alt="User Login" class="user-icon"
         v-if="!userStore.isAuthenticated" />
       <font-awesome-icon :icon="['fas', 'right-from-bracket']" v-if="userStore.isAuthenticated" class="exit"
@@ -28,11 +28,15 @@ export default {
     const userStore = useUserStore();
     const isNotHome = computed(() => route.path !== '/');
     const isNotModification = computed(() => route.path !== '/modification');
+    const isNotVendeur = computed(() => route.path !== '/vendeur');
+    const isNotAdmin = computed(() => route.path !== '/admin');
 
     return {
       userStore,
       isNotHome,
-      isNotModification
+      isNotModification,
+      isNotVendeur,
+      isNotAdmin
     };
   },
   methods: {
@@ -88,7 +92,7 @@ header {
 }
 
 .BOZ {
-  width: 80px;
+  width: 70px;
   height: auto;
 }
 
@@ -121,7 +125,7 @@ header {
 }
 
 .chat-icon {
-  color: #3498db;
+  color: #000000;
 }
 
 .chat-icon:hover {
