@@ -5,7 +5,7 @@ namespace boz\core\services\Blockchain;
 use boz\core\domain\Blockchain\Block;
 use boz\core\domain\Blockchain\Transaction;
 
-interface AuthnServiceInterface
+interface BlockServiceInterface
 {
 
     public function afficherSolde(string $id):float;

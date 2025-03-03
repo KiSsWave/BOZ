@@ -5,7 +5,7 @@ namespace boz\application\action;
 use Exception;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use boz\core\services\Blockchain\AuthnServiceInterface;
+use boz\core\services\Blockchain\BlockServiceInterface;
 
 class GetFacturesByUserLoginAction extends AbstractAction {
     private AuthnServiceInterface $blockService;

@@ -43,7 +43,6 @@ use Psr\Container\ContainerInterface;
 use boz\application\middleware\CorsMiddleware;
 use boz\Infrastructure\repositories\UserRepository;
 use boz\core\services\Blockchain\BlockServiceInterface;
-use boz\infrastructure\repositories\UserRepository;
 use boz\core\repositoryInterfaces\BlockRepositoryInterface;
 use boz\core\services\tickets\TicketServiceInterface;
 use boz\core\repositoryInterfaces\TicketRepositoryInterface;
@@ -156,11 +155,11 @@ return [
     },
 
     GetBalanceAction::class => function (ContainerInterface $container) {
-        return new GetBalanceAction($container->get(AuthnServiceInterface::class));
+        return new GetBalanceAction($container->get(BlockServiceInterface::class));
     },
 
     GetHistoryAction::class => function (ContainerInterface $container) {
-        return new GetHistoryAction($container->get(AuthnServiceInterface::class));
+        return new GetHistoryAction($container->get(BlockServiceInterface::class));
     },
 
     AddTicketAction::class => function (ContainerInterface $c){
@@ -187,19 +186,19 @@ return [
         return new GetTicketsByUserIdAction($c->get(TicketServiceInterface::class));
     },
     CreateFactureAction::class => function (ContainerInterface $container) {
-        return new CreateFactureAction($container->get(AuthnServiceInterface::class));
+        return new CreateFactureAction($container->get(BlockServiceInterface::class));
     },
 
     PayFactureAction::class => function (ContainerInterface $container) {
-        return new PayFactureAction($container->get(AuthnServiceInterface::class));
+        return new PayFactureAction($container->get(BlockServiceInterface::class));
     },
 
     GetFacturesByUserLoginAction::class => function (ContainerInterface $container) {
-        return new GetFacturesByUserLoginAction($container->get(AuthnServiceInterface::class));
+        return new GetFacturesByUserLoginAction($container->get(BlockServiceInterface::class));
     },
 
     GetFactureByIdAction::class => function (ContainerInterface $container) {
-        return new GetFactureByIdAction($container->get(AuthnServiceInterface::class));
+        return new GetFactureByIdAction($container->get(BlockServiceInterface::class));
     },
 
     CreateConversationAction::class => function (ContainerInterface $c){
@@ -223,7 +222,7 @@ return [
     },
 
     GiveCashAction::class => function (ContainerInterface $c){
-        return new GiveCashAction($c->get(AuthnServiceInterface::class));
+        return new GiveCashAction($c->get(BlockServiceInterface::class));
     },
 
     ChangeRoleAction::class=>function(ContainerInterface $c){
