@@ -4,14 +4,14 @@
     <h1>Boz - Dépensez n'importe où !</h1>
     <div class="icons-container">
       <font-awesome-icon :icon="['fas', 'gear']" style="color: #000000;" class="param" v-if="userStore.isAuthenticated && isNotModification"
-        @click="modification" />
+                         @click="modification" title="Paramètres" />
       <font-awesome-icon :icon="['fas', 'comments']" @click="openChat" class="chat-icon"
-        v-if="userStore.isAuthenticated" title="Messages" />
+                         v-if="userStore.isAuthenticated" title="Messages" />
       <font-awesome-icon icon="reply" class="back-icon" @click="index" title="Retour à l'accueil" v-if="isNotHome" />
       <font-awesome-icon :icon="['fas', 'user']" @click="login" alt="User Login" class="user-icon"
-        v-if="!userStore.isAuthenticated" />
+                         v-if="!userStore.isAuthenticated" title="Connexion" />
       <font-awesome-icon :icon="['fas', 'right-from-bracket']" v-if="userStore.isAuthenticated" class="exit"
-        @click="logout" />
+                         @click="logout" title="Déconnexion" />
     </div>
   </header>
 </template>
@@ -73,30 +73,34 @@ export default {
 </script>
 
 <style scoped>
-/* Styles existants */
 header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 20px;
+  padding: clamp(8px, 2vw, 15px) clamp(10px, 3vw, 20px);
   background-color: #ffffff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
   z-index: 10;
-  height: 70px;
+  min-height: 60px;
+  height: auto;
+  max-height: 80px;
+  flex-wrap: nowrap;
 }
 
 .BOZ {
-  width: 80px;
+  width: clamp(40px, 10vw, 80px);
   height: auto;
+  flex-shrink: 0;
 }
 
 /* Conteneur pour les icônes */
 .icons-container {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: clamp(8px, 2vw, 15px);
+  flex-shrink: 0;
 }
 
 /* Styles des icônes */
@@ -105,11 +109,10 @@ header {
 .param,
 .back-icon,
 .chat-icon {
-  width: 24px;
-  height: 24px;
+  width: clamp(18px, 5vw, 24px);
+  height: clamp(18px, 5vw, 24px);
   cursor: pointer;
-  transition: transform 0.2s ease;
-  margin-left: 15px;
+  transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .user-icon:hover,
@@ -128,6 +131,10 @@ header {
   color: #2980b9;
 }
 
+.exit {
+  color: #555;
+}
+
 .exit:hover {
   color: #e74c3c;
 }
@@ -140,25 +147,92 @@ header {
   color: #2980b9;
 }
 
-h1 {
-  font-size: 1.2rem;
+.param {
+  color: #555;
+}
+
+.param:hover {
   color: #2c3e50;
-  margin: 0;
+}
+
+h1 {
+  font-size: clamp(0.75rem, 3vw, 1.2rem);
+  color: #2c3e50;
+  margin: 0 clamp(5px, 2vw, 20px);
   text-align: center;
   flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Responsive breakpoints spécifiques */
+@media (max-width: 600px) {
+  h1 {
+    font-size: 0.9rem;
+  }
 }
 
 @media (max-width: 480px) {
+  header {
+    padding: 8px 12px;
+  }
+
   h1 {
-    font-size: 1rem;
+    font-size: 0.8rem;
   }
 
   .BOZ {
-    width: 60px;
+    width: 50px;
   }
 
   .icons-container {
-    gap: 10px;
+    gap: 8px;
+  }
+
+  .user-icon,
+  .exit,
+  .param,
+  .back-icon,
+  .chat-icon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@media (max-width: 360px) {
+  h1 {
+    font-size: 0.7rem;
+    max-width: 120px;
+  }
+
+  .BOZ {
+    width: 40px;
+  }
+
+  .icons-container {
+    gap: 6px;
+  }
+
+  .user-icon,
+  .exit,
+  .param,
+  .back-icon,
+  .chat-icon {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Orientation paysage sur petits écrans */
+@media (max-height: 500px) and (orientation: landscape) {
+  header {
+    min-height: 50px;
+    padding: 5px 15px;
+  }
+
+  .BOZ {
+    width: 40px;
   }
 }
 </style>

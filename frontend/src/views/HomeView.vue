@@ -109,39 +109,43 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
-  flex: 0 1 auto; /* Modification pour ne pas étirer */
-  margin: 20px 0; /* Ajout de marges */
+  padding: clamp(20px, 5vw, 40px);
+  flex: 1;
+  margin: clamp(10px, 2vw, 20px) 0;
 }
 
 .balance-label {
-  font-size: 1.2rem;
-  margin-bottom: 20px;
+  font-size: clamp(1rem, 3vw, 1.2rem);
+  margin-bottom: clamp(10px, 4vw, 20px);
   color: #7f8c8d;
   text-transform: uppercase;
   font-weight: bold;
+  text-align: center;
 }
 
 .balance-display {
-  font-size: 3rem;
+  font-size: clamp(1.8rem, 5vw, 3rem);
   font-weight: bold;
   color: #2ecc71;
   background-color: #ffffff;
   border: 2px dashed #3498db;
   border-radius: 15px;
-  padding: 30px 40px;
-  min-width: 300px;
+  padding: clamp(15px, 4vw, 30px);
+  width: clamp(200px, 80vw, 300px);
   text-align: center;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  margin-bottom: 40px; /* Ajout d'une marge en bas */
+  margin-bottom: clamp(20px, 5vw, 40px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 footer {
-  margin-top: auto; /* Pousse le footer vers le bas */
+  margin-top: auto;
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 20px;
-  padding: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: clamp(10px, 2vw, 20px);
+  padding: clamp(15px, 3vw, 30px);
   background-color: #ffffff;
   box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -151,13 +155,19 @@ footer button {
   color: white;
   border: none;
   border-radius: 10px;
-  padding: 20px 15px;
-  font-size: 1rem;
+  padding: clamp(10px, 2vw, 20px) clamp(8px, 1.5vw, 15px);
+  font-size: clamp(0.8rem, 2vw, 1rem);
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease;
   text-transform: uppercase;
   font-weight: bold;
-  height: 80px; /* Hauteur fixe pour les boutons */
+  min-height: 60px;
+  height: auto;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 footer button:hover {
@@ -166,49 +176,76 @@ footer button:hover {
 }
 
 footer label {
-  grid-column: span 3;
+  grid-column: 1 / -1; /* Span all columns */
   text-align: center;
   color: #000000;
   font-family: 'Courier New', Courier, monospace;
-  font-size: 1.1rem;
-  padding: 20px;
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+  padding: clamp(10px, 3vw, 20px);
 }
 
-/* Responsive design amélioré */
-@media (max-width: 768px) {
-  .balance-display {
-    font-size: 2.5rem;
-    min-width: 250px;
-    padding: 25px 30px;
-  }
-
+/* Responsive design amélioré avec breakpoints plus précis */
+@media (max-width: 1024px) {
   footer {
-    padding: 20px;
-    gap: 15px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  footer {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   }
 
   footer button {
-    height: 70px;
-    padding: 15px 10px;
+    padding: 12px 10px;
     font-size: 0.9rem;
   }
 }
 
-@media (max-width: 480px) {
-  .balance-container {
-    padding: 20px 15px;
-  }
-
-  .balance-display {
-    font-size: 2rem;
-    min-width: 200px;
-    padding: 20px 25px;
+@media (max-width: 600px) {
+  footer {
+    grid-template-columns: 1fr;
+    gap: 15px;
   }
 
   footer button {
-    height: 60px;
+    height: auto;
+    min-height: 50px;
+    padding: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .balance-label {
+    font-size: 0.9rem;
+  }
+
+  .balance-display {
+    font-size: 1.8rem;
+    padding: 15px 20px;
+  }
+
+  footer button {
     font-size: 0.8rem;
+    min-height: 45px;
     padding: 10px 8px;
+  }
+}
+
+@media (max-width: 320px) {
+  .balance-display {
+    font-size: 1.5rem;
+    padding: 12px 15px;
+    width: 90%;
+  }
+
+  footer {
+    padding: 12px;
+  }
+
+  footer button {
+    min-height: 40px;
+    font-size: 0.75rem;
   }
 }
 </style>

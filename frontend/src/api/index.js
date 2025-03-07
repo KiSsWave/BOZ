@@ -2,7 +2,7 @@ import axios from "axios";
 
 
 const apiClient = axios.create({
-  baseURL: "http://localhost:44050",
+  baseURL: "http://docketu.iutnc.univ-lorraine.fr:54050",
   headers: {
     "Content-Type": "application/json",
 

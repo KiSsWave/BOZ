@@ -8,7 +8,9 @@
           <font-awesome-icon :icon="['fas', 'arrow-left']" />
         </button>
         <h2 v-if="currentConversation">{{ getOtherUserName(currentConversation) }}</h2>
-        <div class="placeholder" aria-hidden="true"></div>
+        <div class="polling-indicator" v-if="pollingActive">
+          <font-awesome-icon :icon="['fas', 'sync']" class="polling-icon" :class="{ active: isPolling }" />
+        </div>
       </div>
 
       <div v-if="initialLoading" class="loading-container">
@@ -31,7 +33,8 @@
           <div
             v-for="(message, index) in messages"
             :key="message?.id || index"
-            :class="['message', (message?.senderLogin === userStore.user?.login) ? 'sent' : 'received']"
+            class="message"
+            :class="[isMyMessage(message) ? 'my-message' : 'other-message']"
           >
             <div class="message-content">
               <p>{{ message?.content || '' }}</p>
@@ -42,18 +45,9 @@
       </div>
 
       <div class="message-form">
-        <textarea
-          v-model="newMessage"
-          placeholder="Écrivez votre message..."
-          @keyup.enter="handleEnter"
-          class="message-input"
-          :disabled="sendingMessage"
-        ></textarea>
-        <button
-          @click="sendMessageHandler"
-          class="send-button"
-          :disabled="!newMessage.trim() || sendingMessage"
-        >
+        <textarea v-model="newMessage" placeholder="Écrivez votre message..." @keyup.enter="handleEnter"
+                  class="message-input" :disabled="sendingMessage"></textarea>
+        <button @click="sendMessageHandler" class="send-button" :disabled="!newMessage.trim() || sendingMessage">
           <font-awesome-icon v-if="!sendingMessage" :icon="['fas', 'paper-plane']" />
           <font-awesome-icon v-else :icon="['fas', 'circle-notch']" spin />
         </button>
@@ -89,7 +83,8 @@ export default {
       sendMessage,
       addOptimisticMessage,
       setCurrentConversation,
-      refreshMessages
+      refreshMessages,
+      pollingActive
     } = useConversations();
 
     // Références et états locaux
@@ -100,6 +95,23 @@ export default {
     const silentLoading = ref(false);
     const sendingMessage = ref(false);
     const pollingInterval = ref(null);
+    const isPolling = ref(false);
+
+    // Vérifier si c'est mon message
+    const isMyMessage = (message) => {
+      // Si c'est un message temporaire, il est forcément de moi
+      if (message?.isTemp) {
+        return true;
+      }
+
+      // Si l'API a ajouté une propriété isMine, on l'utilise
+      if (message?.isMine !== undefined) {
+        return message.isMine;
+      }
+
+      // Sinon on compare l'expéditeur avec mon login
+      return message?.senderLogin === userStore.user?.login;
+    };
 
     // Valider les messages pour éviter les erreurs
     const validateMessages = () => {
@@ -130,6 +142,11 @@ export default {
         await fetchMessages(conversationId.value);
         validateMessages();
 
+        // Débogage
+        if (messages.value && messages.value.length > 0) {
+          console.log(`${messages.value.length} messages chargés`);
+        }
+
         if (!silent) {
           scrollToBottom();
         }
@@ -141,37 +158,73 @@ export default {
       }
     };
 
-    // Polling sécurisé pour les nouveaux messages
+    // Polling amélioré pour les nouveaux messages
     const startPolling = () => {
       // Arrêter d'abord tout polling existant
       stopPolling();
 
-      // Créer un nouvel intervalle (toutes les 8 secondes pour éviter les requêtes trop fréquentes)
-      pollingInterval.value = setInterval(() => {
-        if (conversationId.value) {
-          refreshMessages(conversationId.value);
-        }
-      }, 8000);
+      pollingActive.value = true;
 
-      console.log("Polling démarré");
+      // Créer un nouvel intervalle avec une fonction asynchrone
+      pollingInterval.value = setInterval(async () => {
+        if (conversationId.value) {
+          try {
+            isPolling.value = true;
+            console.log("Polling: Vérification des nouveaux messages...");
+            const hasNewMessages = await refreshMessages(conversationId.value);
+
+            if (hasNewMessages) {
+              console.log("Polling: Nouveaux messages détectés !");
+              scrollToBottom();
+            }
+
+            setTimeout(() => {
+              isPolling.value = false;
+            }, 1000);
+          } catch (error) {
+            console.error("Erreur lors du polling des messages:", error);
+            isPolling.value = false;
+          }
+        }
+      }, 5000); // 5 secondes pour une bonne réactivité
+
+      console.log("Polling démarré avec intervalle de 5 secondes");
     };
 
     const stopPolling = () => {
       if (pollingInterval.value) {
         clearInterval(pollingInterval.value);
         pollingInterval.value = null;
+        pollingActive.value = false;
+        isPolling.value = false;
         console.log("Polling arrêté");
       }
     };
 
     const getOtherUserName = (conversation) => {
       if (!conversation) return '';
-      const currentUserLogin = userStore.user?.login;
-      if (!currentUserLogin) return conversation.user1Login || '';
 
-      return conversation.user1Login === currentUserLogin
-        ? conversation.user2Login
-        : conversation.user1Login;
+      // Récupérer le login de l'utilisateur actuel
+      const currentUserLogin = userStore.user?.email;
+
+      // Si pas de login utilisateur, retourner une valeur par défaut
+      if (!currentUserLogin) return '';
+
+      // Si la propriété otherUser existe déjà (format API simplifiée)
+      if (conversation.otherUser) {
+        return conversation.otherUser;
+      }
+
+      // Vérifier explicitement si l'utilisateur actuel est user1 ou user2
+      if (conversation.user1Login === currentUserLogin) {
+        return conversation.user2Login; // Si je suis user1, afficher user2
+      } else if (conversation.user2Login === currentUserLogin) {
+        return conversation.user1Login; // Si je suis user2, afficher user1
+      } else {
+        console.warn("L'utilisateur actuel n'est ni user1 ni user2 dans cette conversation:",
+          { currentUser: currentUserLogin, user1: conversation.user1Login, user2: conversation.user2Login });
+        return ''; // Cas anormal
+      }
     };
 
     const formatTime = (timestamp) => {
@@ -208,15 +261,19 @@ export default {
         return;
       }
 
+      // Obtenir le destinataire
+      const otherUserLogin = getOtherUserName(currentConversation.value);
+
       // Optimistic update - ajouter immédiatement un message temporaire
       const tempMessage = {
         id: 'temp-' + Date.now(),
         senderLogin: userStore.user?.login,
-        receiverLogin: getOtherUserName(currentConversation.value),
+        receiverLogin: otherUserLogin,
         content: newMessage.value,
         timestamp: Math.floor(Date.now() / 1000),
         isTemp: true,
-        conversationId: conversationId.value
+        conversationId: conversationId.value,
+        isMine: true
       };
 
       // Effacer l'input avant d'envoyer
@@ -247,13 +304,40 @@ export default {
       scrollToBottom();
     });
 
+    // Forcer une actualisation toutes les minutes pour éviter les problèmes de session
+    let forceRefreshInterval = null;
+    const startForceRefresh = () => {
+      forceRefreshInterval = setInterval(async () => {
+        if (conversationId.value) {
+          console.log("Actualisation forcée des messages");
+          await loadMessages(true);
+        }
+      }, 60000); // Toutes les minutes
+    };
+
+    const stopForceRefresh = () => {
+      if (forceRefreshInterval) {
+        clearInterval(forceRefreshInterval);
+        forceRefreshInterval = null;
+      }
+    };
+
+    // Quand l'utilisateur revient sur l'onglet, on actualise immédiatement
+    const handleWindowFocus = async () => {
+      console.log("Fenêtre a repris le focus, actualisation des messages");
+      if (conversationId.value) {
+        await loadMessages(true);
+      }
+    };
+
     onMounted(async () => {
       console.log("ChatView mounted");
+      console.log("User actuel:", userStore.user?.login);
 
       try {
-        if (!currentConversation.value) {
+        if (!currentConversation.value || currentConversation.value.id !== conversationId.value) {
           // Si on accède directement à la page de chat sans passer par la liste
-          console.log("Pas de conversation courante, chargement initial");
+          console.log("Pas de conversation courante ou ID différent, chargement initial");
 
           try {
             const conversations = await fetchConversations(false);
@@ -262,27 +346,48 @@ export default {
             const conversation = conversations.find(c => c.id === conversationId.value);
             if (conversation) {
               console.log("Conversation trouvée:", conversation.id);
+              console.log("Détails conversation:", {
+                user1: conversation.user1Login,
+                user2: conversation.user2Login,
+                currentUser: userStore.user?.login
+              });
               setCurrentConversation(conversation);
+              console.log("Nom de l'autre utilisateur:", getOtherUserName(conversation));
             } else {
               console.warn("Conversation non trouvée dans la liste:", conversationId.value);
+              error.value = "Conversation introuvable";
             }
           } catch (err) {
             console.error('Erreur lors de la récupération des conversations:', err);
+            error.value = "Erreur lors du chargement des conversations";
           }
         } else {
           console.log("Conversation courante déjà définie:", currentConversation.value.id);
+          console.log("Détails conversation:", {
+            user1: currentConversation.value.user1Login,
+            user2: currentConversation.value.user2Login,
+            currentUser: userStore.user?.login
+          });
+          console.log("Nom de l'autre utilisateur:", getOtherUserName(currentConversation.value));
         }
 
         await loadMessages(false);
         startPolling();
+        startForceRefresh();
+
+        // Ajouter un gestionnaire d'événements pour le focus de la fenêtre
+        window.addEventListener('focus', handleWindowFocus);
       } catch (e) {
         console.error("Erreur lors de l'initialisation:", e);
+        error.value = "Erreur d'initialisation";
       }
     });
 
     onUnmounted(() => {
       console.log("ChatView unmounted");
       stopPolling();
+      stopForceRefresh();
+      window.removeEventListener('focus', handleWindowFocus);
     });
 
     return {
@@ -300,8 +405,11 @@ export default {
       handleEnter,
       formatTime,
       getOtherUserName,
+      isMyMessage,
       goBack,
-      loadMessages
+      loadMessages,
+      pollingActive,
+      isPolling
     };
   }
 };
@@ -345,8 +453,22 @@ export default {
   padding: 5px;
 }
 
-.placeholder {
+.polling-indicator {
   width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.polling-icon {
+  color: #bdc3c7;
+  font-size: 1rem;
+}
+
+.polling-icon.active {
+  color: #3498db;
+  animation: spin 1s linear infinite;
 }
 
 .loading-container {
@@ -426,31 +548,34 @@ export default {
   margin-bottom: 10px;
 }
 
-.message.sent {
+/* Message envoyé par moi */
+.my-message {
   justify-content: flex-end;
 }
 
-.message.received {
+.my-message .message-content {
+  background-color: #3498db;
+  color: white;
+  border-radius: 18px;
+  border-bottom-right-radius: 4px;
+}
+
+/* Message envoyé par l'autre personne */
+.other-message {
   justify-content: flex-start;
+}
+
+.other-message .message-content {
+  background-color: #f1f2f6;
+  color: #2c3e50;
+  border-radius: 18px;
+  border-bottom-left-radius: 4px;
 }
 
 .message-content {
   max-width: 70%;
   padding: 10px 15px;
-  border-radius: 18px;
   position: relative;
-}
-
-.sent .message-content {
-  background-color: #3498db;
-  color: white;
-  border-bottom-right-radius: 4px;
-}
-
-.received .message-content {
-  background-color: #f1f2f6;
-  color: #2c3e50;
-  border-bottom-left-radius: 4px;
 }
 
 .message-content p {
@@ -519,6 +644,25 @@ export default {
 
   .message-content {
     max-width: 85%;
+  }
+}
+
+@media (max-width: 480px) {
+  .chat-header h2 {
+    font-size: 1rem;
+  }
+
+  .messages-container {
+    padding: 15px 10px;
+  }
+
+  .message-form {
+    padding: 10px;
+  }
+
+  .send-button {
+    width: 36px;
+    height: 36px;
   }
 }
 </style>
