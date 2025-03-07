@@ -8,9 +8,7 @@
           <font-awesome-icon :icon="['fas', 'arrow-left']" />
         </button>
         <h2 v-if="currentConversation">{{ getOtherUserName(currentConversation) }}</h2>
-        <div class="polling-indicator" v-if="pollingActive">
-          <font-awesome-icon :icon="['fas', 'sync']" class="polling-icon" :class="{ active: isPolling }" />
-        </div>
+        <div class="placeholder" aria-hidden="true"></div>
       </div>
 
       <div v-if="initialLoading" class="loading-container">

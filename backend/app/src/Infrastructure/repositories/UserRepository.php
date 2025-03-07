@@ -1,7 +1,5 @@
 <?php
 
-namespace boz\core\domain\Blockchain;
-
 namespace boz\infrastructure\repositories;
 use boz\core\domain\User\User;
 use boz\core\repositoryInterfaces\RepositoryEntityNotFoundException;
@@ -84,6 +82,43 @@ class UserRepository implements UserRepositoryInterface
             throw new \RuntimeException('Erreur lors de la recherche d\'utilisateurs: ' . $e->getMessage());
         }
     }
+
+    #[\Override] public function update(User $user): void
+    {
+
+        $this->users[$user->getID()] = $user;
+
+
+        $update = $this->pdo->prepare('
+        UPDATE users 
+        SET login = :login, 
+            email = :email, 
+            password = :password 
+        WHERE id = :id
+    ');
+
+        $update->execute([
+            'id' => $user->getID(),
+            'login' => $user->getLogin(),
+            'email' => $user->getEmail(),
+            'password' => $user->getPassword()
+        ]);
+    }
+
+    #[\Override] public function changeRole(string $userId, int $role): void
+    {
+        $update = $this->pdo->prepare('
+        UPDATE users
+        SET role = :role
+        WHERE id = :id
+    ');
+
+            $update->execute([
+                'id' => $userId,
+                'role' => $role
+            ]);
+    }
+
 
 
 }

@@ -10,7 +10,7 @@ use boz\core\repositoryInterfaces\BlockRepositoryInterface;
 use boz\core\repositoryInterfaces\RepositoryEntityNotFoundException;
 use Exception;
 
-class BlockService implements BlockServiceInterface
+class AuthnService implements AuthnServiceInterface
 {
     private BlockRepositoryInterface $blockRepository;
 

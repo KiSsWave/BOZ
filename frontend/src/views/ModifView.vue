@@ -60,6 +60,7 @@
 
 <script>
 import HeaderComponent from '@/components/HeaderComponent.vue';
+import axios from 'axios';
 export default {
   data() {
     return {
@@ -103,8 +104,17 @@ export default {
         return;
       }
       try {
-        // const response = await axios.patch("/modification", this.form);
-
+        const response = await axios.patch("/modification", {
+          login: this.form.login,
+          email: this.form.email,
+          password: this.form.password,
+        });
+        if (response.status === 200) {
+          alert('Inscription réussie !');
+          this.$router.push('/login');
+        } else {
+          alert('Erreur lors de la modification du profil utilisateur');
+        }
       } catch (error) {
         console.error("Erreur lors de la modification du profil :", error);
       }

@@ -13,5 +13,11 @@ interface AuthnServiceInterface
 
     public function searchUsers(string $query, string $currentUserLogin): array;
 
+    public function updateProfile(string $userId, string $login, string $email, ?string $newPassword = null): void;
+
+    public function verifyPassword(CredentialDTO $credentials): bool;
+
+    public function changeRole(string $userId, int $role): void;
+
 
 }

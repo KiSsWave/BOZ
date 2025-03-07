@@ -100,7 +100,16 @@ class BlockRepository implements BlockRepositoryInterface
             $factureId = Uuid::uuid4()->toString();
 
 
-            $qrCode = new QrCode($factureId);
+            $qrCodeData = [
+                'id' => $factureId,
+                'tarif' => $tarif,
+                'label' => $label,
+                'seller' => $login
+            ];
+
+            $qrCodeJson = json_encode($qrCodeData);
+
+            $qrCode = new QrCode($qrCodeJson);
             $writer = new PngWriter();
             $result = $writer->writeString($qrCode);
 

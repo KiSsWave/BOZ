@@ -9,25 +9,12 @@
         <form @submit.prevent="createInvoice" class="form-container">
           <div class="form-group">
             <label for="label">Description :</label>
-            <input
-              type="text"
-              id="label"
-              v-model="form.label"
-              required
-              placeholder="Description de la facture"
-            />
+            <input type="text" id="label" v-model="form.label" required placeholder="Description de la facture" />
           </div>
           <div class="form-group">
             <label for="amount">Montant (€) :</label>
-            <input
-              type="number"
-              id="amount"
-              v-model="form.tarif"
-              required
-              min="0.01"
-              step="0.01"
-              placeholder="Montant"
-            />
+            <input type="number" id="amount" v-model="form.tarif" required min="0.01" step="0.01"
+              placeholder="Montant" />
           </div>
           <div class="error-message" v-if="error">
             {{ error }}
@@ -35,11 +22,7 @@
           <div class="success-message" v-if="success">
             {{ success }}
           </div>
-          <button
-            type="submit"
-            class="submit-button"
-            :disabled="isProcessing"
-          >
+          <button type="submit" class="submit-button" :disabled="isProcessing">
             {{ isProcessing ? 'Création en cours...' : 'Créer la facture' }}
           </button>
         </form>
@@ -56,7 +39,7 @@
         <div v-else class="invoices-grid">
           <div v-for="facture in factures" :key="facture.id" class="invoice-card">
             <div class="invoice-header">
-              <span class="invoice-status" :class="{'status-paid': facture.status === 'payée'}">
+              <span class="invoice-status" :class="{ 'status-paid': facture.status === 'payée' }">
                 {{ facture.status }}
               </span>
             </div>
@@ -65,16 +48,15 @@
               <p class="invoice-amount">{{ facture.amount }}€</p>
             </div>
             <div class="invoice-qr">
-              <img
-                :src="`data:image/png;base64,${facture.qr_code}`"
-                :alt="'QR Code pour ' + facture.label"
-                class="qr-code"
-                @click="fullscreen"
-              />
+              <img :src="`data:image/png;base64,${facture.qr_code}`" :alt="'QR Code pour ' + facture.label"
+                class="qr-code" @click="fullscreen" />
             </div>
           </div>
         </div>
       </div>
+      <a @click="ticket">
+        <font-awesome-icon :icon="['fas', 'ticket']" /> Créer un ticket pour contacter l'administrateur
+      </a>
     </div>
   </div>
 </template>
@@ -85,6 +67,7 @@ import axios from '../api/index.js'
 import { ref, onMounted } from 'vue'
 import { useUserStore } from '@/stores/userStore'
 
+
 export default {
   name: 'VendeurView',
   components: {
@@ -93,7 +76,10 @@ export default {
   methods: {
     fullscreen(event) {
       event.target.classList.toggle('fullscreen')
-    }
+    },
+    ticket() {
+      window.location.href = '/VendeurTicket'
+    },
   },
 
   setup() {
@@ -110,6 +96,7 @@ export default {
     const fullscreen = (event) => {
       event.target.classList.toggle('fullscreen')
     }
+
     const fetchFactures = async () => {
       try {
         const response = await axios.get('/factures')
@@ -177,6 +164,21 @@ export default {
 </script>
 
 <style scoped>
+a {
+  text-align: center;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #34495e;
+  margin-top: 50px;
+  display: block;
+}
+
+a:hover {
+  color: #3498db;
+}
+
 .vendor-container {
   padding: 20px;
   max-width: 800px;
@@ -278,7 +280,8 @@ input:focus {
   margin-top: 30px;
 }
 
-.loading-message, .no-invoices {
+.loading-message,
+.no-invoices {
   text-align: center;
   padding: 20px;
   background: white;

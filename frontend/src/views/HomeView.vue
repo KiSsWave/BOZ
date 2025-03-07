@@ -11,7 +11,7 @@
 
     <footer>
       <button @click="contactAdmin" v-if="userStore.isAuthenticated">Contacter l'administrateur</button>
-      <button @click="viewFactures" v-if="userStore.isAuthenticated">Consulter les tickets</button>
+      <button @click="viewTickets" v-if="userStore.isAuthenticated">Consulter les tickets</button>
       <button @click="viewTransactions" v-if="userStore.isAuthenticated">Consulter les transactions</button>
       <label v-if="!userStore.isAuthenticated">Pour accéder aux fonctionnalités, veuillez vous connecter.</label>
     </footer>
@@ -53,7 +53,7 @@ export default {
       router.push('/contact');
     };
 
-    const viewFactures = () => {
+    const viewTickets = () => {
       router.push('/userTicket');
     };
 
@@ -65,13 +65,19 @@ export default {
       balance,
       userStore,
       contactAdmin,
-      viewFactures,
+      viewTickets,
       viewTransactions
     };
   }
 }
 </script>
-
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+</style>
 <style scoped>
 * {
   margin: 0;
@@ -99,10 +105,6 @@ export default {
   height: 70px; /* Hauteur fixe pour le header */
 }
 
-:deep(.BOZ) {
-  width: 80px;
-  height: auto;
-}
 
 .balance-container {
   display: flex;

@@ -195,7 +195,7 @@ export const useAppStore = defineStore('app', {
       this.isProcessing = true;
 
       try {
-        await axios.post('/give', {
+        await axios.post('/admin/give', {
           user_login,
           amount
         });
