@@ -77,7 +77,6 @@ export default {
     const silentLoading = ref(false);
     const refreshInterval = ref(null);
 
-    // Trier les conversations par date du dernier message (plus récent d'abord)
     const sortedConversations = computed(() => {
       return [...conversations.value].sort((a, b) => {
         const timestampA = a.last_message_timestamp || 0;
@@ -94,8 +93,7 @@ export default {
           initialLoading.value = true;
         }
 
-        await fetchConversations(true); // Toujours inclure le dernier message
-        console.log('Conversations loaded:', conversations.value);
+        await fetchConversations(true);
       } catch (err) {
         console.error('Erreur lors de la récupération des conversations:', err);
       } finally {
@@ -108,7 +106,7 @@ export default {
       stopAutoRefresh();
       refreshInterval.value = setInterval(() => {
         loadConversations(true);
-      }, 15000); // Actualiser toutes les 15 secondes (plus réactif que 30s)
+      }, 15000);
     };
 
     const stopAutoRefresh = () => {
@@ -120,13 +118,15 @@ export default {
 
     const getOtherUserName = (conversation) => {
       if (!conversation) return '';
+
       const currentUserLogin = userStore.user?.email;
       if (!currentUserLogin) return '';
-
 
       if (conversation.otherUser) {
         return conversation.otherUser;
       }
+
+
       if (conversation.user1Login === currentUserLogin) {
         return conversation.user2Login;
       } else if (conversation.user2Login === currentUserLogin) {
@@ -151,6 +151,7 @@ export default {
       const diff = now - date;
       const oneDay = 24 * 60 * 60 * 1000;
 
+
       if (diff < oneDay && date.getDate() === now.getDate()) {
         return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
       }
@@ -160,11 +161,9 @@ export default {
         return 'Hier';
       }
 
-
       if (diff < 7 * oneDay) {
         return date.toLocaleDateString('fr-FR', { weekday: 'long' });
       }
-
 
       return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
     };
@@ -177,13 +176,13 @@ export default {
       return cleanedMessage.substring(0, maxLength) + '...';
     };
 
+
     const handleWindowFocus = () => {
-      console.log("Fenêtre a repris le focus, actualisation des conversations");
       loadConversations(true);
     };
 
     onMounted(() => {
-      console.log('ConversationsListView mounted');
+
       if (conversations.value.length > 0) {
         initialLoading.value = false;
         loadConversations(true);
@@ -191,9 +190,7 @@ export default {
         loadConversations(false);
       }
 
-
       startAutoRefresh();
-
 
       window.addEventListener('focus', handleWindowFocus);
     });

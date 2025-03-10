@@ -130,7 +130,6 @@ export default {
         success.value = 'Votre ticket a été envoyé avec succès !'
         form.value.message = ''
 
-        // Retour à l'accueil après 2 secondes
         setTimeout(() => {
           window.location.href = '/'
         }, 2000)

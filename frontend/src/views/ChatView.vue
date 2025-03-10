@@ -8,7 +8,9 @@
           <font-awesome-icon :icon="['fas', 'arrow-left']" />
         </button>
         <h2 v-if="currentConversation">{{ getOtherUserName(currentConversation) }}</h2>
-        <div class="placeholder" aria-hidden="true"></div>
+        <div class="polling-indicator" v-if="pollingActive">
+          <font-awesome-icon :icon="['fas', 'sync']" class="polling-icon" :class="{ active: isPolling }" />
+        </div>
       </div>
 
       <div v-if="initialLoading" class="loading-container">
@@ -67,7 +69,7 @@ export default {
     HeaderComponent
   },
   setup() {
-    console.log("ChatView setup init");
+
     const route = useRoute();
     const router = useRouter();
     const userStore = useUserStore();
@@ -95,32 +97,32 @@ export default {
     const pollingInterval = ref(null);
     const isPolling = ref(false);
 
-    // Vérifier si c'est mon message
+
     const isMyMessage = (message) => {
-      // Si c'est un message temporaire, il est forcément de moi
+
       if (message?.isTemp) {
         return true;
       }
 
-      // Si l'API a ajouté une propriété isMine, on l'utilise
+
       if (message?.isMine !== undefined) {
         return message.isMine;
       }
 
-      // Sinon on compare l'expéditeur avec mon login
-      return message?.senderLogin === userStore.user?.login;
+
+      return message?.senderLogin === userStore.user?.email;
     };
 
-    // Valider les messages pour éviter les erreurs
+
     const validateMessages = () => {
-      console.log("Validation des messages:", messages.value);
+
       if (!Array.isArray(messages.value)) {
         console.warn('Messages n\'est pas un tableau:', messages.value);
-        messages.value = []; // Initialiser comme un tableau vide
+        messages.value = [];
       }
     };
 
-    // Récupérer les messages
+
     const loadMessages = async (silent = false) => {
       try {
         if (!conversationId.value) {
@@ -135,15 +137,8 @@ export default {
         } else {
           initialLoading.value = true;
         }
-
-        console.log(`Chargement des messages pour la conversation ${conversationId.value}`);
         await fetchMessages(conversationId.value);
         validateMessages();
-
-        // Débogage
-        if (messages.value && messages.value.length > 0) {
-          console.log(`${messages.value.length} messages chargés`);
-        }
 
         if (!silent) {
           scrollToBottom();
@@ -156,23 +151,19 @@ export default {
       }
     };
 
-    // Polling amélioré pour les nouveaux messages
-    const startPolling = () => {
-      // Arrêter d'abord tout polling existant
-      stopPolling();
 
+    const startPolling = () => {
+
+      stopPolling();
       pollingActive.value = true;
 
-      // Créer un nouvel intervalle avec une fonction asynchrone
       pollingInterval.value = setInterval(async () => {
         if (conversationId.value) {
           try {
             isPolling.value = true;
-            console.log("Polling: Vérification des nouveaux messages...");
             const hasNewMessages = await refreshMessages(conversationId.value);
 
             if (hasNewMessages) {
-              console.log("Polling: Nouveaux messages détectés !");
               scrollToBottom();
             }
 
@@ -180,13 +171,10 @@ export default {
               isPolling.value = false;
             }, 1000);
           } catch (error) {
-            console.error("Erreur lors du polling des messages:", error);
             isPolling.value = false;
           }
         }
-      }, 5000); // 5 secondes pour une bonne réactivité
-
-      console.log("Polling démarré avec intervalle de 5 secondes");
+      }, 5000);
     };
 
     const stopPolling = () => {
@@ -195,33 +183,28 @@ export default {
         pollingInterval.value = null;
         pollingActive.value = false;
         isPolling.value = false;
-        console.log("Polling arrêté");
       }
     };
 
     const getOtherUserName = (conversation) => {
       if (!conversation) return '';
 
-      // Récupérer le login de l'utilisateur actuel
       const currentUserLogin = userStore.user?.email;
-
-      // Si pas de login utilisateur, retourner une valeur par défaut
       if (!currentUserLogin) return '';
 
-      // Si la propriété otherUser existe déjà (format API simplifiée)
       if (conversation.otherUser) {
         return conversation.otherUser;
       }
 
-      // Vérifier explicitement si l'utilisateur actuel est user1 ou user2
+
       if (conversation.user1Login === currentUserLogin) {
-        return conversation.user2Login; // Si je suis user1, afficher user2
+        return conversation.user2Login;
       } else if (conversation.user2Login === currentUserLogin) {
-        return conversation.user1Login; // Si je suis user2, afficher user1
+        return conversation.user1Login;
       } else {
         console.warn("L'utilisateur actuel n'est ni user1 ni user2 dans cette conversation:",
           { currentUser: currentUserLogin, user1: conversation.user1Login, user2: conversation.user2Login });
-        return ''; // Cas anormal
+        return '';
       }
     };
 
@@ -259,13 +242,10 @@ export default {
         return;
       }
 
-      // Obtenir le destinataire
       const otherUserLogin = getOtherUserName(currentConversation.value);
-
-      // Optimistic update - ajouter immédiatement un message temporaire
       const tempMessage = {
         id: 'temp-' + Date.now(),
-        senderLogin: userStore.user?.login,
+        senderLogin: userStore.user?.email,
         receiverLogin: otherUserLogin,
         content: newMessage.value,
         timestamp: Math.floor(Date.now() / 1000),
@@ -274,12 +254,11 @@ export default {
         isMine: true
       };
 
-      // Effacer l'input avant d'envoyer
+
       const messageToSend = newMessage.value;
       newMessage.value = '';
 
       try {
-        // Ajouter temporairement le message à la liste
         addOptimisticMessage(tempMessage);
         scrollToBottom();
 
@@ -297,17 +276,16 @@ export default {
       router.push('/conversations');
     };
 
-    // Observer les changements dans les messages pour auto-scroller
+
     watch(messages, () => {
       scrollToBottom();
     });
 
-    // Forcer une actualisation toutes les minutes pour éviter les problèmes de session
+
     let forceRefreshInterval = null;
     const startForceRefresh = () => {
       forceRefreshInterval = setInterval(async () => {
         if (conversationId.value) {
-          console.log("Actualisation forcée des messages");
           await loadMessages(true);
         }
       }, 60000); // Toutes les minutes
@@ -320,37 +298,22 @@ export default {
       }
     };
 
-    // Quand l'utilisateur revient sur l'onglet, on actualise immédiatement
+
     const handleWindowFocus = async () => {
-      console.log("Fenêtre a repris le focus, actualisation des messages");
       if (conversationId.value) {
         await loadMessages(true);
       }
     };
 
     onMounted(async () => {
-      console.log("ChatView mounted");
-      console.log("User actuel:", userStore.user?.login);
-
       try {
         if (!currentConversation.value || currentConversation.value.id !== conversationId.value) {
-          // Si on accède directement à la page de chat sans passer par la liste
-          console.log("Pas de conversation courante ou ID différent, chargement initial");
-
           try {
             const conversations = await fetchConversations(false);
-            console.log(`${conversations.length} conversations récupérées`);
 
             const conversation = conversations.find(c => c.id === conversationId.value);
             if (conversation) {
-              console.log("Conversation trouvée:", conversation.id);
-              console.log("Détails conversation:", {
-                user1: conversation.user1Login,
-                user2: conversation.user2Login,
-                currentUser: userStore.user?.login
-              });
               setCurrentConversation(conversation);
-              console.log("Nom de l'autre utilisateur:", getOtherUserName(conversation));
             } else {
               console.warn("Conversation non trouvée dans la liste:", conversationId.value);
               error.value = "Conversation introuvable";
@@ -359,30 +322,18 @@ export default {
             console.error('Erreur lors de la récupération des conversations:', err);
             error.value = "Erreur lors du chargement des conversations";
           }
-        } else {
-          console.log("Conversation courante déjà définie:", currentConversation.value.id);
-          console.log("Détails conversation:", {
-            user1: currentConversation.value.user1Login,
-            user2: currentConversation.value.user2Login,
-            currentUser: userStore.user?.login
-          });
-          console.log("Nom de l'autre utilisateur:", getOtherUserName(currentConversation.value));
         }
-
         await loadMessages(false);
         startPolling();
         startForceRefresh();
 
-        // Ajouter un gestionnaire d'événements pour le focus de la fenêtre
         window.addEventListener('focus', handleWindowFocus);
       } catch (e) {
-        console.error("Erreur lors de l'initialisation:", e);
         error.value = "Erreur d'initialisation";
       }
     });
 
     onUnmounted(() => {
-      console.log("ChatView unmounted");
       stopPolling();
       stopForceRefresh();
       window.removeEventListener('focus', handleWindowFocus);

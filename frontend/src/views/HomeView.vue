@@ -34,11 +34,9 @@ export default {
     const userStore = useUserStore();
     const appStore = useAppStore();
 
-    // Utiliser le solde depuis le store global
     const balance = computed(() => appStore.balance);
 
     onMounted(async () => {
-      // Charger le solde si l'utilisateur est authentifié
       if (userStore.isAuthenticated) {
         try {
           await appStore.fetchBalance();
@@ -48,7 +46,6 @@ export default {
       }
     });
 
-    // Méthodes de navigation
     const contactAdmin = () => {
       router.push('/contact');
     };

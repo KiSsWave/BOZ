@@ -58,8 +58,6 @@ export function useConversations() {
           if (!seen.has(participants)) {
             seen.add(participants);
             uniqueConvs.push(conv);
-          } else {
-            console.log(`Conversation dupliquée ignorée: ${participants}`);
           }
         }
 
@@ -92,11 +90,8 @@ export function useConversations() {
     error.value = null;
 
     try {
-      console.log(`Récupération des messages pour la conversation ${conversationId}`);
+
       const response = await axios.get(`/conversations/${conversationId}/messages`);
-      console.log('Réponse reçue:', response.data);
-
-
       messages.value = response.data.messages || [];
       return messages.value;
     } catch (err) {
@@ -116,11 +111,7 @@ export function useConversations() {
       return;
     }
 
-    console.log('Ajout de message optimiste:', tempMessage);
-
     messages.value.push(tempMessage);
-
-
     const conversationIndex = conversations.value.findIndex(conv => conv.id === tempMessage.conversationId);
     if (conversationIndex !== -1) {
       conversations.value[conversationIndex].lastMessage = tempMessage.content;
@@ -135,11 +126,7 @@ export function useConversations() {
 
   const sendMessage = async (conversationId, content) => {
     try {
-      console.log(`Envoi d'un message à la conversation ${conversationId}:`, content);
       const response = await axios.post(`/conversations/${conversationId}/messages`, { content });
-
-      console.log('Réponse de l\'API après envoi:', response.data);
-
       const newMessage = response.data.message || response.data.data;
 
 
@@ -194,7 +181,6 @@ export function useConversations() {
 
 
   const setCurrentConversation = (conversation) => {
-    console.log('Setting current conversation:', conversation);
     currentConversation.value = conversation;
 
 
@@ -208,20 +194,15 @@ export function useConversations() {
     try {
 
       if (loading.value) {
-        console.log("Polling: chargement déjà en cours, ignoré");
+
         return false;
       }
 
-      console.log(`Actualisation des messages pour la conversation ${conversationId}`);
       const response = await axios.get(`/conversations/${conversationId}/messages`);
       const newMessages = response.data.messages || [];
 
 
       const tempMessages = messages.value.filter(m => m.isTemp);
-
-
-      console.log(`Polling: ${messages.value.length} messages actuels, ${newMessages.length} nouveaux messages, ${tempMessages.length} temporaires`);
-
 
       if (messages.value.length === 0 ||
         (newMessages.length > 0 && newMessages.length !== messages.value.filter(m => !m.isTemp).length)) {
@@ -234,7 +215,6 @@ export function useConversations() {
 
 
         messages.value = combinedMessages;
-        console.log("Polling: Mise à jour des messages effectuée");
         return true;
       }
 
@@ -254,13 +234,11 @@ export function useConversations() {
             combinedMessages.sort((a, b) => a.timestamp - b.timestamp);
 
             messages.value = combinedMessages;
-            console.log("Polling: Nouveau message détecté et ajouté");
             return true;
           }
         }
       }
 
-      console.log("Polling: Pas de nouveaux messages");
       return false;
     } catch (err) {
       console.error(`Erreur lors de l'actualisation des messages:`, err);
