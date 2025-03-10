@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 
 class RemoteService {
   final storage = const FlutterSecureStorage();
-  static const String _baseUrl = 'http://192.168.1.66:44050';
+  static const String _baseUrl = 'http://docketu.iutnc.univ-lorraine.fr:54050';
 
   Future<http.Response> registerUser(String email, String username, String password) async {
     try {
@@ -165,5 +165,19 @@ class RemoteService {
       print("Error making POST request: $e");
       return http.Response('Error making POST request: $e', 500);
     }
+  }
+
+  Future<http.Response> payBill(String id) async {
+    try {
+      var response = await _authenticatedPostRequest('$_baseUrl/pay', body: {"facture_id": id});
+      return response;
+    } catch (e) {
+      print("Error paying bill: $e");
+      return http.Response('Error paying bill: $e', 500);
+    }
+  }
+
+  Future<http.Response> getConversations() async {
+    return await _authenticatedGetRequest('$_baseUrl/conversations/');
   }
 }
