@@ -22,7 +22,6 @@ services:
       - postgres
     command: php -S 0.0.0.0:80 -t /var/php/public
 
-
   postgres:
     image: 'postgres:latest'
     restart: unless-stopped
@@ -41,16 +40,21 @@ services:
       - '44052:8080'
     networks:
       - boz.net
-    command : php -S 0.0.0.0:8080 -t /var/www/html
+    command: php -S 0.0.0.0:8080 -t /var/www/html
 
-  apache2:
-    image: ubuntu/apache2:latest
+  nodejs:
+    image: node:latest
     restart: unless-stopped
+    build:
+      context: ./frontend
+      dockerfile: ./Dockerfile
     ports:
-      - "44053:80"
+      - "44053:3000"
     volumes:
-      - ./frontend/:/var/www/html
+      - ./frontend:/app
+    working_dir: /app
     networks:
       - boz.net
     depends_on:
       - api
+    command: npm run dev
