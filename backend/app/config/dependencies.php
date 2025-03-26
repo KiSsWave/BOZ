@@ -35,6 +35,7 @@ use boz\core\services\auth\AuthzServiceInterface;
 use boz\core\services\conversations\ConversationService;
 use boz\core\services\conversations\ConversationServiceInterface;
 use boz\core\services\tickets\TicketService;
+use boz\core\services\Blockchain\BlockService;
 use boz\Infrastructure\repositories\BlockRepository;
 use boz\Infrastructure\repositories\ConversationRepository;
 use boz\Infrastructure\repositories\TicketRepository;
@@ -114,6 +115,10 @@ return [
 
     AuthzServiceInterface::class => function (ContainerInterface $c) {
         return new AuthzService($c->get(UserRepositoryInterface::class));
+    },
+
+    BlockServiceInterface::class => function (ContainerInterface $c) {
+        return new BlockService($c->get(BlockRepositoryInterface::class));
     },
 
 
