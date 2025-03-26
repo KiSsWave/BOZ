@@ -43,14 +43,16 @@ services:
       - boz.net
     command : php -S 0.0.0.0:8080 -t /var/www/html
 
-  apache2:
-    image: ubuntu/apache2:latest
-    restart: unless-stopped
-    ports:
-      - "54053:80"
-    volumes:
-      - ./frontend/dist:/var/www/html
-    networks:
-      - boz.net
-    depends_on:
-      - api
+  nodejs:
+  image: node:latest
+  restart: unless-stopped
+  ports:
+    - "54053:3000"
+  volumes:
+    - ./frontend:/app
+  working_dir: /app
+  networks:
+    - boz.net
+  depends_on:
+    - api
+  command: sh -c "npm install && npm run dev -- --host"
