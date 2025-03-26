@@ -11,6 +11,9 @@ class User extends Entity
     protected string $password;
     protected int $role;
 
+    protected ?string $publicKey = null;
+    protected ?string $privateKey = null;
+
 
     public function __construct(string $e,string $l, string $r){
         $this->email = $e;
@@ -35,6 +38,14 @@ class User extends Entity
         return $this->role;
     }
 
+    public function getPublicKey(): ?string{
+        return $this->publicKey;
+    }
+
+    public function getPrivateKey(): ?string{
+        return $this->privateKey;
+    }
+
     public function setPassword(string $p)
     {
         $this->password = $p;
@@ -48,6 +59,15 @@ class User extends Entity
     public function setLogin(string $login): void
     {
         $this->login = $login;
+    }
+
+    public function setPublicKey(string $p): void
+    {
+        $this->publicKey = $p;
+    }
+
+    public function setPrivateKey(string $p): void{
+        $this->privateKey = $p;
     }
 
 
