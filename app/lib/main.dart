@@ -58,7 +58,7 @@ class _MyAppState extends State<MyApp> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             // Afficher un écran de chargement pendant la vérification
-            return const Scaffold(
+            return Scaffold(
               body: Center(
                 child: CircularProgressIndicator(),
               ),
