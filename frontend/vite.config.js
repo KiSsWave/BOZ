@@ -14,5 +14,8 @@ export default defineConfig({
       'vue': 'vue/dist/vue.esm-bundler.js',
     },
   },
+  server: {
+    allowedHosts: ["docketu.iutnc.univ-lorraine.fr"]
+  },
   base: './',
 })

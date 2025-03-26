@@ -195,12 +195,11 @@ export const useAppStore = defineStore('app', {
       this.isProcessing = true;
 
       try {
-        await axios.post('/admin/give', {
+        await axios.post('/give', {
           user_login,
           amount
         });
 
-        // Mettre à jour le solde
         await this.fetchBalance(true);
 
         return true;

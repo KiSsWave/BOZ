@@ -80,7 +80,7 @@ export function useTickets() {
   const giveCash = async ({ user_login, amount }) => {
     isProcessing.value = true
     try {
-      await axios.post('/admin/give', {
+      await axios.post('/give', {
         user_login,
         amount
       })

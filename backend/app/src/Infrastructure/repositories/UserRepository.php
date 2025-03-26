@@ -1,6 +1,7 @@
 <?php
 
-namespace boz\infrastructure\repositories;
+namespace boz\Infrastructure\repositories;
+
 use boz\core\domain\User\User;
 use boz\core\repositoryInterfaces\RepositoryEntityNotFoundException;
 use boz\core\repositoryInterfaces\UserRepositoryInterface;

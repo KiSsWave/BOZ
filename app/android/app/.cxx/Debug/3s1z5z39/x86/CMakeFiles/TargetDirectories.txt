@@ -1,0 +1,2 @@
+D:/Github/BOZ/app/android/app/.cxx/Debug/3s1z5z39/x86/CMakeFiles/edit_cache.dir
+D:/Github/BOZ/app/android/app/.cxx/Debug/3s1z5z39/x86/CMakeFiles/rebuild_cache.dir
