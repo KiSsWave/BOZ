@@ -1,4 +1,4 @@
-import 'package:boz/pages/qr_page.dart';
+import 'package:boz/pages/help_page.dart';
 import 'package:flutter/material.dart';
 import 'seller_home_page.dart';
 import 'settings_page.dart';
@@ -18,6 +18,7 @@ class SellerNavigationBar extends State<SellerNavigation> {
   final List<Widget> body = [
     const SellerHomePage(),
     const BillsPage(),
+    const HelpPage(),
     const SettingsPage(),
   ];
 
@@ -78,6 +79,10 @@ class SellerNavigationBar extends State<SellerNavigation> {
           BottomNavigationBarItem(
             icon: Icon(Icons.description),
             label: "Factures",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.help),
+            label: "Aide",
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),

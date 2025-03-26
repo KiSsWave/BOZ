@@ -69,7 +69,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildSignInButton(BuildContext context) {
+  _buildSignInButton(BuildContext context) {
     return MyButton(
       onTap: () async {
         _showSnackBar(context, "Connexion en cours ...", Colors.black);
@@ -77,21 +77,7 @@ class _LoginPageState extends State<LoginPage> {
         final response = await signUserIn();
 
         if (response.statusCode == 200) {
-          int? role = await RemoteService().getRole();
-          switch (role) {
-            case 1:
-              Navigator.pushReplacementNamed(context, "/home");
-              break;
-            case 2:
-              Navigator.pushReplacementNamed(context, "/seller");
-              break;
-            default:
-              _showSnackBar(
-                context,
-                "Erreur lors de la connexion: rôle inconnu",
-                Colors.red,
-              );
-          }
+          Navigator.pushReplacementNamed(context, "/home");
         } else {
           _showSnackBar(
             context,
