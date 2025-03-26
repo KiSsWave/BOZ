@@ -10,15 +10,18 @@ class HelpPage extends StatefulWidget {
   _HelpPageState createState() => _HelpPageState();
 }
 
-class _HelpPageState extends State<HelpPage> {
+class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin {
   List<Map<String, dynamic>> _tickets = [];
   bool _isLoading = false;
   final RemoteService _remoteService = RemoteService();
+
+  late TabController _tabController;  // Déclaration du TabController
 
   @override
   void initState() {
     super.initState();
     _loadTickets();
+    _tabController = TabController(length: 3, vsync: this); // Initialisation du TabController avec 3 onglets
   }
 
   Future<void> _loadTickets() async {
@@ -148,123 +151,134 @@ class _HelpPageState extends State<HelpPage> {
       backgroundColor: Colors.grey.shade300,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _loadTickets,
-              child: Container(
-                padding: const EdgeInsets.all(16.0),
-                child: Card(
+          : Column(
+              children: [
+                // Onglet TabBar sans AppBar
+                Material(
                   color: Colors.white,
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                  ),
-                  child: ListView(
-                    padding: const EdgeInsets.all(8.0),
-                    children: [
-                      ListTile(
-                        title: const Text(
-                          'FAQ',
-                          style: TextStyle(fontSize: 18.0, color: Colors.black),
-                        ),
-                        trailing: const Icon(
-                          Icons.arrow_forward_ios,
-                          color: Colors.black54,
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => FAQPage()),
-                          );
-                        },
-                      ),
-                      const Divider(color: Colors.black54),
-                      ListTile(
-                        title: const Text(
-                          'Ouvrir un ticket',
-                          style: TextStyle(fontSize: 18.0, color: Colors.black),
-                        ),
-                        trailing: const Icon(
-                          Icons.add_circle_outline,
-                          color: Colors.black,
-                        ),
-                        onTap: _openTicketForm,
-                      ),
-                      const Divider(color: Colors.black54),
-                      const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text(
-                          "Mes Tickets",
-                          style: TextStyle(
-                            fontSize: 20.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      if (_tickets.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.all(16.0),
-                          child: Center(
-                            child: Text(
-                              "Vous n'avez pas encore de tickets",
-                              style: TextStyle(
-                                fontSize: 16.0,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ),
-                        )
-                      else
-                        ..._tickets.map(
-                          (ticket) => Column(
-                            children: [
-                              ListTile(
-                                leading: const Icon(Icons.chat, color: Colors.black),
-                                title: Text(
-                                  ticket['type'] ?? '',
-                                  style: const TextStyle(
-                                    fontSize: 18.0,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      ticket['message'] ?? '',
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(color: Colors.black54),
-                                    ),
-                                    Text(
-                                      "Statut: ${ticket['status'] ?? ''}",
-                                      style: TextStyle(
-                                        color: ticket['status'] == 'en attente'
-                                            ? Colors.orange
-                                            : ticket['status'] == 'en cours'
-                                                ? Colors.blue
-                                                : Colors.green,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                trailing: const Icon(
-                                  Icons.arrow_forward_ios,
-                                  color: Colors.black54,
-                                ),
-                                onTap: () => _openChat(
-                                  ticket['Id'].toString(),
-                                  ticket['status'] ?? '',
-                                ),
-                              ),
-                              const Divider(),
-                            ],
-                          ),
-                        ),
+                  child: TabBar(
+                    controller: _tabController,  // Utilisation du TabController
+                    tabs: const [
+                      Tab(text: 'FAQ'),
+                      Tab(text: 'Tickets'),
+                      Tab(text: 'Chat'),
                     ],
                   ),
                 ),
-              ),
+                // Onglet TabBarView
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,  // Utilisation du TabController
+                    children: [
+                      // Onglet FAQ
+                      FAQPage(),
+
+                      // Onglet Tickets
+                      RefreshIndicator(
+                        onRefresh: _loadTickets,
+                        child: Container(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Card(
+                            color: Colors.white,
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                            ),
+                            child: ListView(
+                              padding: const EdgeInsets.all(8.0),
+                              children: [
+                                ListTile(
+                                  title: const Text(
+                                    'Ouvrir un ticket',
+                                    style: TextStyle(fontSize: 18.0, color: Colors.black),
+                                  ),
+                                  trailing: const Icon(
+                                    Icons.add_circle_outline,
+                                    color: Colors.black,
+                                  ),
+                                  onTap: _openTicketForm,
+                                ),
+                                const Divider(color: Colors.black54),
+                                const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text(
+                                    "Mes Tickets",
+                                    style: TextStyle(
+                                      fontSize: 20.0,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                if (_tickets.isEmpty)
+                                  const Padding(
+                                    padding: EdgeInsets.all(16.0),
+                                    child: Center(
+                                      child: Text(
+                                        "Vous n'avez pas encore de tickets",
+                                        style: TextStyle(
+                                          fontSize: 16.0,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                else
+                                  ..._tickets.map(
+                                    (ticket) => Column(
+                                      children: [
+                                        ListTile(
+                                          leading: const Icon(Icons.chat, color: Colors.black),
+                                          title: Text(
+                                            ticket['type'] ?? '',
+                                            style: const TextStyle(
+                                              fontSize: 18.0,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                          subtitle: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                ticket['message'] ?? '',
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: const TextStyle(color: Colors.black54),
+                                              ),
+                                              Text(
+                                                "Statut: ${ticket['status'] ?? ''}",
+                                                style: TextStyle(
+                                                  color: ticket['status'] == 'en attente'
+                                                      ? Colors.orange
+                                                      : ticket['status'] == 'en cours'
+                                                          ? Colors.blue
+                                                          : Colors.green,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const Divider(),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Onglet Chat
+                      Container(
+                        padding: const EdgeInsets.all(16.0),
+                        child: const Center(
+                          child: Text("Consulter les conversations ici"),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
     );
   }

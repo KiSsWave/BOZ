@@ -51,7 +51,6 @@ export default {
   setup() {
     const appStore = useAppStore();
 
-    // Récupérer les transactions depuis le store global
     const transactions = computed(() => appStore.transactions);
     const loading = computed(() => appStore.loadingStates.transactions);
     const error = computed(() => appStore.errorStates.transactions);
@@ -68,7 +67,6 @@ export default {
     };
 
     onMounted(async () => {
-      // Charger les transactions si elles ne sont pas déjà chargées
       if (!appStore.isDataLoaded('transactions')) {
         await appStore.fetchTransactions();
       }

@@ -22,7 +22,6 @@ services:
       - postgres
     command: php -S 0.0.0.0:80 -t /var/php/public
 
-
   postgres:
     image: 'postgres:latest'
     restart: unless-stopped
@@ -41,7 +40,7 @@ services:
       - '54052:8080'
     networks:
       - boz.net
-    command : php -S 0.0.0.0:8080 -t /var/www/html
+    command: php -S 0.0.0.0:8080 -t /var/www/html
 
   nodejs:
   image: node:latest

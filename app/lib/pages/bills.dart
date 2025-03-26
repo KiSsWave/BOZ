@@ -13,6 +13,9 @@ class BillsPage extends StatefulWidget {
 class _BillsPageState extends State<BillsPage> {
   final RemoteService _remoteService = RemoteService();
   List<Bill> bills = [];
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _libelleController = TextEditingController();
+  final TextEditingController _montantController = TextEditingController();
 
   @override
   void initState() {
@@ -34,6 +37,70 @@ class _BillsPageState extends State<BillsPage> {
     }
   }
 
+  void _showAddBillDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Ajouter une Facture'),
+          content: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: _libelleController,
+                  decoration: const InputDecoration(labelText: 'Libellé'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Le libellé est obligatoire';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: _montantController,
+                  decoration: const InputDecoration(labelText: 'Montant'),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Le montant est obligatoire';
+                    }
+                    if (double.tryParse(value) == null) {
+                      return 'Veuillez entrer un montant valide';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Ferme le dialogue
+              },
+              child: const Text('Annuler'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (_formKey.currentState?.validate() ?? false) {
+                  RemoteService().createBill(
+                    _libelleController.text,
+                    double.parse(_montantController.text),
+                  );
+                  _fetchBills();
+                  Navigator.of(context).pop(); // Ferme le dialogue
+                }
+              },
+              child: const Text('Ajouter'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,8 +109,8 @@ class _BillsPageState extends State<BillsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
+            const Padding(
+              padding: EdgeInsets.all(8.0),
               child: Text(
                 "Mes Factures",
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -67,8 +134,8 @@ class _BillsPageState extends State<BillsPage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: Icon(Icons.add),
+        onPressed: _showAddBillDialog, // Ouvre le dialogue pour ajouter une facture
+        child: const Icon(Icons.add),
       ),
     );
   }

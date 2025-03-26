@@ -3,7 +3,7 @@
     <HeaderComponent />
     <div class="vendor-container">
       <h1>Interface Vendeur</h1>
-      <!-- Formulaire de création de facture -->
+
       <div class="invoice-creation-form">
         <h2>Créer une nouvelle facture</h2>
         <form @submit.prevent="createInvoice" class="form-container">

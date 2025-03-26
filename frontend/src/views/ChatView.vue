@@ -8,7 +8,9 @@
           <font-awesome-icon :icon="['fas', 'arrow-left']" />
         </button>
         <h2 v-if="currentConversation">{{ getOtherUserName(currentConversation) }}</h2>
-        <div class="placeholder" aria-hidden="true"></div>
+        <div class="polling-indicator" v-if="pollingActive">
+          <font-awesome-icon :icon="['fas', 'sync']" class="polling-icon" :class="{ active: isPolling }" />
+        </div>
       </div>
 
       <div v-if="initialLoading" class="loading-container">
@@ -28,11 +30,12 @@
         </div>
 
         <div v-else class="messages-list">
-          <div v-for="(message, index) in messages" :key="message?.id || index" :class="[
-            'message',
-            (messages[0]?.senderLogin === message?.senderLogin) ? 'sent' : 'received',
-            (message?.id === messages[0]?.id) ? 'first-message' : '',
-          ]">
+          <div
+            v-for="(message, index) in messages"
+            :key="message?.id || index"
+            class="message"
+            :class="[isMyMessage(message) ? 'my-message' : 'other-message']"
+          >
             <div class="message-content">
               <p>{{ message?.content || '' }}</p>
               <span class="message-time">{{ formatTime(message?.timestamp) }}</span>
@@ -43,7 +46,7 @@
 
       <div class="message-form">
         <textarea v-model="newMessage" placeholder="Écrivez votre message..." @keyup.enter="handleEnter"
-          class="message-input" :disabled="sendingMessage"></textarea>
+                  class="message-input" :disabled="sendingMessage"></textarea>
         <button @click="sendMessageHandler" class="send-button" :disabled="!newMessage.trim() || sendingMessage">
           <font-awesome-icon v-if="!sendingMessage" :icon="['fas', 'paper-plane']" />
           <font-awesome-icon v-else :icon="['fas', 'circle-notch']" spin />
@@ -66,7 +69,7 @@ export default {
     HeaderComponent
   },
   setup() {
-    console.log("ChatView setup init");
+
     const route = useRoute();
     const router = useRouter();
     const userStore = useUserStore();
@@ -80,7 +83,8 @@ export default {
       sendMessage,
       addOptimisticMessage,
       setCurrentConversation,
-      refreshMessages
+      refreshMessages,
+      pollingActive
     } = useConversations();
 
     // Références et états locaux
@@ -91,17 +95,34 @@ export default {
     const silentLoading = ref(false);
     const sendingMessage = ref(false);
     const pollingInterval = ref(null);
+    const isPolling = ref(false);
 
-    // Valider les messages pour éviter les erreurs
+
+    const isMyMessage = (message) => {
+
+      if (message?.isTemp) {
+        return true;
+      }
+
+
+      if (message?.isMine !== undefined) {
+        return message.isMine;
+      }
+
+
+      return message?.senderLogin === userStore.user?.email;
+    };
+
+
     const validateMessages = () => {
-      console.log("Validation des messages:", messages.value);
+
       if (!Array.isArray(messages.value)) {
         console.warn('Messages n\'est pas un tableau:', messages.value);
-        messages.value = []; // Initialiser comme un tableau vide
+        messages.value = [];
       }
     };
 
-    // Récupérer les messages
+
     const loadMessages = async (silent = false) => {
       try {
         if (!conversationId.value) {
@@ -116,8 +137,6 @@ export default {
         } else {
           initialLoading.value = true;
         }
-
-        console.log(`Chargement des messages pour la conversation ${conversationId.value}`);
         await fetchMessages(conversationId.value);
         validateMessages();
 
@@ -132,37 +151,61 @@ export default {
       }
     };
 
-    // Polling sécurisé pour les nouveaux messages
+
     const startPolling = () => {
-      // Arrêter d'abord tout polling existant
+
       stopPolling();
+      pollingActive.value = true;
 
-      // Créer un nouvel intervalle (toutes les 8 secondes pour éviter les requêtes trop fréquentes)
-      pollingInterval.value = setInterval(() => {
+      pollingInterval.value = setInterval(async () => {
         if (conversationId.value) {
-          refreshMessages(conversationId.value);
-        }
-      }, 8000);
+          try {
+            isPolling.value = true;
+            const hasNewMessages = await refreshMessages(conversationId.value);
 
-      console.log("Polling démarré");
+            if (hasNewMessages) {
+              scrollToBottom();
+            }
+
+            setTimeout(() => {
+              isPolling.value = false;
+            }, 1000);
+          } catch (error) {
+            isPolling.value = false;
+          }
+        }
+      }, 5000);
     };
 
     const stopPolling = () => {
       if (pollingInterval.value) {
         clearInterval(pollingInterval.value);
         pollingInterval.value = null;
-        console.log("Polling arrêté");
+        pollingActive.value = false;
+        isPolling.value = false;
       }
     };
 
     const getOtherUserName = (conversation) => {
       if (!conversation) return '';
-      const currentUserLogin = userStore.user?.login;
-      if (!currentUserLogin) return conversation.user1Login || '';
 
-      return conversation.user1Login === currentUserLogin
-        ? conversation.user2Login
-        : conversation.user1Login;
+      const currentUserLogin = userStore.user?.email;
+      if (!currentUserLogin) return '';
+
+      if (conversation.otherUser) {
+        return conversation.otherUser;
+      }
+
+
+      if (conversation.user1Login === currentUserLogin) {
+        return conversation.user2Login;
+      } else if (conversation.user2Login === currentUserLogin) {
+        return conversation.user1Login;
+      } else {
+        console.warn("L'utilisateur actuel n'est ni user1 ni user2 dans cette conversation:",
+          { currentUser: currentUserLogin, user1: conversation.user1Login, user2: conversation.user2Login });
+        return '';
+      }
     };
 
     const formatTime = (timestamp) => {
@@ -199,23 +242,23 @@ export default {
         return;
       }
 
-      // Optimistic update - ajouter immédiatement un message temporaire
+      const otherUserLogin = getOtherUserName(currentConversation.value);
       const tempMessage = {
         id: 'temp-' + Date.now(),
-        senderLogin: userStore.user?.login,
-        receiverLogin: getOtherUserName(currentConversation.value),
+        senderLogin: userStore.user?.email,
+        receiverLogin: otherUserLogin,
         content: newMessage.value,
         timestamp: Math.floor(Date.now() / 1000),
         isTemp: true,
-        conversationId: conversationId.value
+        conversationId: conversationId.value,
+        isMine: true
       };
 
-      // Effacer l'input avant d'envoyer
+
       const messageToSend = newMessage.value;
       newMessage.value = '';
 
       try {
-        // Ajouter temporairement le message à la liste
         addOptimisticMessage(tempMessage);
         scrollToBottom();
 
@@ -233,47 +276,67 @@ export default {
       router.push('/conversations');
     };
 
-    // Observer les changements dans les messages pour auto-scroller
+
     watch(messages, () => {
       scrollToBottom();
     });
 
+
+    let forceRefreshInterval = null;
+    const startForceRefresh = () => {
+      forceRefreshInterval = setInterval(async () => {
+        if (conversationId.value) {
+          await loadMessages(true);
+        }
+      }, 60000); // Toutes les minutes
+    };
+
+    const stopForceRefresh = () => {
+      if (forceRefreshInterval) {
+        clearInterval(forceRefreshInterval);
+        forceRefreshInterval = null;
+      }
+    };
+
+
+    const handleWindowFocus = async () => {
+      if (conversationId.value) {
+        await loadMessages(true);
+      }
+    };
+
     onMounted(async () => {
-      console.log("ChatView mounted");
-
       try {
-        if (!currentConversation.value) {
-          // Si on accède directement à la page de chat sans passer par la liste
-          console.log("Pas de conversation courante, chargement initial");
-
+        if (!currentConversation.value || currentConversation.value.id !== conversationId.value) {
           try {
             const conversations = await fetchConversations(false);
-            console.log(`${conversations.length} conversations récupérées`);
 
             const conversation = conversations.find(c => c.id === conversationId.value);
             if (conversation) {
-              console.log("Conversation trouvée:", conversation.id);
               setCurrentConversation(conversation);
             } else {
               console.warn("Conversation non trouvée dans la liste:", conversationId.value);
+              error.value = "Conversation introuvable";
             }
           } catch (err) {
             console.error('Erreur lors de la récupération des conversations:', err);
+            error.value = "Erreur lors du chargement des conversations";
           }
-        } else {
-          console.log("Conversation courante déjà définie:", currentConversation.value.id);
         }
-
         await loadMessages(false);
         startPolling();
+        startForceRefresh();
+
+        window.addEventListener('focus', handleWindowFocus);
       } catch (e) {
-        console.error("Erreur lors de l'initialisation:", e);
+        error.value = "Erreur d'initialisation";
       }
     });
 
     onUnmounted(() => {
-      console.log("ChatView unmounted");
       stopPolling();
+      stopForceRefresh();
+      window.removeEventListener('focus', handleWindowFocus);
     });
 
     return {
@@ -291,8 +354,11 @@ export default {
       handleEnter,
       formatTime,
       getOtherUserName,
+      isMyMessage,
       goBack,
-      loadMessages
+      loadMessages,
+      pollingActive,
+      isPolling
     };
   }
 };
@@ -336,8 +402,22 @@ export default {
   padding: 5px;
 }
 
-.placeholder {
+.polling-indicator {
   width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.polling-icon {
+  color: #bdc3c7;
+  font-size: 1rem;
+}
+
+.polling-icon.active {
+  color: #3498db;
+  animation: spin 1s linear infinite;
 }
 
 .loading-container {
@@ -360,9 +440,7 @@ export default {
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 .error-container {
@@ -419,50 +497,34 @@ export default {
   margin-bottom: 10px;
 }
 
-.message-content {
-  max-width: 70%;
-  padding: 10px 15px;
-  border-radius: 18px;
-  position: relative;
-}
-
-/* Correction pour les styles des messages */
-
-/* Aligner les messages à gauche/droite */
-/* Style pour le premier message qui sera placé à droite */
-.message.first-message {
+/* Message envoyé par moi */
+.my-message {
   justify-content: flex-end;
 }
 
-.message.first-message .message-content {
+.my-message .message-content {
   background-color: #3498db;
-  /* Bleu pour l'expéditeur du premier message */
   color: white;
+  border-radius: 18px;
   border-bottom-right-radius: 4px;
 }
 
-/* Les autres messages restent à gauche, mais peuvent être personnalisés pour les autres utilisateurs */
-.message.received {
+/* Message envoyé par l'autre personne */
+.other-message {
   justify-content: flex-start;
 }
 
-.message.received .message-content {
+.other-message .message-content {
   background-color: #f1f2f6;
   color: #2c3e50;
+  border-radius: 18px;
   border-bottom-left-radius: 4px;
 }
 
-/* Style du contenu des messages */
-.sent .message-content {
-  background-color: #3498db;
-  color: white;
-  border-bottom-right-radius: 4px;
-}
-
-.received .message-content {
-  background-color: #f1f2f6;
-  color: #2c3e50;
-  border-bottom-left-radius: 4px;
+.message-content {
+  max-width: 70%;
+  padding: 10px 15px;
+  position: relative;
 }
 
 .message-content p {
@@ -500,19 +562,6 @@ export default {
   border-color: #3498db;
 }
 
-.received {
-  background-color: #f1f2f6;
-  color: #2c3e50;
-  border-bottom-left-radius: 4px;
-}
-
-.received-mine {
-  background-color: #d1e7dd;
-  /* Vert clair pour tes propres messages reçus */
-  color: #155724;
-  border-bottom-left-radius: 4px;
-}
-
 .send-button {
   background-color: #3498db;
   color: white;
@@ -544,6 +593,25 @@ export default {
 
   .message-content {
     max-width: 85%;
+  }
+}
+
+@media (max-width: 480px) {
+  .chat-header h2 {
+    font-size: 1rem;
+  }
+
+  .messages-container {
+    padding: 15px 10px;
+  }
+
+  .message-form {
+    padding: 10px;
+  }
+
+  .send-button {
+    width: 36px;
+    height: 36px;
   }
 }
 </style>
