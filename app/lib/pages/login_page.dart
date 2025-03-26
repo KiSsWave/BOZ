@@ -4,17 +4,23 @@ import 'package:flutter/material.dart';
 import 'package:boz/services/remote_service.dart';
 import 'package:http/http.dart';
 
-class LoginPage extends StatelessWidget {
-  LoginPage({Key? key}) : super(key: key);
+class LoginPage extends StatefulWidget {
+  const LoginPage({Key? key}) : super(key: key);
 
-  final usernameController = TextEditingController();
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  bool _isPasswordVisible = false;
 
   Future<Response> signUserIn() async {
-    final username = usernameController.text;
+    final email = emailController.text;
     final password = passwordController.text;
 
-    return await RemoteService().loginUser(username, password);
+    return await RemoteService().loginUser(email, password);
   }
 
   void _showSnackBar(BuildContext context, String message, Color color) {
@@ -30,11 +36,24 @@ class LoginPage extends StatelessWidget {
     required TextEditingController controller,
     required String hintText,
     required bool obscureText,
+    bool? isPasswordField,
   }) {
     return MyTextField(
       controller: controller,
       hintText: hintText,
-      obscureText: obscureText,
+      obscureText: isPasswordField == true ? !_isPasswordVisible : obscureText,
+      suffixIcon: isPasswordField == true
+          ? IconButton(
+              icon: Icon(
+                _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+              ),
+              onPressed: () {
+                setState(() {
+                  _isPasswordVisible = !_isPasswordVisible;
+                });
+              },
+            )
+          : null,
     );
   }
 
@@ -103,8 +122,8 @@ class LoginPage extends StatelessWidget {
               ),
               const SizedBox(height: 25),
               _buildTextField(
-                controller: usernameController,
-                hintText: "Nom d'utilisateur",
+                controller: emailController,
+                hintText: "Email",
                 obscureText: false,
               ),
               const SizedBox(height: 25),
@@ -112,6 +131,7 @@ class LoginPage extends StatelessWidget {
                 controller: passwordController,
                 hintText: "Mot de passe",
                 obscureText: true,
+                isPasswordField: true,
               ),
               const SizedBox(height: 25),
               _buildSignInButton(context),
