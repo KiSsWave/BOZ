@@ -7,11 +7,13 @@ class RemoteService {
   final storage = const FlutterSecureStorage();
   static const String _baseUrl = 'http://docketu.iutnc.univ-lorraine.fr:54050';
 
-  Future<http.Response> registerUser(String email, String username, String password) async {
+  Future<http.Response> registerUser(
+      String email, String username, String password) async {
     try {
       var client = http.Client();
       var uri = Uri.parse('$_baseUrl/register');
-      var response = await client.post(uri, body: {"email": email, "login": username, "password": password});
+      var response = await client.post(uri,
+          body: {"email": email, "login": username, "password": password});
       if (response.statusCode != 200) {
         throw Exception('Failed to register user');
       }
@@ -26,7 +28,8 @@ class RemoteService {
     try {
       var client = http.Client();
       var uri = Uri.parse('$_baseUrl/signin');
-      var response = await client.post(uri, body: {"email": username, "password": password});
+      var response = await client
+          .post(uri, body: {"email": username, "password": password});
 
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
@@ -77,13 +80,15 @@ class RemoteService {
     var response = await _authenticatedGetRequest('$_baseUrl/tickets');
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body)['Tickets'] as List;
-      return data.map((ticket) => {
-        'Id': ticket['Id'],
-        'type': ticket['type'],
-        'message': ticket['message'],
-        'status': ticket['status'],
-        'adminId': ticket['Id Admin'],
-      }).toList();
+      return data
+          .map((ticket) => {
+                'Id': ticket['Id'],
+                'type': ticket['type'],
+                'message': ticket['message'],
+                'status': ticket['status'],
+                'adminId': ticket['Id Admin'],
+              })
+          .toList();
     } else {
       print("Error fetching tickets: ${response.body}");
       return [];
@@ -128,7 +133,6 @@ class RemoteService {
       var response = await http.get(Uri.parse(url), headers: {
         HttpHeaders.authorizationHeader: 'Bearer $token',
       });
-      
       if (response.statusCode != 200) {
         throw Exception('Failed to fetch data from $url');
       }
@@ -140,7 +144,8 @@ class RemoteService {
     }
   }
 
-  Future<http.Response> _authenticatedPostRequest(String url, {required Map<String, String> body}) async {
+  Future<http.Response> _authenticatedPostRequest(String url,
+      {required Map<String, String> body}) async {
     try {
       var token = await storage.read(key: 'jwt');
       if (token == null) {
@@ -169,7 +174,8 @@ class RemoteService {
 
   Future<http.Response> payBill(String id) async {
     try {
-      var response = await _authenticatedPostRequest('$_baseUrl/pay', body: {"facture_id": id});
+      var response = await _authenticatedPostRequest('$_baseUrl/pay',
+          body: {"facture_id": id});
       return response;
     } catch (e) {
       print("Error paying bill: $e");
@@ -177,7 +183,60 @@ class RemoteService {
     }
   }
 
-  Future<http.Response> getConversations() async {
-    return await _authenticatedGetRequest('$_baseUrl/conversations/');
+  Future<List<Map<String, dynamic>>> fetchConversations() async {
+    try {
+      var response = await _authenticatedGetRequest(
+          '$_baseUrl/conversations?include_last_message=true');
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        return List<Map<String, dynamic>>.from(
+            data['conversations'].map((conv) => {
+                  'id': conv['id'],
+                  'user1Login': conv['user1Login'],
+                  'user2Login': conv['user2Login'],
+                  'lastMessage': conv['lastMessage'] ?? '',
+                  'lastMessageTimestamp': conv['last_message_timestamp']
+                }));
+      } else {
+        print("Error fetching conversations: ${response.body}");
+        return [];
+      }
+    } catch (e) {
+      print("Error in fetchConversations: $e");
+      return [];
+    }
+  }
+
+  Future<Map<String, dynamic>> fetchConversationMessages(
+      String conversationId) async {
+    try {
+      var response = await _authenticatedGetRequest(
+          '$_baseUrl/conversations/$conversationId/messages');
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        return {
+          'messages': List<Map<String, dynamic>>.from(data['messages']),
+          'conversation': data['conversation']
+        };
+      } else {
+        print("Error fetching conversation messages: ${response.body}");
+        return {'messages': [], 'conversation': {}};
+      }
+    } catch (e) {
+      print("Error in fetchConversationMessages: $e");
+      return {'messages': [], 'conversation': {}};
+    }
+  }
+
+  Future<bool> sendMessage(String conversationId, String messageContent) async {
+    try {
+      var response = await _authenticatedPostRequest(
+          '$_baseUrl/conversations/$conversationId/messages',
+          body: {"content": messageContent});
+      return response.statusCode == 200;
+    } catch (e) {
+      print("Error sending message: $e");
+      return false;
+    }
   }
 }

@@ -4,12 +4,18 @@ import 'package:boz/services/remote_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 
-class RegisterPage extends StatelessWidget {
-  RegisterPage({Key? key}) : super(key: key);
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({Key? key}) : super(key: key);
 
+  @override
+  _RegisterPageState createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
   final emailController = TextEditingController();
+  bool _isPasswordVisible = false;
 
   Future<Response> registerUser() async {
     final email = emailController.text;
@@ -17,6 +23,17 @@ class RegisterPage extends StatelessWidget {
     final password = passwordController.text;
 
     return await RemoteService().registerUser(email, username, password);
+  }
+
+  bool _validatePassword(String password) {
+    // Password validation:
+    // - Minimum 8 characters
+    // - At least one uppercase letter
+    // - At least one number
+    // - At least one special character
+    final passwordRegex = RegExp(
+        r'^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$');
+    return passwordRegex.hasMatch(password);
   }
 
   void _showSnackBar(BuildContext context, String message, Color color) {
@@ -28,14 +45,28 @@ class RegisterPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(
-      {required TextEditingController controller,
-      required String hintText,
-      required bool obscureText}) {
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hintText,
+    required bool obscureText,
+    bool? isPasswordField,
+  }) {
     return MyTextField(
       controller: controller,
       hintText: hintText,
-      obscureText: obscureText,
+      obscureText: isPasswordField == true ? !_isPasswordVisible : obscureText,
+      suffixIcon: isPasswordField == true
+          ? IconButton(
+              icon: Icon(
+                _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+              ),
+              onPressed: () {
+                setState(() {
+                  _isPasswordVisible = !_isPasswordVisible;
+                });
+              },
+            )
+          : null,
     );
   }
 
@@ -54,6 +85,18 @@ class RegisterPage extends StatelessWidget {
   Widget _buildSignUpButton(BuildContext context) {
     return MyButton(
       onTap: () async {
+        final password = passwordController.text;
+
+        if (!_validatePassword(password)) {
+          _showSnackBar(
+            context,
+            "Le mot de passe doit contenir au moins 8 caractères, "
+            "une majuscule, un chiffre et un caractère spécial",
+            Colors.red,
+          );
+          return;
+        }
+
         _showSnackBar(context, "Inscription en cours ...", Colors.black);
 
         final response = await registerUser();
@@ -106,8 +149,22 @@ class RegisterPage extends StatelessWidget {
                   controller: passwordController,
                   hintText: "Mot de passe",
                   obscureText: true,
+                  isPasswordField: true,
                 ),
-                const SizedBox(height: 25),
+                const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Text(
+                    "Le mot de passe doit contenir au moins 8 caractères, "
+                    "une majuscule, un chiffre et un caractère spécial",
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 12,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 15),
                 _buildSignUpButton(context),
                 const SizedBox(height: 25),
                 Row(

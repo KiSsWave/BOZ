@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:boz/services/remote_service.dart';
-import 'chat_page.dart';
+import 'package:boz/pages/conversations_page.dart';
 import 'faq_page.dart';
 
 class HelpPage extends StatefulWidget {
@@ -136,15 +136,6 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
     );
   }
 
-  void _openChat(String ticketId, String status) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ChatPage(ticketId: ticketId, status: status),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -269,12 +260,7 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
                       ),
 
                       // Onglet Chat
-                      Container(
-                        padding: const EdgeInsets.all(16.0),
-                        child: const Center(
-                          child: Text("Consulter les conversations ici"),
-                        ),
-                      ),
+                      ConversationsPage(),
                     ],
                   ),
                 ),

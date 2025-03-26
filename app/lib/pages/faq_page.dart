@@ -24,7 +24,6 @@ class FAQPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey.shade300,
-      appBar: AppBar(title: const Text("FAQ")),
       body: ListView.builder(
         padding: const EdgeInsets.all(16.0),
         itemCount: _faqItems.length,
