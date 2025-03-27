@@ -59,6 +59,8 @@ class _HomePageState extends State<HomePage> {
 
         await _preferences.setTransactions(allTransactions);
         _filterTransactions(true);
+      } else if (response.statusCode == 401) {
+        await _remoteService.disconnectUser();
       } else {
         print('Error loading transactions: ${response.statusCode}');
       }
