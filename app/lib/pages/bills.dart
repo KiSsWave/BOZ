@@ -120,8 +120,8 @@ class _BillsPageState extends State<BillsPage> {
               child: GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 4,
+                  mainAxisSpacing: 4,
                   childAspectRatio: 0.8,
                 ),
                 itemCount: bills.length,

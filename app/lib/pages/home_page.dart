@@ -34,14 +34,14 @@ class _HomePageState extends State<HomePage> {
       lastUpdateFormatted = _preferences.getLastUpdate();
       allTransactions = _preferences.getTransactions();
     });
-    
+
     await _loadTransactions();
     await _fetchBalance();
   }
 
   Future<void> _loadTransactions() async {
     if (isLoading) return;
-    
+
     setState(() {
       isLoading = true;
     });
@@ -51,15 +51,16 @@ class _HomePageState extends State<HomePage> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final historyList = (data['history'] as List);
-        
+
         setState(() {
-          allTransactions = historyList
-              .map((item) => Transaction.fromJson(item))
-              .toList();
+          allTransactions =
+              historyList.map((item) => Transaction.fromJson(item)).toList();
         });
 
         await _preferences.setTransactions(allTransactions);
         _filterTransactions(true);
+      } else if (response.statusCode == 401) {
+        await _remoteService.disconnectUser();
       } else {
         print('Error loading transactions: ${response.statusCode}');
       }
@@ -99,9 +100,11 @@ class _HomePageState extends State<HomePage> {
       if (isRecharge == null) {
         displayedTransactions = allTransactions;
       } else if (isRecharge) {
-        displayedTransactions = allTransactions.where((t) => t.isRecharge()).toList();
+        displayedTransactions =
+            allTransactions.where((t) => t.isRecharge()).toList();
       } else {
-        displayedTransactions = allTransactions.where((t) => t.isPayment()).toList();
+        displayedTransactions =
+            allTransactions.where((t) => t.isPayment()).toList();
       }
     });
   }

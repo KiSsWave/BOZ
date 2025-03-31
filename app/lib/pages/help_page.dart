@@ -106,6 +106,7 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
                             ),
                           );
                         } else {
+                          print("\nResponse : ${response.body}\nCode : ${response.statusCode}\n");
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('Erreur lors de la création du ticket'),
