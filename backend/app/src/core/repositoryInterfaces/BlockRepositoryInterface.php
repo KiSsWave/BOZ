@@ -12,13 +12,13 @@ interface BlockRepositoryInterface
     
     public function createFacture($login, float $tarif, string $label, ?string $buyerLogin = null): void;
     
-    public function payFacture(string $factureId, string $userId, string $userLogin): void;
+    public function payFacture(string $factureId, string $userId, string $userLogin, string $role): void;
     
     public function getLastBlock(): array;
     
-    public function addBlock(string $accountLogin, float $amount, string $emitter, string $receiver): void;
+    public function addBlock(string $accountLogin, float $amount, string $emitter, string $receiver, string $role): void;
     
-    public function isTransactionValid(string $userId, float $amount): bool;
+    public function isTransactionValid(string $userId, float $amount, string $role): bool;
     
     public function getFactureById(string $factureId): array;
     
