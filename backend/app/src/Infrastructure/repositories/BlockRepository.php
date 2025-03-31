@@ -30,6 +30,7 @@ class BlockRepository implements BlockRepositoryInterface
             return [
                 'success' => false,
                 'balance' => null,
+                'test' => $verificationResult['invalid_blocks'],
                 'message' => 'Le système de paiement est temporairement indisponible pour des raisons de corruption de la blockchain. Veuillez contacter un administrateur.'
             ];
         }
@@ -293,12 +294,13 @@ class BlockRepository implements BlockRepositoryInterface
             }
 
             $blockId = Uuid::uuid4()->toString();
+            $timestamp = time();
             $previousHash = $lastBlock ? $lastBlock['hash'] : '0';
-            $blockHash = hash('sha256', $blockId . $accountLogin . $amount . $emitter . $receiver . time());
+            $blockHash = hash('sha256', $blockId . $accountLogin . $amount . $emitter . $receiver . $timestamp);
 
             $newBlockStmt = $this->pdo->prepare("
                 INSERT INTO blocks (id, hash, previous_hash, account, amount, emitter, receiver, timestamp)
-                VALUES (:id, :hash, :previous_hash, :account, :amount, :emitter, :receiver, NOW())
+                VALUES (:id, :hash, :previous_hash, :account, :amount, :emitter, :receiver, :timestamp)
             ");
 
             $newBlockStmt->execute([
@@ -308,7 +310,8 @@ class BlockRepository implements BlockRepositoryInterface
                 'account' => $accountLogin,
                 'amount' => $amount,
                 'emitter' => $emitter,
-                'receiver' => $receiver
+                'receiver' => $receiver,
+                'timestamp' => $timestamp,
             ]);
 
             if ($startedTransaction) {
@@ -328,7 +331,10 @@ class BlockRepository implements BlockRepositoryInterface
             return true;
         }
         $balance = $this->getBalanceByUserId($userId);
-        if ($balance < $amount) {
+        if (!$balanceInfo['success']) {
+            return false;
+        }
+        if ($balanceInfo['balance'] < $amount) {
             return false;
         }
         return true;
@@ -396,11 +402,12 @@ class BlockRepository implements BlockRepositoryInterface
             $this->pdo->beginTransaction();
 
             $blockId = Uuid::uuid4()->toString();
-            $blockHash = hash('sha256', $blockId . $adminLogin . '0' . 'genesis' . time());
+            $timestamp = time();
+            $blockHash = hash('sha256', $blockId . $adminLogin . '0' . 'genesis' . $timestamp);
 
             $stmt = $this->pdo->prepare("
                 INSERT INTO blocks (id, hash, previous_hash, account, amount, emitter, receiver, timestamp)
-                VALUES (:id, :hash, :previous_hash, :account, :amount, :emitter, :receiver, NOW())
+                VALUES (:id, :hash, :previous_hash, :account, :amount, :emitter, :receiver,:timestamp)
             ");
 
             $stmt->execute([
@@ -410,7 +417,8 @@ class BlockRepository implements BlockRepositoryInterface
                 'account' => $adminLogin,
                 'amount' => 0.0,
                 'emitter' => $adminLogin,
-                'receiver' => $adminLogin
+                'receiver' => $adminLogin,
+                'timestamp' => $timestamp
             ]);
 
             $this->pdo->commit();
@@ -427,7 +435,7 @@ class BlockRepository implements BlockRepositoryInterface
         try {
             // Récupérer tous les blocs ordonnés par timestamp
             $stmt = $this->pdo->prepare("
-            SELECT id, hash, previous_hash, timestamp, account, amount, emetteur, recepteur
+            SELECT id, hash, previous_hash, timestamp, account, amount, emitter, receiver
             FROM blocks
             ORDER BY timestamp ASC
         ");
@@ -448,14 +456,12 @@ class BlockRepository implements BlockRepositoryInterface
             for ($i = 0; $i < count($blocks); $i++) {
                 $currentBlock = $blocks[$i];
 
+                if ($i == 0 || $currentBlock['previous_hash'] == '0') {
+                    $calculatedHash = hash('sha256', $currentBlock['id'] . $currentBlock['account'] . '0' . 'genesis' . strtotime($currentBlock['timestamp']));
+                } else {
+                    $calculatedHash = hash('sha256', $currentBlock['id'] . $currentBlock['account'] . $currentBlock['amount'] . $currentBlock['emitter'] . $currentBlock['receiver'] . strtotime($currentBlock['timestamp']));
+                }
                 // Recalculer le hash du bloc actuel pour vérifier s'il a été modifié
-                $calculatedHash = hash('sha256',
-                    $currentBlock['id'] .
-                    $currentBlock['emetteur'] .
-                    $currentBlock['recepteur'] .
-                    $currentBlock['amount'] .
-                    strtotime($currentBlock['timestamp'])
-                );
 
                 // Vérifier si le hash stocké correspond au hash calculé
                 if ($calculatedHash !== $currentBlock['hash']) {
@@ -463,6 +469,8 @@ class BlockRepository implements BlockRepositoryInterface
                         'block_id' => $currentBlock['id'],
                         'error' => 'Hash invalide',
                         'stored_hash' => $currentBlock['hash'],
+                        'time' => $currentBlock['receiver'],
+                        'truetime' => $blocks[$i]['receiver'],
                         'calculated_hash' => $calculatedHash
                     ];
                 }
@@ -482,7 +490,7 @@ class BlockRepository implements BlockRepositoryInterface
                     }
                 } else {
                     // Pour le premier bloc, vérifier que previous_hash est bien NULL
-                    if ($currentBlock['previous_hash'] !== null) {
+                    if ($currentBlock['previous_hash'] !== '0') {
                         $invalidBlocks[] = [
                             'block_id' => $currentBlock['id'],
                             'error' => 'Le premier bloc ne devrait pas avoir de previous_hash',

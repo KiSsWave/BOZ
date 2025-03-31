@@ -21,7 +21,8 @@ export const useAppStore = defineStore('app', {
       pendingTickets: false,
       myTickets: false,
       userTickets: false,
-      conversations: false
+      conversations: false,
+      profile: false
     },
     errorStates: {
       balance: null,
@@ -29,7 +30,8 @@ export const useAppStore = defineStore('app', {
       pendingTickets: null,
       myTickets: null,
       userTickets: null,
-      conversations: null
+      conversations: null,
+      profile: null
     },
 
     // Registre des données chargées
@@ -47,6 +49,9 @@ export const useAppStore = defineStore('app', {
   }),
 
   getters: {
+    // Expose axios instance pour une utilisation dans les composants
+    $axios: () => axios,
+    
     // Getter pour vérifier si une donnée a déjà été chargée
     isDataLoaded: (state) => (dataType) => {
       return state.dataLoaded[dataType];
@@ -64,6 +69,48 @@ export const useAppStore = defineStore('app', {
   },
 
   actions: {
+    // === ACTIONS LIÉES AU PROFIL UTILISATEUR ===
+    
+    async updateUserProfile(profileData) {
+      this.loadingStates.profile = true;
+      this.errorStates.profile = null;
+      
+      try {
+        const response = await axios.patch('/profile', profileData);
+        
+        // Mettre à jour les données utilisateur dans le userStore
+        const userStore = useUserStore();
+        await userStore.fetchUserInfo();
+        
+        return response.data;
+      } catch (error) {
+        console.error('Erreur lors de la mise à jour du profil:', error);
+        this.errorStates.profile = "Impossible de mettre à jour votre profil";
+        throw error;
+      } finally {
+        this.loadingStates.profile = false;
+      }
+    },
+    
+    async changeUserRole() {
+      this.isProcessing = true;
+      
+      try {
+        const response = await axios.patch('/role');
+        
+        // Mettre à jour les données utilisateur dans le userStore
+        const userStore = useUserStore();
+        await userStore.fetchUserInfo();
+        
+        return response.data;
+      } catch (error) {
+        console.error('Erreur lors du changement de rôle:', error);
+        throw error;
+      } finally {
+        this.isProcessing = false;
+      }
+    },
+    
     // === ACTIONS LIÉES AU SOLDE ET TRANSACTIONS ===
 
     async fetchBalance(forceRefresh = false) {

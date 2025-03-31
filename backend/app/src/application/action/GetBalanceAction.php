@@ -26,7 +26,7 @@ class GetBalanceAction extends AbstractAction
 
             if(!$balance['success']){
                 $array = [
-                    'ERROR : ' => $balance['message']
+                    'ERROR : ' => $balance
                 ];
             }else{
                 $array = [
