@@ -32,12 +32,12 @@ class BlockService implements BlockServiceInterface
         $this->blockRepository->createFacture($login, $tarif, $label, $buyerLogin);
     }
 
-    public function payerFacture(string $factureId, string $userId, string $userLogin): void
+    public function payerFacture(string $factureId, string $userId, string $userLogin, string $role): void
     {
-        $this->blockRepository->payFacture($factureId, $userId, $userLogin);
+        $this->blockRepository->payFacture($factureId, $userId, $userLogin,$role);
     }
 
-    public function giveCash(string $adminLogin, string $userLogin, float $amount): void
+    public function giveCash(string $adminLogin, string $userLogin, float $amount, string $role): void
     {
         try {
             $hasBlocks = true;
@@ -51,7 +51,7 @@ class BlockService implements BlockServiceInterface
                 $this->blockRepository->createGenesisBlock($adminLogin);
             }
             
-            $this->blockRepository->addBlock($userLogin, $amount, $adminLogin, $userLogin);
+            $this->blockRepository->addBlock($userLogin, $amount, $adminLogin, $userLogin, $role);
             
         } catch (Exception $e) {
             throw new Exception($e->getMessage());

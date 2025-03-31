@@ -29,6 +29,7 @@ class GiveCashAction extends AbstractAction
         }
 
         $adminLogin = $admin->getEmail();
+        $adminRole = $admin->getRole();
 
         try {
             if (!$userLogin || !$amount) {
@@ -39,7 +40,7 @@ class GiveCashAction extends AbstractAction
                 throw new HttpBadRequestException($rq, "Le montant doit être un nombre positif");
             }
 
-            $this->blockService->giveCash($adminLogin, $userLogin, floatval($amount));
+            $this->blockService->giveCash($adminLogin, $userLogin, floatval($amount), $adminRole);
 
             $rs->getBody()->write(json_encode([
                 'message' => "Transaction de {$amount} effectuée pour l'utilisateur {$userLogin}"

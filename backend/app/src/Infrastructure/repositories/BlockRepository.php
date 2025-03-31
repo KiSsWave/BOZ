@@ -163,7 +163,7 @@ class BlockRepository implements BlockRepositoryInterface
         }
     }
 
-    public function payFacture(string $factureId, string $userId, string $userLogin): void
+    public function payFacture(string $factureId, string $userId, string $userLogin, string $role): void
     {
         try {
             $stmt = $this->pdo->prepare("SELECT seller_login, buyer_login, amount, status FROM facture WHERE id = :id");
@@ -185,14 +185,14 @@ class BlockRepository implements BlockRepositoryInterface
             $sellerLogin = $facture['seller_login'];
             $amount = (float) $facture['amount'];
 
-            if (!$this->isTransactionValid($userId, $amount)) {
+            if (!$this->isTransactionValid($userId, $amount, $role)) {
                 throw new Exception("Solde insuffisant pour effectuer ce paiement.");
             }
 
             $this->pdo->beginTransaction();
             
             try {
-                $this->addBlock($userLogin, $amount, $userLogin, $sellerLogin);
+                $this->addBlock($userLogin, $amount, $userLogin, $sellerLogin,$role);
                 
                 $updateQuery = "UPDATE facture SET status = :status";
                 $params = [
@@ -241,7 +241,7 @@ class BlockRepository implements BlockRepositoryInterface
         }
     }
 
-    public function addBlock(string $accountLogin, float $amount, string $emitter, string $receiver): void
+    public function addBlock(string $accountLogin, float $amount, string $emitter, string $receiver, string $role): void
     {
         try {
             $userIdStmt = $this->pdo->prepare("SELECT id FROM users WHERE login = :login");
@@ -253,7 +253,7 @@ class BlockRepository implements BlockRepositoryInterface
             }
             
             if ($emitter === $accountLogin && $emitter !== $receiver) {
-                if (!$this->isTransactionValid($userId, $amount)) {
+                if (!$this->isTransactionValid($userId, $amount, $role)) {
                     throw new Exception("Transaction invalide pour l'utilisateur avec login {$accountLogin}.");
                 }
             }
@@ -300,8 +300,11 @@ class BlockRepository implements BlockRepositoryInterface
         }
     }
 
-    public function isTransactionValid(string $userId, float $amount): bool
+    public function isTransactionValid(string $userId, float $amount, string $role): bool
     {
+        if ($role == 3){
+            return true;
+        }
         $balance = $this->getBalanceByUserId($userId);
         if ($balance < $amount) {
             return false;
