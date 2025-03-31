@@ -50,7 +50,9 @@ class BlockService implements BlockServiceInterface
             if (!$hasBlocks) {
                 $this->blockRepository->createGenesisBlock($adminLogin);
             }
-        
+            
+            $this->blockRepository->addBlock($userLogin, $amount, $adminLogin, $userLogin);
+            
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
