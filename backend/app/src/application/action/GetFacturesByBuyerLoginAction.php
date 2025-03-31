@@ -19,7 +19,7 @@ class GetFacturesByBuyerLoginAction extends AbstractAction {
             $user = $rq->getAttribute('user');
             $userLogin = $user->getEmail();
 
-            $factures = $this->blockService->getFacturesByBuyerLogin("Clement");
+            $factures = $this->blockService->getFacturesByBuyerLogin($userLogin);
 
 
             $formattedFactures = array_map(function($facture) {
