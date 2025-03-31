@@ -35,7 +35,7 @@ return function (\Slim\App $app): \Slim\App {
 
         $app->post('/pay', boz\application\action\PayFactureAction::class)->add(boz\application\middleware\AuthzUserMiddleware::class);
         $app->patch('/role', boz\application\action\ChangeRoleAction::class)->add(boz\application\middleware\AuthzUserMiddleware::class);
-        $app->get('/buyers/factures', boz\application\action\GetFacturesByUserLoginAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
+        $app->get('/buyers/factures', boz\application\action\GetFacturesByBuyerLoginAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
 
        
 
