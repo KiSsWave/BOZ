@@ -11,6 +11,9 @@
             <option value="bug">Signaler un bug</option>
             <option value="question">Question</option>
             <option value="remboursement">Demande de remboursement</option>
+            <option value="partenariat">Demande de partenariat</option>
+            <option value="erreur">Erreur de transaction</option>
+            <option value="suppression">Suppression du compte</option>
             <option value="autre">Autre</option>
           </select>
         </div>
@@ -52,16 +55,16 @@
       <div v-else-if="userTickets && userTickets.length > 0" class="ticket-container">
         <div v-for="ticket in userTickets" :key="ticket.Id" class="ticket" :class="getStatusClass(ticket.status)">
           <div class="ticket-header">
-            <span class="ticket-type">{{ ticket.type }}</span>
             <span class="ticket-status">Statut: {{ ticket.status }}</span>
           </div>
           <div class="ticket-body">
-            <p>{{ ticket.message }}</p>
+            Votre message:<p>{{ ticket.message }}</p>
           </div>
           <div class="ticket-footer">
             <span v-if="ticket['Id Admin']" class="admin-assigned">Un administrateur s'occupe de votre ticket</span>
             <span v-else class="pending-assignment">En attente d'assignation</span>
           </div>
+          <br>
         </div>
       </div>
 
@@ -272,6 +275,50 @@ button:disabled {
   text-align: center;
 }
 
+.ticket-container {
+  margin-top: 20px;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ticket {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  border-left: 5px solid #3498db;
+  transition: transform 0.2s ease-in-out;
+}
+
+.ticket:hover {
+  transform: scale(1.02);
+}
+
+.ticket-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.ticket-status {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.ticket-body {
+  background: #f9f9f9;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.ticket-message {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
 
 @media (max-width: 480px) {
   .contact-container {
