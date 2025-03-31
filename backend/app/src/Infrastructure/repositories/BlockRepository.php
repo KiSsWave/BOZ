@@ -133,116 +133,67 @@ class BlockRepository implements BlockRepositoryInterface
         }
     }
 
-    public function payFacture(string $factureId, string $buyerId): void
-    {
+    public function payFacture(string $factureId, string $userId, string $userLogin): void
+{
+    try {
+        // Récupérer les détails de la facture
+        $stmt = $this->pdo->prepare("SELECT seller_login, amount, status FROM facture WHERE id = :id");
+        $stmt->execute(['id' => $factureId]);
+        $facture = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$facture) {
+            throw new RepositoryEntityNotFoundException("La facture avec l'ID {$factureId} n'existe pas.");
+        }
+
+        if ($facture['status'] === 'payée') {
+            throw new RepositoryEntityNotFoundException("La facture avec l'ID {$factureId} est déjà payée.");
+        }
+
+        $sellerLogin = $facture['seller_login'];
+        $amount = (float) $facture['amount'];
+
+        // Vérifier si l'acheteur a suffisamment de fonds
+        if (!$this->isTransactionValid($userId, $amount, 'pay')) {
+            throw new Exception("Solde insuffisant pour effectuer ce paiement.");
+        }
+
+        // Récupérer l'ID du vendeur à partir de son login
+        $sellerIdStmt = $this->pdo->prepare("SELECT id FROM users WHERE login = :login");
+        $sellerIdStmt->execute(['login' => $sellerLogin]);
+        $sellerId = $sellerIdStmt->fetchColumn();
+
+        if (!$sellerId) {
+            throw new Exception("Vendeur avec login {$sellerLogin} non trouvé.");
+        }
+
+        $this->pdo->beginTransaction();
+        
         try {
-            $buyerStmt = $this->pdo->prepare("SELECT login FROM users WHERE id = :id");
-            $buyerStmt->execute(['id' => $buyerId]);
-            $buyer = $buyerStmt->fetch(PDO::FETCH_ASSOC);
-
-            if (!$buyer) {
-                throw new RepositoryEntityNotFoundException("Utilisateur acheteur non trouvé.");
-            }
-
-            $buyerLogin = $buyer['login'];
-
-            $stmt = $this->pdo->prepare("SELECT seller_login, amount, status FROM facture WHERE id = :id");
-            $stmt->execute(['id' => $factureId]);
-            $facture = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if (!$facture) {
-                throw new RepositoryEntityNotFoundException("La facture avec l'ID {$factureId} n'existe pas.");
-            }
-
-            if ($facture['status'] === 'payée') {
-                throw new RepositoryEntityNotFoundException("La facture avec l'ID {$factureId} est déjà payée.");
-            }
-
-            $sellerLogin = $facture['seller_login'];
-            $amount = (float) $facture['amount'];
-
-            if (!$this->isTransactionValid($buyerId, $amount, 'pay')) {
-                throw new Exception("Solde insuffisant pour l'utilisateur.");
-            }
-
-            $this->pdo->beginTransaction();
-
-            try {
-                // Transaction de débit pour l'acheteur
-                $buyerTransactionId = Uuid::uuid4()->toString();
-                $debitStmt = $this->pdo->prepare("
-                INSERT INTO transactions (id, account, amount, type)
-                VALUES (:id, :account, :amount, :type)
-            ");
-                $debitStmt->execute([
-                    'id' => $buyerTransactionId,
-                    'account' => $buyerLogin,
-                    'amount' => $amount,
-                    'type' => 'pay'
-                ]);
-
-                // Créer le bloc pour l'acheteur
-                $lastBlock = $this->getLastBlock();
-                $blockId = Uuid::uuid4()->toString();
-                $blockHash = hash('sha256', $blockId . $buyerTransactionId . time());
-                $this->pdo->prepare("
-                INSERT INTO blocks (id, hash, previous_hash, transaction_id, timestamp)
-                VALUES (:id, :hash, :previous_hash, :transaction_id, to_timestamp(:timestamp))
-            ")->execute([
-                    'id' => $blockId,
-                    'hash' => $blockHash,
-                    'previous_hash' => $lastBlock['hash'],
-                    'transaction_id' => $buyerTransactionId,
-                    'timestamp' => time()
-                ]);
-
-                // Transaction de crédit pour le vendeur
-                $sellerTransactionId = Uuid::uuid4()->toString();
-                $creditStmt = $this->pdo->prepare("
-                INSERT INTO transactions (id, account, amount, type)
-                VALUES (:id, :account, :amount, :type)
-            ");
-                $creditStmt->execute([
-                    'id' => $sellerTransactionId,
-                    'account' => $sellerLogin,
-                    'amount' => $amount,
-                    'type' => 'add'
-                ]);
-
-                // Créer le bloc pour le vendeur
-                $blockId = Uuid::uuid4()->toString();
-                $blockHash = hash('sha256', $blockId . $sellerTransactionId . time());
-                $this->pdo->prepare("
-                INSERT INTO blocks (id, hash, previous_hash, transaction_id, timestamp)
-                VALUES (:id, :hash, :previous_hash, :transaction_id, to_timestamp(:timestamp))
-            ")->execute([
-                    'id' => $blockId,
-                    'hash' => $blockHash,
-                    'previous_hash' => $lastBlock['hash'],
-                    'transaction_id' => $sellerTransactionId,
-                    'timestamp' => time()
-                ]);
-
-                // Mettre à jour la facture
-                $this->pdo->prepare("
+            // Utiliser addBlock avec les IDs et indiquer de ne pas gérer les transactions
+            $this->addBlock($userId, $amount, 'pay', false);
+            $this->addBlock($sellerId, $amount, 'add', false);
+            
+            // Mettre à jour le statut de la facture
+            $this->pdo->prepare("
                 UPDATE facture
                 SET status = :status
                 WHERE id = :id
             ")->execute([
-                    'status' => 'payée',
-                    'id' => $factureId
-                ]);
-
-                $this->pdo->commit();
-            } catch (Exception $e) {
-                $this->pdo->rollBack();
-                throw $e;
-            }
+                'status' => 'payée',
+                'id' => $factureId
+            ]);
+            
+            $this->pdo->commit();
         } catch (Exception $e) {
-            throw new RepositoryEntityNotFoundException("Erreur lors du paiement de la facture : " . $e->getMessage());
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+            throw $e;
         }
+    } catch (Exception $e) {
+        throw new RepositoryEntityNotFoundException("Erreur lors du paiement de la facture : " . $e->getMessage());
     }
-
+}
     public function getLastBlock(): array
     {
         try {
@@ -263,50 +214,71 @@ class BlockRepository implements BlockRepositoryInterface
         }
     }
 
-    public function addBlock(string $userId, float $amount, string $type): void
-    {
-        try {
-            if (!$this->isTransactionValid($userId, $amount, $type)) {
-                throw new Exception("Transaction invalide pour l'utilisateur {$userId}.");
-            }
+    public function addBlock(string $userId, float $amount, string $type, bool $manageTransaction = true): void
+{
+    try {
+        // Vérifier la validité de la transaction
+        if (!$this->isTransactionValid($userId, $amount, $type)) {
+            throw new Exception("Transaction invalide pour l'utilisateur avec ID {$userId}.");
+        }
 
-            $transactionId = Uuid::uuid4()->toString();
+        // Récupérer le login de l'utilisateur à partir de son ID
+        $userLoginStmt = $this->pdo->prepare("SELECT login FROM users WHERE id = :id");
+        $userLoginStmt->execute(['id' => $userId]);
+        $userLogin = $userLoginStmt->fetchColumn();
+        
+        if (!$userLogin) {
+            throw new Exception("Utilisateur avec ID {$userId} non trouvé.");
+        }
+
+        $transactionId = Uuid::uuid4()->toString();
+        
+        // Démarrer une transaction seulement si on gère la transaction dans cette méthode
+        if ($manageTransaction && !$this->pdo->inTransaction()) {
             $this->pdo->beginTransaction();
+        }
 
-            $transactionStmt = $this->pdo->prepare("
+        // Utiliser le login comme account dans la transaction
+        $transactionStmt = $this->pdo->prepare("
             INSERT INTO transactions (id, account, amount, type)
             VALUES (:id, :account, :amount, :type)
         ");
-            $transactionStmt->execute([
-                'id' => $transactionId,
-                'account' => $userId,
-                'amount' => $amount,
-                'type' => $type
-            ]);
+        $transactionStmt->execute([
+            'id' => $transactionId,
+            'account' => $userLogin,  // Utiliser le login, pas l'ID
+            'amount' => $amount,
+            'type' => $type
+        ]);
 
-            $lastBlock = $this->getLastBlock();
+        $lastBlock = $this->getLastBlock();
 
-            $newBlockStmt = $this->pdo->prepare("
+        $newBlockStmt = $this->pdo->prepare("
             INSERT INTO blocks (id, hash, previous_hash, transaction_id, timestamp)
             VALUES (:id, :hash, :previous_hash, :transaction_id, to_timestamp(:timestamp))
         ");
-            $blockId = Uuid::uuid4()->toString();
-            $blockHash = hash('sha256', $blockId . $transactionId . time());
+        $blockId = Uuid::uuid4()->toString();
+        $blockHash = hash('sha256', $blockId . $transactionId . time());
 
-            $newBlockStmt->execute([
-                'id' => $blockId,
-                'hash' => $blockHash,
-                'previous_hash' => $lastBlock['hash'],
-                'transaction_id' => $transactionId,
-                'timestamp' => time()
-            ]);
+        $newBlockStmt->execute([
+            'id' => $blockId,
+            'hash' => $blockHash,
+            'previous_hash' => $lastBlock['hash'],
+            'transaction_id' => $transactionId,
+            'timestamp' => time()
+        ]);
 
+        // Faire un commit seulement si on gère la transaction dans cette méthode
+        if ($manageTransaction && $this->pdo->inTransaction()) {
             $this->pdo->commit();
-        } catch (Exception $e) {
-            $this->pdo->rollBack();
-            throw new Exception("Erreur lors de l'ajout d'un nouveau bloc : " . $e->getMessage());
         }
+    } catch (Exception $e) {
+        // Faire un rollback seulement si on gère la transaction dans cette méthode
+        if ($manageTransaction && $this->pdo->inTransaction()) {
+            $this->pdo->rollBack();
+        }
+        throw new Exception("Erreur lors de l'ajout d'un nouveau bloc : " . $e->getMessage());
     }
+}
 
     public function isTransactionValid(string $userId, float $amount, string $type): bool
     {

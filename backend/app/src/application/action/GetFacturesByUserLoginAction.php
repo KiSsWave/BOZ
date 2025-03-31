@@ -8,9 +8,9 @@ use Psr\Http\Message\ServerRequestInterface;
 use boz\core\services\Blockchain\BlockServiceInterface;
 
 class GetFacturesByUserLoginAction extends AbstractAction {
-    private AuthnServiceInterface $blockService;
+    private BlockServiceInterface $blockService;
 
-    public function __construct(AuthnServiceInterface $blockService) {
+    public function __construct(BlockServiceInterface $blockService) {
         $this->blockService = $blockService;
     }
 

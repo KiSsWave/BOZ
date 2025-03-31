@@ -34,8 +34,7 @@ class PayFactureAction extends AbstractAction
                 throw new Exception("Utilisateur non authentifié");
             }
 
-            $buyerId = $user->getId();
-            $this->blockService->payerFacture($factureId, $buyerId);
+            $this->blockService->payerFacture($factureId,$user->getID(),$user->getEmail());
 
             $rs->getBody()->write(json_encode([
                 'message' => "La facture avec l'ID {$factureId} a été payée avec succès"
