@@ -24,12 +24,24 @@ class GetBalanceAction extends AbstractAction
         try{
             $balance = $this->blockService->afficherSolde($userId);
 
-            $array = [
-                'balance' => $balance
-            ];
+            if(!$balance['success']){
+                $array = [
+                    'ERROR : ' => $balance['message']
+                ];
+            }else{
+                $array = [
+                    'balance' => $balance['balance']
+                ];
+            }
             $rs->getBody()->write(json_encode($array));
             return $rs->withHeader('Content-Type', 'application/json')->withStatus(200);
-        }catch(Exception $e){
+        }catch(BlockchainCompromiseException $e){
+            $rs->getBody()->write(json_encode([
+                'error' => $e->getMessage(),
+                'type' => 'blockchain_compromise'
+            ]));
+            return $rs->withHeader('Content-Type', 'application/json')->withStatus(503);
+        } catch(Exception $e){
             $rs->getBody()->write(json_encode([
                 'error' => $e->getMessage()
             ]));

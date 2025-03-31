@@ -20,32 +20,54 @@ class BlockRepository implements BlockRepositoryInterface
         $this->pdo = $pdo;
     }
 
-    public function getBalanceByUserId(string $userId): float
+    public function getBalanceByUserId(string $userId): array
     {
         try {
+            $verificationResult = $this->verifyBlockchain();
+        
+
+        if (!$verificationResult['valid']) {
+            return [
+                'success' => false,
+                'balance' => null,
+                'message' => 'Le système de paiement est temporairement indisponible pour des raisons de corruption de la blockchain. Veuillez contacter un administrateur.'
+            ];
+        }
             $loginStmt = $this->pdo->prepare("SELECT login FROM users WHERE id = :user_id");
             $loginStmt->execute(['user_id' => $userId]);
             $login = $loginStmt->fetchColumn();
             
             if (!$login) {
-                throw new RepositoryEntityNotFoundException("Utilisateur avec ID {$userId} non trouvé.");
-            }
+                return [
+                    'success' => false,
+                    'balance' => null,
+                    'message' => 'Utilisateur non trouvé.'
+                ];           
+             }
             
             $stmt = $this->pdo->prepare("
             SELECT 
                 COALESCE(
-                    (SELECT SUM(amount) FROM blocks WHERE receiver = :login) -
-                    (SELECT SUM(amount) FROM blocks WHERE emitter = :login AND emitter != receiver),
+                    (SELECT COALESCE(SUM(amount), 0) FROM blocks WHERE receiver = :login) -
+                    (SELECT COALESCE(SUM(amount), 0) FROM blocks WHERE emitter = :login AND emitter != receiver),
                     0
                 ) AS balance
             ");
             $stmt->execute(['login' => $login]);
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            return floatval($result['balance']) ?? 0.0;
-        } catch (\PDOException $e) {
-            throw new RepositoryEntityNotFoundException("Erreur lors du calcul du solde : " . $e->getMessage());
-        }
+            $balance = floatval($result['balance'] ?? 0.0);
+            return [
+                'success' => true,
+                'balance' => $balance,
+                'message' => 'Solde récupéré avec succès.'
+            ];        
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'balance' => null,
+                'message' => 'Une erreur est survenue lors de la consultation de votre solde. Veuillez réessayer ultérieurement.'
+            ];        }
     }
 
     public function getHistoryByUserId(string $userId): array
@@ -399,4 +421,101 @@ class BlockRepository implements BlockRepositoryInterface
             throw new Exception("Erreur lors de la création du bloc de genèse : " . $e->getMessage());
         }
     }
+
+    public function verifyBlockchain(): array
+    {
+        try {
+            // Récupérer tous les blocs ordonnés par timestamp
+            $stmt = $this->pdo->prepare("
+            SELECT id, hash, previous_hash, timestamp, account, amount, emetteur, recepteur
+            FROM blocks
+            ORDER BY timestamp ASC
+        ");
+            $stmt->execute();
+            $blocks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Si la chaîne est vide, elle est considérée comme valide
+            if (empty($blocks)) {
+                return [
+                    'valid' => true,
+                    'message' => 'La blockchain est vide mais valide.'
+                ];
+            }
+
+            $invalidBlocks = [];
+
+            // Vérifier chaque bloc individuellement et la liaison avec le bloc précédent
+            for ($i = 0; $i < count($blocks); $i++) {
+                $currentBlock = $blocks[$i];
+
+                // Recalculer le hash du bloc actuel pour vérifier s'il a été modifié
+                $calculatedHash = hash('sha256',
+                    $currentBlock['id'] .
+                    $currentBlock['emetteur'] .
+                    $currentBlock['recepteur'] .
+                    $currentBlock['amount'] .
+                    strtotime($currentBlock['timestamp'])
+                );
+
+                // Vérifier si le hash stocké correspond au hash calculé
+                if ($calculatedHash !== $currentBlock['hash']) {
+                    $invalidBlocks[] = [
+                        'block_id' => $currentBlock['id'],
+                        'error' => 'Hash invalide',
+                        'stored_hash' => $currentBlock['hash'],
+                        'calculated_hash' => $calculatedHash
+                    ];
+                }
+
+                // Pour tous les blocs sauf le premier, vérifier la liaison avec le bloc précédent
+                if ($i > 0) {
+                    $previousBlock = $blocks[$i - 1];
+
+                    // Vérifier si le previous_hash pointe correctement vers le hash du bloc précédent
+                    if ($currentBlock['previous_hash'] !== $previousBlock['hash']) {
+                        $invalidBlocks[] = [
+                            'block_id' => $currentBlock['id'],
+                            'error' => 'Chaînage invalide',
+                            'stored_previous_hash' => $currentBlock['previous_hash'],
+                            'actual_previous_hash' => $previousBlock['hash']
+                        ];
+                    }
+                } else {
+                    // Pour le premier bloc, vérifier que previous_hash est bien NULL
+                    if ($currentBlock['previous_hash'] !== null) {
+                        $invalidBlocks[] = [
+                            'block_id' => $currentBlock['id'],
+                            'error' => 'Le premier bloc ne devrait pas avoir de previous_hash',
+                            'stored_previous_hash' => $currentBlock['previous_hash']
+                        ];
+                    }
+                }
+            }
+
+            // Retourner le résultat de la vérification
+            if (empty($invalidBlocks)) {
+                return [
+                    'valid' => true,
+                    'message' => 'La blockchain est valide. Tous les blocs sont intègres.',
+                    'block_count' => count($blocks)
+                ];
+            } else {
+                return [
+                    'valid' => false,
+                    'message' => 'La blockchain est invalide. Des blocs ont été altérés.',
+                    'invalid_blocks' => $invalidBlocks,
+                    'block_count' => count($blocks)
+                ];
+            }
+
+        } catch (Exception $e) {
+            return [
+                'valid' => false,
+                'message' => 'Erreur lors de la vérification de la blockchain: ' . $e->getMessage()
+            ];
+        }
+    }
+
+
+
 }

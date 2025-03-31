@@ -4,7 +4,7 @@ namespace boz\core\services\Blockchain;
 
 interface BlockServiceInterface
 {
-    public function afficherSolde(string $id): float;
+    public function afficherSolde(string $id): array;
     
     public function afficherHistorique(string $id): array;
     

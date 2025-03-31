@@ -17,9 +17,15 @@ class BlockService implements BlockServiceInterface
         $this->blockRepository = $b;
     }
 
-    public function afficherSolde(string $id): float
+    public function afficherSolde(string $id): array
     {
         return $this->blockRepository->getBalanceByUserId($id);
+        if (is_array($result)) {
+            if (!$result['success']) {
+                throw new BlockchainCompromiseException($result['message']);
+            }
+            return $result['balance'];
+        }
     }
 
     public function afficherHistorique(string $id): array
