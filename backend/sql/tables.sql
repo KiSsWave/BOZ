@@ -6,7 +6,10 @@ CREATE TABLE "public"."blocks" (
                                    "hash" character varying(64) NOT NULL,
                                    "previous_hash" character varying(64),
                                    "timestamp" timestamp DEFAULT CURRENT_TIMESTAMP,
-                                   "transaction_id" uuid NOT NULL,
+                                   "account" character varying(255) NOT NULL,
+                                   "amount" numeric(12,2) NOT NULL,
+                                   "emetteur" character varying(255) NOT NULL,
+                                   "recepteur" character varying(255) NOT NULL,
                                    CONSTRAINT "blocks_hash_key" UNIQUE ("hash"),
                                    CONSTRAINT "blocks_pkey" PRIMARY KEY ("id")
 ) WITH (oids = false);
@@ -91,8 +94,6 @@ CREATE TABLE "public"."users" (
 ) WITH (oids = false);
 
 
-ALTER TABLE ONLY "public"."blocks" ADD CONSTRAINT "blocks_transaction_id_fkey" FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON DELETE CASCADE NOT DEFERRABLE;
-
 ALTER TABLE ONLY "public"."chat_requests" ADD CONSTRAINT "chat_requests_receiver_fk" FOREIGN KEY (receiver_login) REFERENCES users(login) NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."chat_requests" ADD CONSTRAINT "chat_requests_sender_fk" FOREIGN KEY (sender_login) REFERENCES users(login) NOT DEFERRABLE;
 
@@ -107,6 +108,6 @@ ALTER TABLE ONLY "public"."messages" ADD CONSTRAINT "messages_sender_fk" FOREIGN
 ALTER TABLE ONLY "public"."tickets" ADD CONSTRAINT "tickets_idadmin_fkey" FOREIGN KEY (idadmin) REFERENCES users(id) NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."tickets" ADD CONSTRAINT "tickets_user_login_fkey" FOREIGN KEY (user_login) REFERENCES users(login) NOT DEFERRABLE;
 
-ALTER TABLE ONLY "public"."transactions" ADD CONSTRAINT "transactions_account_fkey" FOREIGN KEY (account) REFERENCES users(login) NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."blocks" ADD CONSTRAINT "transactions_account_fkey" FOREIGN KEY (account) REFERENCES users(login) NOT DEFERRABLE;
 
 -- 2025-02-26 12:17:36.484455+00
