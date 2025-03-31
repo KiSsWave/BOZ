@@ -31,53 +31,16 @@ class UserRepository implements UserRepositoryInterface
 
     #[\Override] public function save(User $user): string
     {
-        if ($user->getPublicKey() === null) {
-            $config = [
-                'digest_alg' => 'sha512',
-                'private_key_bits' => 2048,
-                'private_key_type' => OPENSSL_KEYTYPE_RSA,
-            ];
-
-            $res = openssl_pkey_new($config);
-            openssl_pkey_export($res, $privateKey);
-
-            $pubKey = openssl_pkey_get_details($res);
-            $publicKey = $pubKey['key'];
-
-            $encryptedPrivateKey = $this->encryptPrivateKey($privateKey, $user->getPassword());
-            $user->setPublicKey($publicKey);
-            $user->setPrivateKey($encryptedPrivateKey);
-        }
         $this->users[$user->getID()] = $user;
-        $insert = $this->pdo->prepare('INSERT INTO USERS(id, login, email, password, role, publicKey, privateKey) VALUES (:id,:login, :email, :password, :role, :public, :private)');
+        $insert = $this->pdo->prepare('INSERT INTO USERS(id, login, email, password, role) VALUES (:id,:login, :email, :password, :role)');
         $insert->execute([
             'id' => $user->getID(),
             'login' =>$user->getLogin(),
             'email' => $user->getEmail(),
             'password' => $user->getPassword(),
-            'role' => $user->getRole(),
-            'public' => $user->getPublicKey(),
-            'private' => $user->getPrivateKey(),
+            'role' => $user->getRole()
         ]);
         return $user->getID();
-    }
-
-    private function encryptPrivateKey(string $privateKey, string $userPassword): string
-    {
-        $method = 'AES-256-CBC';
-        $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($method));
-
-        $key = hash('sha256', $userPassword, true);
-
-        $encryptedKey = openssl_encrypt(
-            $privateKey,
-            $method,
-            $key,
-            0,
-            $iv
-        );
-
-        return base64_encode($iv . $encryptedKey);
     }
 
     #[\Override] public function getUserByEmail(string $email): User

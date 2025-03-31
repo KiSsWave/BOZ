@@ -1,14 +1,11 @@
 <?php
 
-
 namespace boz\application\action;
-
 
 use Exception;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use boz\core\services\Blockchain\BlockServiceInterface;
-
 
 class CreateFactureAction extends AbstractAction
 {
@@ -21,10 +18,10 @@ class CreateFactureAction extends AbstractAction
 
     public function __invoke(ServerRequestInterface $rq, ResponseInterface $rs, array $args): ResponseInterface
     {
-
-        $data = $rq->getParsedBody();;
+        $data = $rq->getParsedBody();
         $tarif = $data['tarif'] ?? null;
         $label = $data['label'] ?? null;
+        $buyerLogin = $data['buyer_login'] ?? null;
 
         $vendeur = $rq->getAttribute('user');
         if (!$vendeur) {
@@ -32,11 +29,10 @@ class CreateFactureAction extends AbstractAction
         }
         $vendeurLogin = $vendeur->getEmail();
 
-
-        try{
-            $this->blockService->creerFacture($vendeurLogin,$tarif, $label);
+        try {
+            $this->blockService->creerFacture($vendeurLogin, $tarif, $label, $buyerLogin);
             return $rs->withHeader('Content-Type', 'application/json')->withStatus(200);
-        }catch(Exception $e){
+        } catch (Exception $e) {
             $rs->getBody()->write(json_encode([
                 'error' => $e->getMessage()
             ]));

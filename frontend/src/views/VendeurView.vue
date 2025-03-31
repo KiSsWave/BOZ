@@ -16,6 +16,31 @@
             <input type="number" id="amount" v-model="form.tarif" required min="0.01" step="0.01"
               placeholder="Montant" />
           </div>
+          <div class="form-group">
+            <label for="buyer">Acheteur (optionnel) :</label>
+            <div class="buyer-search">
+              <input 
+                type="text" 
+                id="buyer" 
+                v-model="buyerQuery" 
+                placeholder="Rechercher un acheteur..." 
+                @input="searchBuyers"
+              />
+              <div v-if="showBuyerResults && searchResults.length > 0" class="search-results">
+                <div 
+                  v-for="user in searchResults" 
+                  :key="user.id" 
+                  class="search-result-item"
+                  @click="selectBuyer(user)">
+                  {{ user.login }}
+                </div>
+              </div>
+            </div>
+            <div v-if="selectedBuyer" class="selected-buyer">
+              Acheteur sélectionné: <span>{{ selectedBuyer.login }}</span>
+              <button type="button" class="clear-buyer" @click="clearSelectedBuyer">×</button>
+            </div>
+          </div>
           <div class="error-message" v-if="error">
             {{ error }}
           </div>
@@ -46,6 +71,7 @@
             <div class="invoice-body">
               <p class="invoice-description">{{ facture.label }}</p>
               <p class="invoice-amount">{{ facture.amount }}€</p>
+              <p v-if="facture.buyer_login" class="invoice-buyer">Acheteur: {{ facture.buyer_login }}</p>
             </div>
             <div class="invoice-qr">
               <img :src="`data:image/png;base64,${facture.qr_code}`" :alt="'QR Code pour ' + facture.label"
@@ -64,9 +90,9 @@
 <script>
 import HeaderComponent from '@/components/HeaderComponent.vue'
 import axios from '../api/index.js'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useUserStore } from '@/stores/userStore'
-
+import debounce from 'lodash/debounce'
 
 export default {
   name: 'VendeurView',
@@ -93,9 +119,52 @@ export default {
     const isProcessing = ref(false)
     const loading = ref(true)
     const factures = ref([])
+    const buyerQuery = ref('')
+    const searchResults = ref([])
+    const showBuyerResults = ref(false)
+    const selectedBuyer = ref(null)
+    
     const fullscreen = (event) => {
       event.target.classList.toggle('fullscreen')
     }
+
+    const searchBuyers = debounce(async () => {
+      if (buyerQuery.value.length < 2) {
+        searchResults.value = []
+        return
+      }
+      
+      try {
+        const response = await axios.get('/users/search', {
+          params: { query: buyerQuery.value }
+        })
+        searchResults.value = response.data.users
+        showBuyerResults.value = true
+      } catch (err) {
+        console.error('Erreur lors de la recherche d\'utilisateurs:', err)
+        searchResults.value = []
+      }
+    }, 300)
+
+    const selectBuyer = (user) => {
+      selectedBuyer.value = user
+      buyerQuery.value = ''
+      showBuyerResults.value = false
+      searchResults.value = []
+    }
+
+    const clearSelectedBuyer = () => {
+      selectedBuyer.value = null
+    }
+
+    // Fermer les résultats de recherche quand on clique ailleurs
+    watch(buyerQuery, (newValue) => {
+      if (!newValue) {
+        setTimeout(() => {
+          showBuyerResults.value = false
+        }, 200)
+      }
+    })
 
     const fetchFactures = async () => {
       try {
@@ -124,16 +193,24 @@ export default {
       success.value = null
 
       try {
-        await axios.post('/facture', {
+        const invoiceData = {
           label: form.value.label,
           tarif: parseFloat(form.value.tarif)
-        })
+        }
+        
+        // Ajouter l'acheteur si sélectionné
+        if (selectedBuyer.value) {
+          invoiceData.buyer_login = selectedBuyer.value.login
+        }
+
+        await axios.post('/facture', invoiceData)
 
         success.value = 'Facture créée avec succès'
         form.value = {
           label: '',
           tarif: ''
         }
+        clearSelectedBuyer()
 
         // Recharger la liste des factures
         await fetchFactures()
@@ -156,9 +233,15 @@ export default {
       isProcessing,
       loading,
       factures,
-      createInvoice
+      createInvoice,
+      buyerQuery,
+      searchResults,
+      showBuyerResults,
+      selectedBuyer,
+      searchBuyers,
+      selectBuyer,
+      clearSelectedBuyer
     }
-
   }
 }
 </script>
@@ -335,6 +418,13 @@ input:focus {
   font-size: 1.2rem;
   font-weight: bold;
   color: #2c3e50;
+  margin-bottom: 8px;
+}
+
+.invoice-buyer {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+  font-style: italic;
 }
 
 .invoice-qr {
@@ -352,7 +442,6 @@ input:focus {
   cursor: pointer;
 }
 
-
 .qr-code.fullscreen {
   position: fixed;
   top: 50%;
@@ -368,6 +457,62 @@ input:focus {
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 }
 
+/* Styles pour la recherche d'acheteurs */
+.buyer-search {
+  position: relative;
+  width: 100%;
+}
+
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 0 0 6px 6px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 10;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.search-result-item {
+  padding: 10px 15px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+
+.search-result-item:hover {
+  background-color: #f0f7fb;
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.selected-buyer {
+  display: flex;
+  align-items: center;
+  background-color: #e1f5fe;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-top: 8px;
+}
+
+.selected-buyer span {
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+.clear-buyer {
+  margin-left: auto;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #e74c3c;
+}
 
 @media (max-width: 480px) {
   .vendor-container {

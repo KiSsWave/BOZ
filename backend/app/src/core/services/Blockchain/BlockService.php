@@ -2,10 +2,8 @@
 
 namespace boz\core\services\Blockchain;
 
-use boz\core\domain\Blockchain\Transaction;
 use boz\core\domain\Blockchain\Block;
 use boz\core\dto\BlockDTO;
-use boz\core\dto\TransactionDTO;
 use boz\core\repositoryInterfaces\BlockRepositoryInterface;
 use boz\core\repositoryInterfaces\RepositoryEntityNotFoundException;
 use Exception;
@@ -14,30 +12,33 @@ class BlockService implements BlockServiceInterface
 {
     private BlockRepositoryInterface $blockRepository;
 
-
     public function __construct(BlockRepositoryInterface $b)
     {
         $this->blockRepository = $b;
     }
 
-    public function afficherSolde(string $id):float{
+    public function afficherSolde(string $id): float
+    {
         return $this->blockRepository->getBalanceByUserId($id);
     }
 
-    public function afficherHistorique(string $id):array{
+    public function afficherHistorique(string $id): array
+    {
         return $this->blockRepository->getHistoryByUserId($id);
     }
 
-    public function creerFacture(string $login,float $tarif, string $label):void{
-        $this->blockRepository->createFacture($login,$tarif, $label);
-    }
-
-    public function payerFacture(string $factureId, string $userId, string $userLogin):void
+    public function creerFacture(string $login, float $tarif, string $label, ?string $buyerLogin = null): void
     {
-        $this->blockRepository->payFacture($factureId,$userId,$userLogin);
+        $this->blockRepository->createFacture($login, $tarif, $label, $buyerLogin);
     }
 
-    public function giveCash(string $adminLogin, string $userLogin, float $amount): void {
+    public function payerFacture(string $factureId, string $userId, string $userLogin): void
+    {
+        $this->blockRepository->payFacture($factureId, $userId, $userLogin);
+    }
+
+    public function giveCash(string $adminLogin, string $userLogin, float $amount): void
+    {
         try {
             $hasBlocks = true;
             try {
@@ -49,8 +50,7 @@ class BlockService implements BlockServiceInterface
             if (!$hasBlocks) {
                 $this->blockRepository->createGenesisBlock($adminLogin);
             }
-
-            $this->blockRepository->addBlock($userLogin, $amount, 'add');
+        
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -65,5 +65,4 @@ class BlockService implements BlockServiceInterface
     {
         return $this->blockRepository->getFacturesByUserLogin($userLogin);
     }
-
 }
