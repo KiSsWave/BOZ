@@ -60,17 +60,6 @@ class _SettingsPageState extends State<SettingsPage> {
                 },
               ),
               Divider(color: Colors.black54),
-              SwitchListTile(
-                title: const Text('Mode sombre', style: TextStyle(fontSize: 18.0, color: Colors.black)),
-                value: _darkModeEnabled,
-                activeColor: Colors.black,
-                onChanged: (value) {
-                  setState(() {
-                    _darkModeEnabled = value;
-                  });
-                },
-              ),
-              Divider(color: Colors.black54),
               ListTile(
                 leading: Icon(Icons.account_balance, color: Colors.black),
                 title: const Text('Transférer vers un compte bancaire', style: TextStyle(fontSize: 18.0, color: Colors.black)),

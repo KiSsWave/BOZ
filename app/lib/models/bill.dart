@@ -91,7 +91,7 @@ class BillWidget extends StatelessWidget {
       onTap: decodedImage != null ? () => showQrCodeDialog(context) : null,
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(8),

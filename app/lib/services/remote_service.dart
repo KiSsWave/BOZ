@@ -161,7 +161,7 @@ class RemoteService {
         body: body,
       );
 
-      if (response.statusCode != 200) {
+      if (response.statusCode != 200 && response.statusCode != 201) {
         throw Exception('Failed to make POST request to $url');
       }
 
