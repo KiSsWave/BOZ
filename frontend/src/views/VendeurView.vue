@@ -3,54 +3,42 @@
     <HeaderComponent />
     <div class="vendor-container">
       <h1>Interface Vendeur</h1>
-
-      <div class="invoice-creation-form">
-        <h2>Créer une nouvelle facture</h2>
-        <form @submit.prevent="createInvoice" class="form-container">
-          <div class="form-group">
-            <label for="label">Description :</label>
-            <input type="text" id="label" v-model="form.label" required placeholder="Description de la facture" />
-          </div>
-          <div class="form-group">
-            <label for="amount">Montant (€) :</label>
-            <input type="number" id="amount" v-model="form.tarif" required min="0.01" step="0.01"
-              placeholder="Montant" />
-          </div>
-          <div class="error-message" v-if="error">
-            {{ error }}
-          </div>
-          <div class="success-message" v-if="success">
-            {{ success }}
-          </div>
-          <button type="submit" class="submit-button" :disabled="isProcessing">
-            {{ isProcessing ? 'Création en cours...' : 'Créer la facture' }}
-          </button>
-        </form>
+      <div class="balance-container">
+        <label class="balance-label">VOTRE SOLDE EST DE :</label>
+        <div class="balance-display">
+          {{ balance }}€
+        </div>
       </div>
-      <!-- Liste des factures -->
-      <div class="invoices-list">
-        <h2>Mes factures</h2>
-        <div v-if="loading" class="loading-message">
-          Chargement des factures...
+      <div class="invoice-container">
+        <div class="invoice-creation-form">
+          <h2>Créer une nouvelle facture</h2>
+          <form @submit.prevent="createInvoice" class="form-container">
+            <div class="form-group">
+              <label for="label">Description :</label>
+              <input type="text" id="label" v-model="form.label" required placeholder="Description de la facture" />
+            </div>
+            <div class="form-group">
+              <label for="amount">Montant (€) :</label>
+              <input type="number" id="amount" v-model="form.tarif" required min="0.01" step="0.01"
+                placeholder="Montant" />
+            </div>
+            <div class="error-message" v-if="error">
+              {{ error }}
+            </div>
+            <div class="success-message" v-if="success">
+              {{ success }}
+            </div>
+            <button type="submit" class="submit-button" :disabled="isProcessing">
+              {{ isProcessing ? 'Création en cours...' : 'Créer la facture' }}
+            </button>
+          </form>
         </div>
-        <div v-else-if="factures.length === 0" class="no-invoices">
-          Aucune facture créée
-        </div>
-        <div v-else class="invoices-grid">
-          <div v-for="facture in factures" :key="facture.id" class="invoice-card">
-            <div class="invoice-header">
-              <span class="invoice-status" :class="{ 'status-paid': facture.status === 'payée' }">
-                {{ facture.status }}
-              </span>
-            </div>
-            <div class="invoice-body">
-              <p class="invoice-description">{{ facture.label }}</p>
-              <p class="invoice-amount">{{ facture.amount }}€</p>
-            </div>
-            <div class="invoice-qr">
-              <img :src="`data:image/png;base64,${facture.qr_code}`" :alt="'QR Code pour ' + facture.label"
-                class="qr-code" @click="fullscreen" />
-            </div>
+
+        <div v-if="lastFacture" class="invoice-qr">
+          <h2>Dernière facture créée</h2>
+          <div class="invoice-details">
+            <label>{{ lastFacture.label }}</label>
+            <label>{{ lastFacture.amount }}€</label>
           </div>
         </div>
       </div>
