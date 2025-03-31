@@ -28,6 +28,8 @@ return function (\Slim\App $app): \Slim\App {
     $app->get('/conversations/{id}/messages', boz\application\action\GetMessagesAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
     $app->post('/conversations/{id}/messages', boz\application\action\SendMessageAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
 
+    $app->get('/buyers/factures', boz\application\action\GetFacturesByUserLoginAction::class)->add(boz\application\middleware\AuthnMiddleware::class);
+
 
 
     $app->group('user', function () use ($app) {

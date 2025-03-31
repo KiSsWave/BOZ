@@ -17,12 +17,14 @@ interface BlockRepositoryInterface
     public function getLastBlock(): array;
     
     public function addBlock(string $accountLogin, float $amount, string $emitter, string $receiver): void;
-    
+
     public function isTransactionValid(string $userId, float $amount): bool;
     
     public function getFactureById(string $factureId): array;
     
     public function getFacturesByUserLogin(string $userLogin): array;
+
+    public function getFacturesByBuyerLogin(string $buyerLogin): array;
     
     public function createGenesisBlock(string $adminLogin): void;
 }

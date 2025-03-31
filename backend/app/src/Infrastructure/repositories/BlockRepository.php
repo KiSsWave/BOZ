@@ -347,6 +347,24 @@ class BlockRepository implements BlockRepositoryInterface
         }
     }
 
+    public function getFacturesByBuyerLogin(string $buyerLogin): array
+    {
+        try {
+            $stmt = $this->pdo->prepare("
+                SELECT *
+                FROM facture
+                WHERE buyer_login = :buyer_login
+            ");
+
+            $stmt->execute(['buyer_login' => $buyerLogin]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            throw new RepositoryEntityNotFoundException("Erreur lors de la récupération des factures : " . $e->getMessage());
+        }
+    }
+
+    
+
     public function createGenesisBlock(string $adminLogin): void
     {
         try {

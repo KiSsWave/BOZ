@@ -67,4 +67,9 @@ class BlockService implements BlockServiceInterface
     {
         return $this->blockRepository->getFacturesByUserLogin($userLogin);
     }
+
+    public function getFacturesByBuyerLogin(string $buyerLogin): array
+    {
+        return $this->blockRepository->getFacturesByBuyerLogin($buyerLogin);
+    }
 }

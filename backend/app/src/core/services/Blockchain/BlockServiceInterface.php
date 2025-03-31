@@ -17,4 +17,6 @@ interface BlockServiceInterface
     public function getFactureById(string $factureId): array;
     
     public function getFacturesByUserLogin(string $userLogin): array;
+
+    public function getFacturesByBuyerLogin(string $buyerLogin): array;
 }
