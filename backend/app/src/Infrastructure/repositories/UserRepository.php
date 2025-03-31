@@ -49,15 +49,13 @@ class UserRepository implements UserRepositoryInterface
             $user->setPrivateKey($encryptedPrivateKey);
         }
         $this->users[$user->getID()] = $user;
-        $insert = $this->pdo->prepare('INSERT INTO USERS(id, login, email, password, role, publicKey, privateKey) VALUES (:id,:login, :email, :password, :role, :public, :private)');
+        $insert = $this->pdo->prepare('INSERT INTO USERS(id, login, email, password, role) VALUES (:id,:login, :email, :password, :role)');
         $insert->execute([
             'id' => $user->getID(),
             'login' =>$user->getLogin(),
             'email' => $user->getEmail(),
             'password' => $user->getPassword(),
             'role' => $user->getRole(),
-            'public' => $user->getPublicKey(),
-            'private' => $user->getPrivateKey(),
         ]);
         return $user->getID();
     }

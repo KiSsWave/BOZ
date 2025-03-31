@@ -11,6 +11,9 @@
             <option value="bug">Signaler un bug</option>
             <option value="question">Question</option>
             <option value="remboursement">Demande de remboursement</option>
+            <option value="partenariat">Demande de partenariat</option>
+            <option value="erreur">Erreur de transaction</option>
+            <option value="suppression">Suppression du compte</option>
             <option value="autre">Autre</option>
           </select>
         </div>

@@ -2,12 +2,12 @@
   <header>
     <img class="BOZ" src="../assets/logoBOZ.png" alt="BOZ Logo" />
     <h1>Boz - Dépensez n'importe où !</h1>
-    
+
 
     <div v-if="showCountdown" class="countdown-alert">
       Session: {{ secondsRemaining }}s
     </div>
-    
+
     <div class="icons-container">
       <font-awesome-icon :icon="['fas', 'gear']" style="color: #000000;" class="param" v-if="userStore.isAuthenticated && isNotModification"
                          @click="modification" title="Paramètres" />
@@ -36,23 +36,23 @@ export default {
     const userStore = useUserStore();
     const isNotHome = computed(() => route.path !== '/');
     const isNotModification = computed(() => route.path !== '/modification');
-    
+
 
     const secondsRemaining = ref(0);
     const showCountdown = ref(false);
-    let tokenExpirationTimeout; 
-    let countdownInterval; 
-    
-   
+    let tokenExpirationTimeout;
+    let countdownInterval;
+
+
     const getToken = () => {
       return localStorage.getItem("token");
     };
-    
+
 
     const isTokenExpired = () => {
       const token = getToken();
       if (!token) return true;
-      
+
       try {
         const decoded = jwtDecode(token);
         return decoded.exp * 1000 < Date.now();
@@ -60,64 +60,64 @@ export default {
         return true;
       }
     };
-    
-    
+
+
     const getTokenRemainingTimeMs = () => {
       const token = getToken();
       if (!token) return 0;
-      
+
       try {
         const decoded = jwtDecode(token);
-      
+
         return Math.max(0, (decoded.exp * 1000) - Date.now());
       } catch (error) {
         return 0;
       }
     };
-    
-   
+
+
     const setupTokenExpirationHandler = () => {
       if (!userStore.isAuthenticated) return;
-      
- 
+
+
       clearTimeout(tokenExpirationTimeout);
       clearInterval(countdownInterval);
-      
-     
+
+
       const remainingTimeMs = getTokenRemainingTimeMs();
-      
+
       if (remainingTimeMs <= 0) {
-       
+
         handleExpiration();
         return;
       }
-      
+
       if (remainingTimeMs <= 10000) {
-      
+
         startCountdown(Math.ceil(remainingTimeMs / 1000));
       } else {
-        const timeUntilCountdown = remainingTimeMs - 10000; 
+        const timeUntilCountdown = remainingTimeMs - 10000;
         tokenExpirationTimeout = setTimeout(() => {
-          startCountdown(10); 
+          startCountdown(10);
         }, timeUntilCountdown);
       }
     };
-    
+
 
     const startCountdown = (initialSeconds) => {
       showCountdown.value = true;
       secondsRemaining.value = initialSeconds;
-      
+
       countdownInterval = setInterval(() => {
         secondsRemaining.value -= 1;
-        
+
         if (secondsRemaining.value <= 0) {
           clearInterval(countdownInterval);
           handleExpiration();
         }
       }, 1000);
     };
-    
+
 
     const handleExpiration = () => {
       clearTimeout(tokenExpirationTimeout);
@@ -126,28 +126,28 @@ export default {
       userStore.logout();
       router.push('/login');
     };
-    
+
     onMounted(() => {
       if (userStore.isAuthenticated) {
         setupTokenExpirationHandler();
       }
     });
-    
+
     watch(
       () => userStore.isAuthenticated,
       (newValue, oldValue) => {
         if (newValue && !oldValue) {
-     
+
           setupTokenExpirationHandler();
         } else if (!newValue && oldValue) {
-      
+
           clearTimeout(tokenExpirationTimeout);
           clearInterval(countdownInterval);
           showCountdown.value = false;
         }
       }
     );
-    
+
     onBeforeUnmount(() => {
       clearTimeout(tokenExpirationTimeout);
       clearInterval(countdownInterval);
@@ -316,7 +316,7 @@ h1 {
   h1 {
     font-size: 0.9rem;
   }
-  
+
   .countdown-alert {
     font-size: 0.7rem;
     padding: 2px 6px;
@@ -348,7 +348,7 @@ h1 {
     width: 20px;
     height: 20px;
   }
-  
+
   .countdown-alert {
     font-size: 0.65rem;
     padding: 2px 4px;
@@ -378,7 +378,7 @@ h1 {
     width: 18px;
     height: 18px;
   }
-  
+
   .countdown-alert {
     font-size: 0.6rem;
     padding: 1px 3px;
