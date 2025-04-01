@@ -13,6 +13,8 @@
       <button @click="contactAdmin" v-if="userStore.isAuthenticated">Contacter l'administrateur</button>
       <button @click="viewTickets" v-if="userStore.isAuthenticated">Consulter les tickets</button>
       <button @click="viewTransactions" v-if="userStore.isAuthenticated">Consulter les transactions</button>
+      <!-- Nouveau bouton pour les factures d'acheteur si le rôle est 1 -->
+      <button @click="viewBuyerFactures" v-if="userStore.isAuthenticated && userStore.user?.role === '1'">Mes factures</button>
       <label v-if="!userStore.isAuthenticated">Pour accéder aux fonctionnalités, veuillez vous connecter.</label>
     </footer>
   </div>
@@ -57,13 +59,18 @@ export default {
     const viewTransactions = () => {
       router.push('/transaction');
     };
+    
+    const viewBuyerFactures = () => {
+      router.push('/mes-factures');
+    };
 
     return {
       balance,
       userStore,
       contactAdmin,
       viewTickets,
-      viewTransactions
+      viewTransactions,
+      viewBuyerFactures
     };
   }
 }
