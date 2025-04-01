@@ -9,6 +9,7 @@ use boz\application\action\GetBalanceAction;
 use boz\application\action\GetConversationsAction;
 use boz\application\action\GetFactureByIdAction;
 use boz\application\action\GetFacturesByUserLoginAction;
+use boz\application\action\GetFacturesByBuyerLoginAction;
 use boz\application\action\GetHistoryAction;
 use boz\application\action\GetMessagesAction;
 use boz\application\action\GetTicketsPendingAction;
@@ -205,6 +206,11 @@ return [
     GetFactureByIdAction::class => function (ContainerInterface $container) {
         return new GetFactureByIdAction($container->get(BlockServiceInterface::class));
     },
+
+    GetFacturesByBuyerLoginAction::class => function (ContainerInterface $container) {
+        return new GetFacturesByBuyerLoginAction($container->get(BlockServiceInterface::class));
+    },
+
 
     CreateConversationAction::class => function (ContainerInterface $c){
         return new CreateConversationAction($c->get(ConversationServiceInterface::class));

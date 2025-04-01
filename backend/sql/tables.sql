@@ -1,4 +1,4 @@
--- Updated PostgreSQL schema
+-- Adminer 4.17.1 PostgreSQL 17.4 (Debian 17.4-1.pgdg120+2) dump
 
 DROP TABLE IF EXISTS "blocks";
 CREATE TABLE "public"."blocks" (
@@ -8,11 +8,10 @@ CREATE TABLE "public"."blocks" (
     "timestamp" timestamp DEFAULT CURRENT_TIMESTAMP,
     "account" character varying(255) NOT NULL,
     "amount" numeric(12,2) NOT NULL,
-    "type" character varying(10) NOT NULL,
     "emitter" character varying(255) NOT NULL,
     "receiver" character varying(255) NOT NULL,
-    CONSTRAINT "blocks_hash_key" UNIQUE ("hash"),
-    CONSTRAINT "blocks_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "blocks_new_hash_key" UNIQUE ("hash"),
+    CONSTRAINT "blocks_new_pkey" PRIMARY KEY ("id")
 ) WITH (oids = false);
 
 
@@ -87,8 +86,6 @@ CREATE TABLE "public"."users" (
 ) WITH (oids = false);
 
 
--- Foreign Key Constraints
-
 ALTER TABLE ONLY "public"."blocks" ADD CONSTRAINT "blocks_account_fkey" FOREIGN KEY (account) REFERENCES users(login) NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."blocks" ADD CONSTRAINT "blocks_emitter_fkey" FOREIGN KEY (emitter) REFERENCES users(login) NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."blocks" ADD CONSTRAINT "blocks_receiver_fkey" FOREIGN KEY (receiver) REFERENCES users(login) NOT DEFERRABLE;
@@ -99,11 +96,13 @@ ALTER TABLE ONLY "public"."chat_requests" ADD CONSTRAINT "chat_requests_sender_f
 ALTER TABLE ONLY "public"."conversations" ADD CONSTRAINT "conversations_user1_fk" FOREIGN KEY (user1_login) REFERENCES users(login) NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."conversations" ADD CONSTRAINT "conversations_user2_fk" FOREIGN KEY (user2_login) REFERENCES users(login) NOT DEFERRABLE;
 
-ALTER TABLE ONLY "public"."facture" ADD CONSTRAINT "facture_seller_login_fkey" FOREIGN KEY (seller_login) REFERENCES users(login) NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."facture" ADD CONSTRAINT "facture_buyer_login_fkey" FOREIGN KEY (buyer_login) REFERENCES users(login) NOT DEFERRABLE;
+ALTER TABLE ONLY "public"."facture" ADD CONSTRAINT "facture_seller_login_fkey" FOREIGN KEY (seller_login) REFERENCES users(login) NOT DEFERRABLE;
 
 ALTER TABLE ONLY "public"."messages" ADD CONSTRAINT "messages_receiver_fk" FOREIGN KEY (receiver_login) REFERENCES users(login) NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."messages" ADD CONSTRAINT "messages_sender_fk" FOREIGN KEY (sender_login) REFERENCES users(login) NOT DEFERRABLE;
 
 ALTER TABLE ONLY "public"."tickets" ADD CONSTRAINT "tickets_idadmin_fkey" FOREIGN KEY (idadmin) REFERENCES users(id) NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."tickets" ADD CONSTRAINT "tickets_user_login_fkey" FOREIGN KEY (user_login) REFERENCES users(login) NOT DEFERRABLE;
+
+-- 2025-03-31 12:12:32.172247+00
