@@ -103,13 +103,22 @@ class RemoteService {
   }
 
   Future<http.Response> fetchBills() async {
-    return await _authenticatedGetRequest('$_baseUrl/factures');
+    if (await getRole() == 1) {
+      return await _authenticatedGetRequest('$_baseUrl/buyers/factures');
+    } else {
+      return await _authenticatedGetRequest('$_baseUrl/factures');
+    }
   }
 
-  Future<http.Response> createBill(String description, double amount) async {
+  Future<http.Response> createBill(
+      String description, double amount, String? destinataire) async {
     return await _authenticatedPostRequest(
       '$_baseUrl/facture',
-      body: {"label": description, "tarif": amount.toString()},
+      body: {
+        "label": description,
+        "tarif": amount.toString(),
+        if (destinataire != null) "buyer_login": destinataire,
+      },
     );
   }
 
@@ -237,6 +246,20 @@ class RemoteService {
     } catch (e) {
       print("Error sending message: $e");
       return false;
+    }
+  }
+
+  Future<http.Response> searchUser(String login) async {
+    try {
+      var response =
+          await _authenticatedGetRequest('$_baseUrl/users/search?query=$login');
+      if (response.statusCode != 200) {
+        throw Exception('Failed to search user');
+      }
+      return response;
+    } catch (e) {
+      print("Error searching user: $e");
+      return http.Response('Error searching user: $e', 500);
     }
   }
 }

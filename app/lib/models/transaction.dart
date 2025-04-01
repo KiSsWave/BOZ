@@ -6,6 +6,7 @@ class Transaction {
   final double amount;
   final String timestamp;
 
+
   const Transaction({
     required this.transaction_id,
     required this.type,
