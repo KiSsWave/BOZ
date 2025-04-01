@@ -245,7 +245,8 @@ class _BillDetailPageState extends State<BillDetailPage> {
   }
 
   Widget _buildQrCode(BuildContext context, Uint8List qrCode) {
-    return Padding(
+    return Center (
+    child: Padding(
       padding: const EdgeInsets.only(top: 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -261,6 +262,6 @@ class _BillDetailPageState extends State<BillDetailPage> {
           Image.memory(qrCode),
         ],
       ),
-    );
+    ),);
   }
 }
