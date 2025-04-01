@@ -1,17 +1,17 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import HomeView from '../views/user/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import ConversationsListView from '@/views/ConversationsListView.vue'
 import ChatView from '@/views/ChatView.vue'
-import AdminView from '@/views/AdminView.vue'
-import VendeurView from '@/views/VendeurView.vue'
+import AdminView from '@/views/admin/AdminView.vue'
+import VendeurView from '@/views/vendeur/VendeurView.vue'
 import ContactView from '@/views/ContactView.vue'
-import UserTicketView from '@/views/UserTicketView.vue'
-import TransactionView from '@/views/TransactionView.vue'
+import UserTicketView from '@/views/user/UserTicketView.vue'
+import TransactionView from '@/views/user/TransactionView.vue'
 import ModifView from '@/views/ModifView.vue'
 import FaqView from '@/views/FaqView.vue'
-import VendeurTicketView from '@/views/VendeurTicketView.vue'
+import FacturesView from '@/views/vendeur/FacturesView.vue'
 import { useUserStore } from '@/stores/userStore'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -88,10 +88,10 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
-      path: '/VendeurTicket',
-      name: 'VendeurTicket',
-      component: VendeurTicketView,
-      meta: { requiresAuth: true, role: "2" }
+      path: '/factures',
+      name: 'factures',
+      component: FacturesView,
+      meta: { requiresAuth: true }
     }
 
 
