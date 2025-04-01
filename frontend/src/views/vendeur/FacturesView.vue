@@ -34,7 +34,7 @@
 
 <script>
 import HeaderComponent from '@/components/HeaderComponent.vue'
-import axios from '../api/index.js'
+import axios from '../../api/index.js'
 import { ref, onMounted } from 'vue'
 
 export default {
@@ -75,7 +75,7 @@ export default {
       factures,
       loading,
       error,
-      fullscreen
+      fullscreen,
     }
   }
 }

@@ -70,7 +70,7 @@
 
 <script>
 import HeaderComponent from '@/components/HeaderComponent.vue'
-import axios from '../api/index.js'
+import axios from '../../api/index.js'
 import { ref, onMounted, computed, watch } from 'vue'
 import { useUserStore } from '@/stores/userStore'
 import debounce from 'lodash/debounce'
