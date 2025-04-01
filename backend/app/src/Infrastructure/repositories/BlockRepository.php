@@ -330,7 +330,7 @@ class BlockRepository implements BlockRepositoryInterface
         if ($role == 3){
             return true;
         }
-        $balance = $this->getBalanceByUserId($userId);
+        $balanceInfo = $this->getBalanceByUserId($userId);
         if (!$balanceInfo['success']) {
             return false;
         }
