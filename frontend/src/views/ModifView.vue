@@ -56,7 +56,9 @@
             </ul>
           </div>
 
-          <button type="submit" class="modif-button">Modifier</button>
+          <button type="submit" class="modif-button" :disabled="appStore.loadingStates.profile">
+            {{ appStore.loadingStates.profile ? 'Modification en cours...' : 'Modifier' }}
+          </button>
         </form>
       </div>
 
@@ -103,7 +105,9 @@
             </ul>
           </div>
         </div>
-        <button @click="devenirVendeur" class="vendeur-button">Devenir Vendeur</button>
+        <button @click="devenirVendeur" class="vendeur-button" :disabled="appStore.isProcessing">
+          {{ appStore.isProcessing ? 'Traitement en cours...' : 'Devenir Vendeur' }}
+        </button>
       </div>
     </div>
   </div>
@@ -113,6 +117,7 @@
 import HeaderComponent from '@/components/HeaderComponent.vue';
 import { useAppStore } from '@/stores/appStore';
 import { useUserStore } from '@/stores/userStore';
+
 export default {
   data() {
     return {
@@ -170,8 +175,8 @@ export default {
           this.form.email = this.userStore.user.login || '';
 
           // Sauvegarder les données initiales pour détecter les changements
-          this.initialData.user = this.form.user;
-          this.initialData.email = this.form.email;
+          this.initialData.user = this.form.email;
+          this.initialData.email = this.form.login;
         }
       } catch (error) {
         console.error("Erreur lors du chargement des données utilisateur:", error);
@@ -217,46 +222,27 @@ export default {
       }
 
       try {
-        // Utiliser une action personnalisée dans appStore
-        const result = await this.updateUserProfile(updatedData);
+        // Utiliser la méthode du store pour mettre à jour le profil
+        await this.appStore.updateUserProfile(updatedData);
         alert('Modification réussie !');
-        
-        // Mettre à jour les informations utilisateur dans le store
-        await this.userStore.fetchUserInfo();
-        
         this.$router.push('/');
       } catch (error) {
         console.error("Erreur lors de la modification du profil :", error);
         alert('Erreur lors de la modification du profil: ' + (error.message || 'Erreur inconnue'));
       }
     },
-    
-    async updateUserProfile(profileData) {
-      // Méthode personnalisée qui pourrait être déplacée vers appStore si nécessaire
-      try {
-        // Utiliser l'instance axios importée par appStore via son module d'api
-        const response = await this.appStore.$axios.patch("/profile", profileData);
-        return response.data;
-      } catch (error) {
-        console.error("Erreur lors de la mise à jour du profil:", error);
-        throw error;
-      }
-    },
     async devenirVendeur() {
       try {
-        // Utiliser l'instance axios via appStore 
-        const response = await this.appStore.$axios.patch("/role");
+        // Utiliser la méthode du store pour changer le rôle
+        await this.appStore.changeUserRole();
         
-        if (response.status === 200) {
-          alert('Félicitations ! Vous êtes maintenant un vendeur.');
-          
-          // Mettre à jour les informations utilisateur dans le store
-          await this.userStore.fetchUserInfo();
-          
-          this.$router.push('/vendeur');
-        } else {
-          alert('Erreur lors du changement de rôle');
-        }
+        alert('Félicitations ! Vous êtes maintenant un vendeur.');
+        
+        // Attendre un peu pour que les données se mettent à jour
+        setTimeout(() => {
+          // Redirection vers la page vendeur (avec delay pour s'assurer que les données sont à jour)
+          this.$router.push('/');
+        }, 500);
       } catch (error) {
         console.error("Erreur lors du changement de rôle :", error);
         alert('Erreur lors du changement de rôle. Veuillez réessayer plus tard.');
@@ -383,6 +369,11 @@ input:focus {
   background-color: #2980b9;
 }
 
+.modif-button:disabled, .vendeur-button:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+}
+
 .vendeur-button {
   background-color: #27ae60;
   margin-top: auto;
@@ -390,6 +381,10 @@ input:focus {
 
 .vendeur-button:hover {
   background-color: #219955;
+}
+
+.vendeur-button:disabled {
+  background-color: #7dbd8c;
 }
 
 .password-requirements {
