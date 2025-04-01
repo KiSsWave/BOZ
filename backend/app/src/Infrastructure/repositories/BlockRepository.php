@@ -294,20 +294,20 @@ class BlockRepository implements BlockRepositoryInterface
         }
 
         $blockId = Uuid::uuid4()->toString();
-        // Utiliser une chaîne de texte pour le calcul du hash mais ne pas l'inclure dans la requête
         $timestampForHash = time();
+        $timestampForHash = date('Y-m-d H:i:s');
         $previousHash = $lastBlock ? $lastBlock['hash'] : '0';
-        $blockHash = hash('sha256', $blockId . $accountLogin . $amount . $emitter . $receiver . $timestampForHash);
-
+        $blockHash = hash('sha256', trim($blockId) . trim($accountLogin) . number_format($amount, 2, '.', '') . trim($emitter) . trim($receiver) . trim($timestampForHash));
         $newBlockStmt = $this->pdo->prepare("
-            INSERT INTO blocks (id, hash, previous_hash, account, amount, emitter, receiver)
-            VALUES (:id, :hash, :previous_hash, :account, :amount, :emitter, :receiver)
+            INSERT INTO blocks (id, hash, previous_hash,timestamp, account, amount, emitter, receiver)
+            VALUES (:id, :hash, :previous_hash, :time, :account, :amount, :emitter, :receiver)
         ");
 
         $newBlockStmt->execute([
             'id' => $blockId,
             'hash' => $blockHash,
             'previous_hash' => $previousHash,
+            'time' => $timestampForHash,
             'account' => $accountLogin,
             'amount' => $amount,
             'emitter' => $emitter,
@@ -402,21 +402,21 @@ class BlockRepository implements BlockRepositoryInterface
         $this->pdo->beginTransaction();
 
         $blockId = Uuid::uuid4()->toString();
-        // Utiliser la date ISO standard pour PostgreSQL
         $timestamp = date('Y-m-d H:i:s');
-        $blockHash = hash('sha256', $blockId . $adminLogin . '0' . 'genesis' . $timestamp);
+        $blockHash = hash('sha256', trim($blockId) . trim($adminLogin) . '0' . 'genesis' . trim($timestamp));
 
         $stmt = $this->pdo->prepare("
-            INSERT INTO blocks (id, hash, previous_hash, account, amount, emitter, receiver)
-            VALUES (:id, :hash, :previous_hash, :account, :amount, :emitter, :receiver)
+            INSERT INTO blocks (id, hash, previous_hash,timestamp, account, amount, emitter, receiver)
+            VALUES (:id, :hash, :previous_hash, :timestamp ,:account, :amount, :emitter, :receiver)
         ");
 
         $stmt->execute([
             'id' => $blockId,
             'hash' => $blockHash,
             'previous_hash' => '0',
+            'timestamp' => $timestamp,
             'account' => $adminLogin,
-            'amount' => 0.0,
+            'amount' => number_format(0, 2, '.', ''),
             'emitter' => $adminLogin,
             'receiver' => $adminLogin
         ]);
@@ -456,12 +456,12 @@ class BlockRepository implements BlockRepositoryInterface
             for ($i = 0; $i < count($blocks); $i++) {
                 $currentBlock = $blocks[$i];
 
-                if ($i == 0 || $currentBlock['previous_hash'] == '0') {
-                    $calculatedHash = hash('sha256', $currentBlock['id'] . $currentBlock['account'] . '0' . 'genesis' . strtotime($currentBlock['timestamp']));
-                } else {
-                    $calculatedHash = hash('sha256', $currentBlock['id'] . $currentBlock['account'] . $currentBlock['amount'] . $currentBlock['emitter'] . $currentBlock['receiver'] . strtotime($currentBlock['timestamp']));
-                }
-                // Recalculer le hash du bloc actuel pour vérifier s'il a été modifié
+                // Premier bloc (Genesis) ou bloc avec previous_hash = '0'
+                    if ($i == 0 || $currentBlock['previous_hash'] == '0') {
+                        $calculatedHash = hash('sha256', trim($currentBlock['id']) . trim($currentBlock['account']) . '0' . 'genesis' . trim($currentBlock['timestamp']));
+                    } else {
+                    // Modifications ici pour aligner avec la méthode de calcul dans addBlock()
+                    $calculatedHash = hash('sha256', trim($currentBlock['id']) . trim($currentBlock['account']) . number_format($currentBlock['amount'], 2, '.', '') . trim($currentBlock['emitter']) . trim($currentBlock['receiver']) . trim($currentBlock['timestamp']));                }
 
                 // Vérifier si le hash stocké correspond au hash calculé
                 if ($calculatedHash !== $currentBlock['hash']) {
@@ -469,8 +469,7 @@ class BlockRepository implements BlockRepositoryInterface
                         'block_id' => $currentBlock['id'],
                         'error' => 'Hash invalide',
                         'stored_hash' => $currentBlock['hash'],
-                        'time' => $currentBlock['receiver'],
-                        'truetime' => $blocks[$i]['receiver'],
+                        'time' => $currentBlock['timestamp'],
                         'calculated_hash' => $calculatedHash
                     ];
                 }
@@ -489,11 +488,11 @@ class BlockRepository implements BlockRepositoryInterface
                         ];
                     }
                 } else {
-                    // Pour le premier bloc, vérifier que previous_hash est bien NULL
+                    // Pour le premier bloc, vérifier que previous_hash est bien '0'
                     if ($currentBlock['previous_hash'] !== '0') {
                         $invalidBlocks[] = [
                             'block_id' => $currentBlock['id'],
-                            'error' => 'Le premier bloc ne devrait pas avoir de previous_hash',
+                            'error' => 'Le premier bloc devrait avoir "0" comme previous_hash',
                             'stored_previous_hash' => $currentBlock['previous_hash']
                         ];
                     }
