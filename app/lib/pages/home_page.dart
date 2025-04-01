@@ -58,7 +58,7 @@ class _HomePageState extends State<HomePage> {
       final response = await _remoteService.fetchHistory();
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final historyList = (data['history'] as List);
+        final historyList = (data['transactions'] as List);
 
         setState(() {
           allTransactions =
