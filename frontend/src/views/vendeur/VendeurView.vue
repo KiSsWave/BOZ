@@ -3,7 +3,12 @@
     <HeaderComponent />
     <div class="vendor-container">
       <h1>Interface Vendeur</h1>
-
+      <div class="balance-container">
+        <label class="balance-label">VOTRE SOLDE EST DE :</label>
+        <div class="balance-display">
+          {{ balance }}€
+        </div>
+      </div>
       <div class="invoice-creation-form">
         <h2>Créer une nouvelle facture</h2>
         <form @submit.prevent="createInvoice" class="form-container">
@@ -19,19 +24,10 @@
           <div class="form-group">
             <label for="buyer">Acheteur (optionnel) :</label>
             <div class="buyer-search">
-              <input 
-                type="text" 
-                id="buyer" 
-                v-model="buyerQuery" 
-                placeholder="Rechercher un acheteur..." 
-                @input="searchBuyers"
-              />
+              <input type="text" id="buyer" v-model="buyerQuery" placeholder="Rechercher un acheteur..."
+                @input="searchBuyers" />
               <div v-if="showBuyerResults && searchResults.length > 0" class="search-results">
-                <div 
-                  v-for="user in searchResults" 
-                  :key="user.id" 
-                  class="search-result-item"
-                  @click="selectBuyer(user)">
+                <div v-for="user in searchResults" :key="user.id" class="search-result-item" @click="selectBuyer(user)">
                   {{ user.login }}
                 </div>
               </div>
@@ -52,47 +48,33 @@
           </button>
         </form>
       </div>
-      <!-- Liste des factures -->
-      <div class="invoices-list">
-        <h2>Mes factures</h2>
-        <div v-if="loading" class="loading-message">
-          Chargement des factures...
+
+
+      <div v-if="lastFacture" class="invoice-qr">
+        <h2>Dernière facture créée</h2>
+        <div class="invoice-details">
+          <label>{{ lastFacture.label }}</label>
+          <label>{{ lastFacture.amount }}€</label>
         </div>
-        <div v-else-if="factures.length === 0" class="no-invoices">
-          Aucune facture créée
-        </div>
-        <div v-else class="invoices-grid">
-          <div v-for="facture in factures" :key="facture.id" class="invoice-card">
-            <div class="invoice-header">
-              <span class="invoice-status" :class="{ 'status-paid': facture.status === 'payée' }">
-                {{ facture.status }}
-              </span>
-            </div>
-            <div class="invoice-body">
-              <p class="invoice-description">{{ facture.label }}</p>
-              <p class="invoice-amount">{{ facture.amount }}€</p>
-              <p v-if="facture.buyer_login" class="invoice-buyer">Acheteur: {{ facture.buyer_login }}</p>
-            </div>
-            <div class="invoice-qr">
-              <img :src="`data:image/png;base64,${facture.qr_code}`" :alt="'QR Code pour ' + facture.label"
-                class="qr-code" @click="fullscreen" />
-            </div>
-          </div>
-        </div>
+        <img :src="`data:image/png;base64,${lastFacture.qr_code}`" :alt="'QR Code pour ' + lastFacture.label"
+          class="qr-code" @click="fullscreen" />
       </div>
-      <a @click="ticket">
-        <font-awesome-icon :icon="['fas', 'ticket']" /> Créer un ticket pour contacter l'administrateur
-      </a>
     </div>
+    <footer>
+      <button @click="contactAdmin">Contacter l'administrateur</button>
+      <button @click="viewTickets">Consulter les tickets</button>
+      <button @click="viewFactures">Consulter les factures</button>
+    </footer>
   </div>
 </template>
 
 <script>
 import HeaderComponent from '@/components/HeaderComponent.vue'
-import axios from '../api/index.js'
+import axios from '../../api/index.js'
 import { ref, onMounted, computed, watch } from 'vue'
 import { useUserStore } from '@/stores/userStore'
 import debounce from 'lodash/debounce'
+import { useAppStore } from '@/stores/appStore';
 
 export default {
   name: 'VendeurView',
@@ -106,10 +88,20 @@ export default {
     ticket() {
       window.location.href = '/VendeurTicket'
     },
+    contactAdmin() {
+      window.location.href = '/contact'
+    },
+    viewTickets() {
+      window.location.href = '/userTicket'
+    },
+    viewFactures() {
+      window.location.href = '/factures'
+    }
   },
 
   setup() {
     const userStore = useUserStore()
+    const appStore = useAppStore()
     const form = ref({
       label: '',
       tarif: ''
@@ -123,7 +115,10 @@ export default {
     const searchResults = ref([])
     const showBuyerResults = ref(false)
     const selectedBuyer = ref(null)
-    
+
+    const lastFacture = ref(null)
+    const balance = computed(() => appStore.balance);
+
     const fullscreen = (event) => {
       event.target.classList.toggle('fullscreen')
     }
@@ -133,7 +128,7 @@ export default {
         searchResults.value = []
         return
       }
-      
+
       try {
         const response = await axios.get('/users/search', {
           params: { query: buyerQuery.value }
@@ -170,8 +165,13 @@ export default {
       try {
         const response = await axios.get('/factures')
         factures.value = response.data.factures
+
+        if (factures.value && factures.value.length > 0) {
+          lastFacture.value = factures.value[0]
+        }
       } catch (err) {
         console.error('Erreur lors de la récupération des factures:', err)
+        error.value = 'Impossible de récupérer les factures'
       } finally {
         loading.value = false
       }
@@ -197,7 +197,7 @@ export default {
           label: form.value.label,
           tarif: parseFloat(form.value.tarif)
         }
-        
+
         // Ajouter l'acheteur si sélectionné
         if (selectedBuyer.value) {
           invoiceData.buyer_login = selectedBuyer.value.login
@@ -222,9 +222,14 @@ export default {
       }
     }
 
-    onMounted(() => {
-      fetchFactures()
-    })
+    onMounted(async () => {
+      try {
+        await appStore.fetchBalance();
+      } catch (error) {
+        console.error("Erreur lors de la récupération du solde :", error);
+      }
+    });
+
 
     return {
       form,
@@ -240,7 +245,10 @@ export default {
       selectedBuyer,
       searchBuyers,
       selectBuyer,
-      clearSelectedBuyer
+      clearSelectedBuyer,
+      lastFacture,
+      createInvoice,
+      fullscreen
     }
   }
 }
@@ -263,11 +271,11 @@ a:hover {
 }
 
 .vendor-container {
-  padding: 20px;
-  max-width: 800px;
-  margin: 0 auto;
-  min-height: calc(100vh - 70px);
   background-color: #f4f7f6;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 h1 {
@@ -286,6 +294,8 @@ h2 {
 .invoice-creation-form {
   background: white;
   padding: 25px;
+  width: 100%;
+  max-width: 400px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 30px;
@@ -294,6 +304,7 @@ h2 {
 .form-container {
   display: flex;
   flex-direction: column;
+  width: auto;
   gap: 20px;
 }
 
@@ -301,6 +312,42 @@ h2 {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+footer {
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: clamp(10px, 2vw, 20px);
+  padding: clamp(15px, 3vw, 30px);
+  background-color: #ffffff;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+}
+
+footer button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: clamp(10px, 2vw, 20px) clamp(8px, 1.5vw, 15px);
+  font-size: clamp(0.8rem, 2vw, 1rem);
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  text-transform: uppercase;
+  font-weight: bold;
+  min-height: 60px;
+  height: auto;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+footer button:hover {
+  background-color: #2980b9;
+  transform: translateY(-3px);
 }
 
 label {
@@ -358,57 +405,28 @@ input:focus {
   text-align: center;
 }
 
-/* Styles pour la liste des factures */
-.invoices-list {
-  margin-top: 30px;
-}
-
-.loading-message,
-.no-invoices {
-  text-align: center;
-  padding: 20px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.invoices-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
-}
-
-.invoice-card {
-  background: white;
-  border-radius: 8px;
-  padding: 15px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.invoice-header {
+.invoice-qr {
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: 10px;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 20px;
 }
 
-.invoice-status {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  background-color: #f39c12;
-  color: white;
+.invoice-details {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 15px;
 }
 
-.status-paid {
-  background-color: #27ae60;
-}
-
-.invoice-body {
-  margin-bottom: 15px;
-}
-
-.invoice-description {
+.invoice-details label {
+  margin: 5px 0;
   font-size: 1.1rem;
   color: #2c3e50;
   margin-bottom: 8px;
@@ -436,10 +454,18 @@ input:focus {
 }
 
 .qr-code {
-  width: 150px;
-  height: 150px;
+  width: 200px;
+  height: 200px;
   object-fit: contain;
   cursor: pointer;
+  border: 1px solid #ddd;
+  padding: 5px;
+  background: white;
+  transition: transform 0.3s ease;
+}
+
+.qr-code:hover {
+  transform: scale(1.05);
 }
 
 .qr-code.fullscreen {
@@ -521,19 +547,20 @@ input:focus {
 
   .invoice-creation-form {
     padding: 15px;
+    width: 100%;
+  }
+
+  .invoice-qr {
+    width: 100%;
   }
 
   input {
     padding: 10px;
   }
 
-  .invoices-grid {
-    grid-template-columns: 1fr;
-  }
-
   .qr-code {
-    width: 120px;
-    height: 120px;
+    width: 160px;
+    height: 160px;
   }
 }
 </style>

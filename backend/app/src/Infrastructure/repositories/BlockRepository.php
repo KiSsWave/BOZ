@@ -265,65 +265,65 @@ class BlockRepository implements BlockRepositoryInterface
     }
 
     public function addBlock(string $accountLogin, float $amount, string $emitter, string $receiver, string $role): void
-    {
-        try {
-            $userIdStmt = $this->pdo->prepare("SELECT id FROM users WHERE login = :login");
-            $userIdStmt->execute(['login' => $accountLogin]);
-            $userId = $userIdStmt->fetchColumn();
-            
-            if (!$userId) {
-                throw new Exception("Utilisateur avec login {$accountLogin} non trouvé.");
-            }
-            
-            if ($emitter === $accountLogin && $emitter !== $receiver) {
-                if (!$this->isTransactionValid($userId, $amount, $role)) {
-                    throw new Exception("Transaction invalide pour l'utilisateur avec login {$accountLogin}.");
-                }
-            }
-
-            $startedTransaction = false;
-            if (!$this->pdo->inTransaction()) {
-                $this->pdo->beginTransaction();
-                $startedTransaction = true;
-            }
-
-            $lastBlock = null;
-            try {
-                $lastBlock = $this->getLastBlock();
-            } catch (RepositoryEntityNotFoundException $e) {
-            }
-
-            $blockId = Uuid::uuid4()->toString();
-            $timestamp = time();
-            $previousHash = $lastBlock ? $lastBlock['hash'] : '0';
-            $blockHash = hash('sha256', $blockId . $accountLogin . $amount . $emitter . $receiver . $timestamp);
-
-            $newBlockStmt = $this->pdo->prepare("
-                INSERT INTO blocks (id, hash, previous_hash, account, amount, emitter, receiver, timestamp)
-                VALUES (:id, :hash, :previous_hash, :account, :amount, :emitter, :receiver, :timestamp)
-            ");
-
-            $newBlockStmt->execute([
-                'id' => $blockId,
-                'hash' => $blockHash,
-                'previous_hash' => $previousHash,
-                'account' => $accountLogin,
-                'amount' => $amount,
-                'emitter' => $emitter,
-                'receiver' => $receiver,
-                'timestamp' => $timestamp,
-            ]);
-
-            if ($startedTransaction) {
-                $this->pdo->commit();
-            }
-        } catch (Exception $e) {
-            if (isset($startedTransaction) && $startedTransaction && $this->pdo->inTransaction()) {
-                $this->pdo->rollBack();
-            }
-            throw new Exception("Erreur lors de l'ajout d'un nouveau bloc : " . $e->getMessage());
+{
+    try {
+        $userIdStmt = $this->pdo->prepare("SELECT id FROM users WHERE login = :login");
+        $userIdStmt->execute(['login' => $accountLogin]);
+        $userId = $userIdStmt->fetchColumn();
+        
+        if (!$userId) {
+            throw new Exception("Utilisateur avec login {$accountLogin} non trouvé.");
         }
+        
+        if ($emitter === $accountLogin && $emitter !== $receiver) {
+            if (!$this->isTransactionValid($userId, $amount, $role)) {
+                throw new Exception("Transaction invalide pour l'utilisateur avec login {$accountLogin}.");
+            }
+        }
+
+        $startedTransaction = false;
+        if (!$this->pdo->inTransaction()) {
+            $this->pdo->beginTransaction();
+            $startedTransaction = true;
+        }
+
+        $lastBlock = null;
+        try {
+            $lastBlock = $this->getLastBlock();
+        } catch (RepositoryEntityNotFoundException $e) {
+        }
+
+        $blockId = Uuid::uuid4()->toString();
+        // Utiliser une chaîne de texte pour le calcul du hash mais ne pas l'inclure dans la requête
+        $timestampForHash = time();
+        $previousHash = $lastBlock ? $lastBlock['hash'] : '0';
+        $blockHash = hash('sha256', $blockId . $accountLogin . $amount . $emitter . $receiver . $timestampForHash);
+
+        $newBlockStmt = $this->pdo->prepare("
+            INSERT INTO blocks (id, hash, previous_hash, account, amount, emitter, receiver)
+            VALUES (:id, :hash, :previous_hash, :account, :amount, :emitter, :receiver)
+        ");
+
+        $newBlockStmt->execute([
+            'id' => $blockId,
+            'hash' => $blockHash,
+            'previous_hash' => $previousHash,
+            'account' => $accountLogin,
+            'amount' => $amount,
+            'emitter' => $emitter,
+            'receiver' => $receiver
+        ]);
+
+        if ($startedTransaction) {
+            $this->pdo->commit();
+        }
+    } catch (Exception $e) {
+        if (isset($startedTransaction) && $startedTransaction && $this->pdo->inTransaction()) {
+            $this->pdo->rollBack();
+        }
+        throw new Exception("Erreur lors de l'ajout d'un nouveau bloc : " . $e->getMessage());
     }
+}
 
     public function isTransactionValid(string $userId, float $amount, string $role): bool
     {
@@ -397,38 +397,38 @@ class BlockRepository implements BlockRepositoryInterface
     
 
     public function createGenesisBlock(string $adminLogin): void
-    {
-        try {
-            $this->pdo->beginTransaction();
+{
+    try {
+        $this->pdo->beginTransaction();
 
-            $blockId = Uuid::uuid4()->toString();
-            $timestamp = time();
-            $blockHash = hash('sha256', $blockId . $adminLogin . '0' . 'genesis' . $timestamp);
+        $blockId = Uuid::uuid4()->toString();
+        // Utiliser la date ISO standard pour PostgreSQL
+        $timestamp = date('Y-m-d H:i:s');
+        $blockHash = hash('sha256', $blockId . $adminLogin . '0' . 'genesis' . $timestamp);
 
-            $stmt = $this->pdo->prepare("
-                INSERT INTO blocks (id, hash, previous_hash, account, amount, emitter, receiver, timestamp)
-                VALUES (:id, :hash, :previous_hash, :account, :amount, :emitter, :receiver,:timestamp)
-            ");
+        $stmt = $this->pdo->prepare("
+            INSERT INTO blocks (id, hash, previous_hash, account, amount, emitter, receiver)
+            VALUES (:id, :hash, :previous_hash, :account, :amount, :emitter, :receiver)
+        ");
 
-            $stmt->execute([
-                'id' => $blockId,
-                'hash' => $blockHash,
-                'previous_hash' => '0',
-                'account' => $adminLogin,
-                'amount' => 0.0,
-                'emitter' => $adminLogin,
-                'receiver' => $adminLogin,
-                'timestamp' => $timestamp
-            ]);
+        $stmt->execute([
+            'id' => $blockId,
+            'hash' => $blockHash,
+            'previous_hash' => '0',
+            'account' => $adminLogin,
+            'amount' => 0.0,
+            'emitter' => $adminLogin,
+            'receiver' => $adminLogin
+        ]);
 
-            $this->pdo->commit();
-        } catch (Exception $e) {
-            if ($this->pdo->inTransaction()) {
-                $this->pdo->rollBack();
-            }
-            throw new Exception("Erreur lors de la création du bloc de genèse : " . $e->getMessage());
+        $this->pdo->commit();
+    } catch (Exception $e) {
+        if ($this->pdo->inTransaction()) {
+            $this->pdo->rollBack();
         }
+        throw new Exception("Erreur lors de la création du bloc de genèse : " . $e->getMessage());
     }
+}
 
     public function verifyBlockchain(): array
     {

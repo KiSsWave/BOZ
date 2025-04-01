@@ -1,5 +1,4 @@
 import 'package:boz/pages/navigation_page.dart';
-import 'package:boz/pages/seller_navigation_page.dart';
 import 'package:flutter/material.dart';
 import 'pages/login_page.dart';
 import 'pages/register_page.dart';
@@ -30,18 +29,17 @@ class _MyAppState extends State<MyApp> {
   Future<Widget> _determineInitialPage() async {
     try {
       // Vérifier si l'utilisateur est connecté
-      int? role = await RemoteService().getRole();
+      bool isConnected = await RemoteService().isConnected();
 
-      switch (role) {
-        case 1:
-          return MyNavigation();
-        case 2:
-          return SellerNavigation();
-        default:
-          return LoginPage();
+      if (isConnected) {
+        // Si connecté, utiliser la page de navigation unifiée qui s'adapte au rôle
+        return const NavigationPage();
+      } else {
+        // Non connecté, renvoyer à la page de connexion
+        return LoginPage();
       }
     } catch (e) {
-      // En cas d'erreur (par exemple, non connecté), renvoyer à la page de connexion
+      // En cas d'erreur, renvoyer à la page de connexion
       return LoginPage();
     }
   }
@@ -58,7 +56,7 @@ class _MyAppState extends State<MyApp> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             // Afficher un écran de chargement pendant la vérification
-            return Scaffold(
+            return const Scaffold(
               body: Center(
                 child: CircularProgressIndicator(),
               ),
@@ -76,8 +74,7 @@ class _MyAppState extends State<MyApp> {
       routes: {
         '/login': (context) => LoginPage(),
         '/register': (context) => RegisterPage(),
-        '/home': (context) => MyNavigation(),
-        '/seller': (context) => SellerNavigation(),
+        '/home': (context) => const NavigationPage(),
       },
     );
   }

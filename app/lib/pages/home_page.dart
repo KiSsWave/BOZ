@@ -17,6 +17,7 @@ class _HomePageState extends State<HomePage> {
   List<Transaction> allTransactions = [];
   List<Transaction> displayedTransactions = [];
   bool isLoading = false;
+  int? role;
 
   final Preferences _preferences = Preferences();
   final RemoteService _remoteService = RemoteService();
@@ -24,7 +25,14 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _initializePreferences();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    // Récupérer le rôle de l'utilisateur
+    role = await _remoteService.getRole();
+
+    await _initializePreferences();
   }
 
   Future<void> _initializePreferences() async {
@@ -111,6 +119,43 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Si le rôle n'est pas encore déterminé, afficher un indicateur de chargement
+    if (role == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    // Déterminer quelle interface afficher en fonction du rôle
+    if (role == 2) {
+      // Interface du vendeur
+      return _buildSellerHomePage();
+    } else {
+      // Interface de l'utilisateur standard (par défaut)
+      return _buildUserHomePage();
+    }
+  }
+
+  // Interface pour le vendeur
+  Widget _buildSellerHomePage() {
+    return SafeArea(
+      child: RefreshIndicator(
+        onRefresh: () async {
+          await _fetchBalance();
+        },
+        color: Colors.black,
+        backgroundColor: Colors.grey[300],
+        child: Center(
+          child: Column(
+            children: [
+              _buildBalanceCard(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Interface pour l'utilisateur standard
+  Widget _buildUserHomePage() {
     return SafeArea(
       child: RefreshIndicator(
         onRefresh: () async {

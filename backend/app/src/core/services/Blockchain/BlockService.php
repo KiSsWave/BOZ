@@ -44,25 +44,25 @@ class BlockService implements BlockServiceInterface
     }
 
     public function giveCash(string $adminLogin, string $userLogin, float $amount, string $role): void
-    {
+{
+    try {
+        $hasBlocks = true;
         try {
-            $hasBlocks = true;
-            try {
-                $this->blockRepository->getLastBlock();
-            } catch (RepositoryEntityNotFoundException $e) {
-                $hasBlocks = false;
-            }
-
-            if (!$hasBlocks) {
-                $this->blockRepository->createGenesisBlock($adminLogin);
-            }
-            
-            $this->blockRepository->addBlock($userLogin, $amount, $adminLogin, $userLogin, $role);
-            
-        } catch (Exception $e) {
-            throw new Exception($e->getMessage());
+            $this->blockRepository->getLastBlock();
+        } catch (RepositoryEntityNotFoundException $e) {
+            $hasBlocks = false;
         }
+
+        if (!$hasBlocks) {
+            $this->blockRepository->createGenesisBlock($adminLogin);
+        }
+        
+        $this->blockRepository->addBlock($userLogin, $amount, $adminLogin, $userLogin, $role);
+        
+    } catch (Exception $e) {
+        throw new Exception($e->getMessage());
     }
+}
 
     public function getFactureById(string $factureId): array
     {

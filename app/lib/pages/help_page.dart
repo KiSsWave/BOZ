@@ -63,7 +63,7 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
                         border: OutlineInputBorder(),
                       ),
                       value: selectedType,
-                      items: ["Question", "Demande de fond", "Devenir Vendeur"]
+                      items: ["Question", "Demande de fond", "Devenir Vendeur", "Signaler un bug", "Demande de Partenariat", "Erreur de transaction", "Suppression du compte", "Autre"]
                           .map((String type) {
                         return DropdownMenuItem<String>(
                           value: type,
