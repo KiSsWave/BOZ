@@ -12,6 +12,7 @@ import TransactionView from '@/views/user/TransactionView.vue'
 import ModifView from '@/views/ModifView.vue'
 import FaqView from '@/views/FaqView.vue'
 import FacturesView from '@/views/vendeur/FacturesView.vue'
+import FacturesBuyerView from '@/views/user/FacturesBuyerView.vue'
 import { useUserStore } from '@/stores/userStore'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -92,6 +93,12 @@ const router = createRouter({
       name: 'factures',
       component: FacturesView,
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/mes-factures',
+      name: 'factures-acheteur',
+      component: FacturesBuyerView,
+      meta: { requiresAuth: true, role: "1" }
     }
 
 
